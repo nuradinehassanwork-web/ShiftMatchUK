@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>ShiftMatch — Flexible Student Work</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0a0f1e;
+  --paper:#f4f6fb;
+  --blue:#1a52f5;
+  --blue2:#0f3cd4;
+  --blue-dark:#0d1a4a;
+  --blue-light:#e8efff;
+  --mint:#d4f7e0;
+  --amber:#f5c842;
+  --muted:#6b7280;
+  --white:#ffffff;
+  --r:20px;
+  --font:'Outfit',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--paper);color:var(--ink);overflow-x:hidden;}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;width:100%;z-index:999;
+  padding:12px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(244,246,251,0.93);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(10,15,30,0.07);
+}
+.logo-wrap{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);}
+.logo-img{height:38px;width:38px;object-fit:contain;}
+.logo-name{font-family:var(--font);font-weight:700;font-size:19px;letter-spacing:-.01em;}
+.nav-links{display:flex;align-items:center;gap:28px;}
+.nav-links a{font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s;}
+.nav-links a:hover{color:var(--ink);}
+.nav-cta{background:var(--blue)!important;color:white!important;padding:9px 22px;border-radius:999px;font-weight:600!important;transition:background .15s!important;}
+.nav-cta:hover{background:var(--blue2)!important;}
+
+/* ── BTNS ── */
+.btn-primary{background:var(--blue);color:white;border:none;padding:14px 28px;border-radius:999px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 8px 24px rgba(26,82,245,.3);transition:transform .15s,box-shadow .15s,background .15s;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(26,82,245,.4);background:var(--blue2);}
+.btn-ghost{background:transparent;color:var(--ink);border:1.5px solid rgba(10,15,30,.18);padding:13px 26px;border-radius:999px;font-family:var(--font);font-size:15px;font-weight:500;cursor:pointer;transition:border-color .15s,background .15s;}
+.btn-ghost:hover{border-color:var(--ink);background:rgba(10,15,30,.04);}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:40px;align-items:center;
+  padding:120px 48px 80px;
+  position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#eef2ff 0%,var(--paper) 50%,#e8f5ec 100%);
+}
+.hero::before{content:'';position:absolute;top:-200px;right:-200px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(26,82,245,0.09) 0%,transparent 70%);pointer-events:none;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--mint);color:#0d6632;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:6px 14px;border-radius:999px;margin-bottom:24px;width:fit-content;animation:fadeUp .5s ease-out both;}
+.hero-badge::before{content:'';width:7px;height:7px;border-radius:50%;background:#18c45e;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.hero h1{font-family:var(--font);font-weight:800;font-size:clamp(38px,5.5vw,70px);line-height:1.0;letter-spacing:-.025em;animation:fadeUp .6s .1s ease-out both;}
+.hero h1 em{font-style:normal;background:linear-gradient(130deg,var(--blue) 0%,#5b8aff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:17px;color:var(--muted);font-weight:400;line-height:1.65;margin-top:20px;max-width:460px;animation:fadeUp .6s .2s ease-out both;}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px;animation:fadeUp .6s .3s ease-out both;}
+.hero-stats{display:flex;flex-wrap:wrap;gap:12px;margin-top:40px;animation:fadeUp .6s .45s ease-out both;}
+.stat-chip{background:white;border-radius:14px;padding:12px 18px;box-shadow:0 4px 18px rgba(10,15,30,.08);display:flex;flex-direction:column;gap:2px;}
+.stat-chip strong{font-family:var(--font);font-size:22px;font-weight:800;color:var(--blue);}
+.stat-chip span{font-size:11px;color:var(--muted);font-weight:400;}
+
+/* hero right */
+.hero-right{position:relative;display:flex;align-items:center;justify-content:center;animation:fadeUp .7s .2s ease-out both;}
+.shifty-bg-circle{position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(26,82,245,0.13),rgba(26,82,245,0.03));top:50%;left:50%;transform:translate(-50%,-50%);z-index:0;}
+.shifty-svg{width:290px;height:360px;position:relative;z-index:1;filter:drop-shadow(0 28px 48px rgba(26,82,245,0.22));animation:float 4s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+.phone-float{position:absolute;right:-24px;top:20px;background:white;border-radius:18px;padding:14px;box-shadow:0 18px 44px rgba(10,15,30,.14);width:185px;z-index:3;animation:float2 5s 1s ease-in-out infinite;}
+@keyframes float2{0%,100%{transform:translateY(0) rotate(2deg);}50%{transform:translateY(-10px) rotate(2deg);}}
+.pf-header{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.pf-header img{width:16px;height:16px;object-fit:contain;}
+.pf-header span{font-family:var(--font);font-size:11px;font-weight:700;color:var(--ink);}
+.pf-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(10,15,30,.06);font-size:11px;}
+.pf-row:last-child{border-bottom:none;}
+.pf-row span:first-child{color:var(--muted);}
+.pf-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;}
+.pf-badge.conf{background:#d4f7e0;color:#0d6632;}
+.pf-badge.pend{background:#fff7ed;color:#c25f00;}
+.pf-badge.open{background:#eff6ff;color:var(--blue);}
+.wallet-float{position:absolute;left:-20px;bottom:30px;background:white;border-radius:16px;padding:14px 18px;box-shadow:0 16px 40px rgba(10,15,30,.12);z-index:3;animation:float3 4.5s .5s ease-in-out infinite;}
+@keyframes float3{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-10px) rotate(-2deg);}}
+.wallet-float .w-label{font-size:10px;color:var(--muted);font-weight:500;margin-bottom:4px;}
+.wallet-float .w-amount{font-family:var(--font);font-size:22px;font-weight:800;color:var(--ink);}
+.wallet-float .w-trend{font-size:11px;color:#18c45e;font-weight:600;margin-top:3px;}
+
+/* ── LAYOUT UTILS ── */
+.section{padding:96px 48px;max-width:1200px;margin:0 auto;}
+.dk-wrap{padding:96px 0;}
+.dk-inner{max-width:1200px;margin:0 auto;padding:0 48px;}
+.sl{font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:12px;}
+.sl.amber{color:var(--amber);}
+.sl.mint{color:#18c45e;}
+.st{font-family:var(--font);font-weight:800;font-size:clamp(26px,4vw,44px);line-height:1.05;letter-spacing:-.02em;max-width:600px;margin-bottom:10px;}
+.sb{font-size:15px;color:var(--muted);max-width:480px;line-height:1.65;margin-bottom:44px;font-weight:400;}
+
+/* ── SERVICES ── */
+.srv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;}
+.srv-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);padding:28px;transition:background .2s,transform .2s;}
+.srv-card:hover{background:rgba(255,255,255,.09);transform:translateY(-3px);}
+.srv-icon{width:44px;height:44px;border-radius:12px;background:var(--blue);display:grid;place-items:center;margin-bottom:18px;}
+.srv-icon svg{width:21px;height:21px;}
+.srv-card h3{font-family:var(--font);font-size:17px;font-weight:700;color:white;margin-bottom:8px;}
+.srv-card p{font-size:13px;color:rgba(255,255,255,.5);line-height:1.65;}
+.srv-tag{display:inline-block;margin-top:14px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);padding:3px 9px;border-radius:5px;background:rgba(245,200,66,.12);}
+
+/* ── APP SCREENS ── */
+.screens-scroll{display:flex;gap:20px;overflow-x:auto;padding-bottom:16px;scrollbar-width:none;}
+.screens-scroll::-webkit-scrollbar{display:none;}
+.screen-card{flex-shrink:0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:18px;width:215px;transition:transform .2s,background .2s;}
+.screen-card:hover{transform:translateY(-6px) scale(1.02);background:rgba(255,255,255,.12);}
+.screen-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;font-family:var(--font);}
+.fake-phone{background:white;border-radius:14px;padding:12px;min-height:236px;position:relative;overflow:hidden;}
+.fp-hd{display:flex;align-items:center;gap:5px;margin-bottom:10px;}
+.fp-logo{height:13px;width:13px;object-fit:contain;}
+.fp-logo-sm{font-family:var(--font);font-size:10px;font-weight:700;color:var(--ink);}
+.fp-title{font-family:var(--font);font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.fp-sub{font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.4;}
+.fp-amount{font-family:var(--font);font-size:24px;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.fp-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(10,15,30,.06);font-size:10px;}
+.fp-row:last-child{border-bottom:none;}
+.fp-row-l{color:var(--muted);}
+.fp-row-r{font-weight:600;color:var(--ink);font-family:var(--font);}
+.fp-btn{background:var(--blue);color:white;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;width:100%;cursor:pointer;margin-top:10px;font-family:var(--font);}
+.fp-stat-row{display:flex;gap:6px;margin-bottom:8px;}
+.fp-stat{flex:1;background:#f4f6fb;border-radius:8px;padding:7px;text-align:center;}
+.fp-stat strong{display:block;font-family:var(--font);font-size:13px;font-weight:800;color:var(--blue);}
+.fp-stat span{font-size:8px;color:var(--muted);}
+.fp-timer-wrap{display:flex;flex-direction:column;align-items:center;padding:14px 0;}
+.fp-timer-ring{width:88px;height:88px;position:relative;}
+.fp-timer-ring svg{width:88px;height:88px;}
+.fp-timer-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.fp-timer-time{font-family:var(--font);font-size:15px;font-weight:800;color:var(--ink);}
+.fp-timer-lbl{font-size:8px;color:var(--muted);}
+.fp-shift-item{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(10,15,30,.06);}
+.fp-shift-item:last-child{border-bottom:none;}
+.fp-ci{width:24px;height:24px;border-radius:7px;background:var(--blue-light);display:grid;place-items:center;flex-shrink:0;}
+.fp-ci svg{width:12px;height:12px;}
+.fp-si{flex:1;}
+.fp-si .n{font-size:10px;font-weight:600;color:var(--ink);font-family:var(--font);}
+.fp-si .d{font-size:9px;color:var(--muted);}
+.fp-pay{font-size:10px;font-weight:700;color:var(--blue);font-family:var(--font);}
+.fp-map{background:linear-gradient(135deg,#e8f0fe,#d1e4f5);border-radius:9px;height:64px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;position:relative;overflow:hidden;}
+.fp-booked{display:inline-block;background:#d4f7e0;color:#0d6632;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;margin-bottom:5px;font-family:var(--font);}
+.fp-field{margin-bottom:6px;}
+.fp-field label{display:block;font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+.fp-field .val{font-size:10px;color:var(--ink);background:#f4f6fb;border-radius:5px;padding:3px 6px;font-family:var(--font);}
+.fp-verify-icon{width:48px;height:48px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;margin:8px auto;}
+.fp-dash-stat{display:flex;gap:5px;margin-bottom:8px;}
+.fp-ds{flex:1;background:#f4f6fb;border-radius:6px;padding:6px;text-align:center;}
+.fp-ds strong{display:block;font-family:var(--font);font-size:12px;font-weight:800;color:var(--blue);}
+.fp-ds span{font-size:8px;color:var(--muted);}
+.fp-activity{font-size:9px;color:var(--muted);padding:3px 0;border-bottom:1px solid rgba(10,15,30,.05);}
+.fp-activity .hi{color:var(--blue);font-weight:600;}
+
+/* ── SHIFTY SECTION ── */
+.shifty-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+.shifty-mascot-wrap{display:flex;justify-content:center;position:relative;}
+.shifty-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(26,82,245,0.35),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+.shifty-big{width:270px;height:330px;filter:drop-shadow(0 18px 55px rgba(26,82,245,0.45));animation:float 4s ease-in-out infinite;position:relative;z-index:1;}
+.shifty-feats{display:flex;flex-direction:column;gap:14px;margin-top:24px;}
+.sf{display:flex;align-items:flex-start;gap:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;}
+.sf-icon{width:36px;height:36px;border-radius:10px;background:var(--blue);display:grid;place-items:center;flex-shrink:0;}
+.sf-icon svg{width:18px;height:18px;}
+.sf h4{font-family:var(--font);font-size:14px;font-weight:700;color:white;margin-bottom:3px;}
+.sf p{font-size:12px;color:rgba(255,255,255,.5);line-height:1.5;}
+
+/* ── STEPS ── */
+.steps{display:flex;flex-direction:column;}
+.step{display:grid;grid-template-columns:56px 1fr;gap:24px;padding:26px 0;border-bottom:1px solid rgba(10,15,30,.07);align-items:start;}
+.step:last-child{border-bottom:none;}
+.step-num{width:44px;height:44px;border-radius:12px;background:var(--blue);color:white;font-family:var(--font);font-weight:800;font-size:15px;display:grid;place-items:center;flex-shrink:0;}
+.step-content h3{font-family:var(--font);font-size:16px;font-weight:700;margin-bottom:5px;}
+.step-content p{font-size:14px;color:var(--muted);line-height:1.65;}
+
+/* ── DASHBOARD PREVIEW ── */
+.dash-preview{background:white;border-radius:22px;padding:26px;box-shadow:0 20px 55px rgba(10,15,30,.1);border:1px solid rgba(10,15,30,.06);margin-bottom:48px;}
+.dash-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.dash-top h3{font-family:var(--font);font-size:17px;font-weight:700;}
+.dash-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.ds-box{background:var(--paper);border-radius:12px;padding:14px;text-align:center;}
+.ds-box strong{display:block;font-family:var(--font);font-size:22px;font-weight:800;color:var(--blue);}
+.ds-box span{font-size:11px;color:var(--muted);}
+.dash-table{width:100%;border-collapse:collapse;}
+.dash-table th{font-size:11px;font-weight:600;color:var(--muted);text-align:left;padding:0 0 10px;text-transform:uppercase;letter-spacing:.05em;font-family:var(--font);}
+.dash-table td{font-size:13px;padding:10px 0;border-bottom:1px solid rgba(10,15,30,.06);font-family:var(--font);}
+.dash-table tr:last-child td{border-bottom:none;}
+.sb-confirmed{background:#d4f7e0;color:#0d6632;font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;font-family:var(--font);}
+.sb-pending{background:#fff7ed;color:#c25f00;font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;font-family:var(--font);}
+.sb-open{background:#eff6ff;color:var(--blue);font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;font-family:var(--font);}
+
+/* ── PRO ── */
+.pro-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;}
+.pro-badge-wrap{display:inline-flex;align-items:center;gap:8px;background:rgba(245,200,66,.12);padding:7px 16px;border-radius:999px;font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.08em;margin-bottom:18px;font-family:var(--font);}
+.pro-title{font-family:var(--font);font-weight:800;font-size:clamp(28px,4vw,46px);color:white;line-height:1.05;letter-spacing:-.02em;margin-bottom:12px;}
+.pro-sub{font-size:15px;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:24px;}
+.pro-feats{display:flex;flex-direction:column;gap:10px;}
+.pf-item{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:rgba(255,255,255,.75);}
+.pf-item::before{content:'';flex-shrink:0;width:18px;height:18px;border-radius:5px;background:rgba(245,200,66,.12);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5c842' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");background-size:11px;background-repeat:no-repeat;background-position:center;margin-top:2px;}
+.pro-logo-card{background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.18);border-radius:26px;padding:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.pro-diamond{width:130px;height:130px;transform:rotate(45deg);border-radius:20px;background:linear-gradient(135deg,#e8a800,#f5c842);display:flex;align-items:center;justify-content:center;box-shadow:0 18px 48px rgba(245,200,66,.28);}
+.pro-diamond-inner{transform:rotate(-45deg);display:flex;flex-direction:column;align-items:center;gap:2px;}
+.pro-tagline{font-size:14px;color:rgba(255,255,255,.4);text-align:center;line-height:1.6;}
+
+/* ── REGISTRATION ── */
+.reg-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+.reg-perks{display:flex;flex-direction:column;gap:12px;margin-top:24px;}
+.reg-perk{display:flex;align-items:center;gap:12px;background:white;border-radius:14px;padding:12px 16px;box-shadow:0 4px 16px rgba(10,15,30,.07);font-size:13px;font-weight:500;font-family:var(--font);}
+.rp-icon{width:32px;height:32px;border-radius:9px;background:var(--blue);display:grid;place-items:center;flex-shrink:0;}
+.rp-icon svg{width:16px;height:16px;}
+.reg-tabs{display:flex;gap:10px;margin-bottom:26px;}
+.reg-tab{flex:1;padding:10px;border-radius:12px;border:1.5px solid rgba(10,15,30,.12);background:white;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;color:var(--muted);}
+.reg-tab.active{background:var(--blue);color:white;border-color:var(--blue);box-shadow:0 6px 20px rgba(26,82,245,.28);}
+.reg-card{background:white;border-radius:26px;padding:34px;box-shadow:0 22px 56px rgba(10,15,30,.11);border:1px solid rgba(10,15,30,.06);position:relative;overflow:hidden;}
+.reg-card::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(26,82,245,.05);pointer-events:none;}
+.reg-header{display:flex;align-items:center;gap:12px;margin-bottom:26px;}
+.reg-header img{height:34px;width:34px;object-fit:contain;}
+.reg-header span{font-family:var(--font);font-weight:800;font-size:19px;}
+.form-group{margin-bottom:13px;}
+.form-group label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase;font-family:var(--font);}
+.form-group input{width:100%;padding:12px 16px;background:var(--paper);border:1.5px solid rgba(10,15,30,.1);border-radius:12px;font-family:var(--font);font-size:14px;color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s;}
+.form-group input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,82,245,.1);}
+.sso-btn{width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(10,15,30,.12);background:white;display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;margin-bottom:13px;transition:border-color .2s,background .2s;}
+.sso-btn:hover{border-color:var(--blue);background:var(--blue-light);}
+.divider{text-align:center;font-size:12px;color:var(--muted);margin:12px 0;position:relative;font-family:var(--font);}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:rgba(10,15,30,.1);}
+.divider::before{left:0;} .divider::after{right:0;}
+.reg-note{font-size:11px;color:var(--muted);text-align:center;margin-top:13px;line-height:1.55;}
+.reg-note a{color:var(--blue);}
+.avail-slot{display:flex;align-items:center;gap:7px;background:var(--paper);border:1.5px solid rgba(10,15,30,.1);border-radius:9px;padding:8px 10px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.avail-slot:hover{border-color:var(--blue);background:#eff6ff;}
+.avail-slot input{accent-color:var(--blue);}
+.avail-slot input:checked ~ *{color:var(--blue);}
+.avail-slot:has(input:checked){border-color:var(--blue);background:#eff6ff;color:var(--blue);}
+.interest-tag{display:flex;align-items:center;gap:6px;background:var(--paper);border:1.5px solid rgba(10,15,30,.1);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.interest-tag:hover{border-color:var(--blue);background:#eff6ff;}
+.interest-tag:has(input:checked){border-color:var(--blue);background:#eff6ff;color:var(--blue);}
+.interest-tag input{accent-color:var(--blue);}
+
+/* ── PRICING ── */
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.pc{background:white;border-radius:var(--r);padding:34px;border:1.5px solid rgba(10,15,30,.08);box-shadow:0 10px 36px rgba(10,15,30,.07);position:relative;overflow:hidden;}
+.pc.featured{background:var(--ink);border-color:transparent;}
+.pc-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;font-family:var(--font);}
+.pc.featured .pc-label{color:var(--amber);}
+.pc h3{font-family:var(--font);font-size:24px;font-weight:800;margin-bottom:5px;}
+.pc.featured h3,.pc.featured .pc-price,.pc.featured .pc-desc{color:white;}
+.pc-price{font-size:13px;color:var(--muted);margin-bottom:14px;font-family:var(--font);}
+.pc-desc{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:22px;}
+.pc-feats{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+.pc-feat{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--muted);font-family:var(--font);}
+.pc-feat::before{content:'';flex-shrink:0;width:17px;height:17px;border-radius:5px;background:#eff6ff;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a52f5' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");background-size:10px;background-repeat:no-repeat;background-position:center;margin-top:1px;}
+.pc.featured .pc-feat{color:rgba(255,255,255,.7);}
+.pc.featured .pc-feat::before{background:rgba(245,200,66,.12);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5c842' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");background-size:10px;background-repeat:no-repeat;background-position:center;}
+.btn-plan{width:100%;padding:13px;border-radius:12px;border:none;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;background:var(--blue);color:white;box-shadow:0 6px 20px rgba(26,82,245,.28);transition:transform .15s,box-shadow .15s;}
+.btn-plan:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(26,82,245,.38);}
+.best-badge{position:absolute;top:18px;right:18px;background:var(--amber);color:#0a0f1e;font-size:10px;font-weight:700;padding:3px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;font-family:var(--font);}
+
+/* ── CONTACT ── */
+.contact-grid{display:grid;grid-template-columns:1.3fr 0.7fr;gap:40px;align-items:start;}
+.cf-dark{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);padding:34px;}
+.cf-dark input,.cf-dark textarea{width:100%;padding:12px 16px;margin-bottom:11px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;font-family:var(--font);font-size:14px;color:white;outline:none;transition:border-color .2s;}
+.cf-dark input::placeholder,.cf-dark textarea::placeholder{color:rgba(255,255,255,.3);}
+.cf-dark input:focus,.cf-dark textarea:focus{border-color:var(--blue);}
+.cf-dark textarea{min-height:120px;resize:vertical;}
+.ic{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;margin-bottom:14px;}
+.ic h4{font-family:var(--font);font-weight:700;font-size:14px;color:white;margin-bottom:7px;}
+.ic p{font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;}
+
+/* ── FOOTER ── */
+footer{background:#060a12;color:rgba(255,255,255,.35);padding:30px 48px;font-size:13px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:var(--font);}
+.footer-logo{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.65);text-decoration:none;font-family:var(--font);font-weight:700;font-size:16px;}
+.footer-logo img{height:28px;width:28px;object-fit:contain;}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .6s ease-out,transform .6s ease-out;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  nav{padding:12px 20px;}
+  .nav-links{display:none;}
+  .hero{grid-template-columns:1fr;padding:108px 22px 60px;text-align:center;}
+  .hero-badge{margin:0 auto 24px;}
+  .hero-actions{justify-content:center;}
+  .hero-right{display:none;}
+  .section{padding:60px 22px;}
+  .dk-inner{padding:60px 22px;}
+  .shifty-grid,.pro-grid,.reg-grid,.pricing-grid,.contact-grid{grid-template-columns:1fr;}
+  .shifty-mascot-wrap{display:none;}
+  footer{padding:22px 20px;flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="logo-wrap" href="#">
+    <img class="logo-img" src="logo.png" alt="ShiftMatch logo"/>
+    <span class="logo-name">ShiftMatch</span>
+  </a>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#app-screens">App</a>
+    <a href="#shiftsave">ShiftSave</a>
+    <a href="#shiftskills">ShiftSkills</a>
+    <a href="#how">How it works</a>
+    <a href="#pro">Pro+</a>
+    <a href="#register">Sign up</a>
+    <a href="#contact" class="nav-cta">Get a demo</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-badge">Now matching students across the UK</div>
+    <h1>The smarter way<br/>to <em>staff every shift.</em></h1>
+    <p class="hero-sub">ShiftMatch connects businesses with motivated, verified university students for flexible short-notice work. Smart matching, group shifts, in-app VOIP, wallet &amp; stats — all in one app.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Join ShiftMatch free</button>
+      <button class="btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See how it works</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-chip"><strong>60s</strong><span>to post a shift</span></div>
+      <div class="stat-chip"><strong>1-tap</strong><span>acceptance</span></div>
+      <div class="stat-chip"><strong>+40%</strong><span>group attendance</span></div>
+      <div class="stat-chip"><strong>£0</strong><span>agency fees</span></div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="shifty-bg-circle"></div>
+    <!-- Shifty mascot SVG -->
+    <svg class="shifty-svg" viewBox="0 0 300 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="150" cy="312" rx="88" ry="18" fill="rgba(26,82,245,0.13)"/>
+      <rect x="89" y="258" width="43" height="66" rx="20" fill="#e8eeff"/>
+      <rect x="168" y="258" width="43" height="66" rx="20" fill="#e8eeff"/>
+      <rect x="89" y="275" width="43" height="8" fill="rgba(26,82,245,0.18)"/>
+      <rect x="168" y="275" width="43" height="8" fill="rgba(26,82,245,0.18)"/>
+      <rect x="81" y="316" width="56" height="18" rx="9" fill="#c7d4f7"/>
+      <rect x="163" y="316" width="56" height="18" rx="9" fill="#c7d4f7"/>
+      <rect x="75" y="148" width="150" height="122" rx="26" fill="white"/>
+      <rect x="75" y="238" width="150" height="14" fill="rgba(26,82,245,0.07)"/>
+      <rect x="23" y="158" width="50" height="26" rx="13" fill="#e8eeff"/>
+      <rect x="9" y="164" width="30" height="18" rx="9" fill="#d0daff"/>
+      <rect x="227" y="148" width="50" height="26" rx="13" fill="#e8eeff"/>
+      <rect x="261" y="128" width="18" height="42" rx="9" fill="#d0daff"/>
+      <ellipse cx="261" cy="124" rx="11" ry="9" fill="#d0daff"/>
+      <path d="M150 180 L168 198 L150 218 L132 198 Z" fill="rgba(26,82,245,0.1)"/>
+      <path d="M150 186 L164 198 L150 212 L136 198 Z" fill="#1a52f5"/>
+      <path d="M143 198l5 5 9-9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="150" y="234" font-family="Outfit,sans-serif" font-size="8.5" font-weight="700" fill="rgba(26,82,245,0.55)" text-anchor="middle">ShiftMatch</text>
+      <rect x="131" y="140" width="38" height="14" rx="7" fill="#c7d4f7"/>
+      <ellipse cx="150" cy="108" rx="66" ry="63" fill="white"/>
+      <circle cx="85" cy="108" r="15" fill="#e8eeff"/>
+      <circle cx="85" cy="108" r="8" fill="#1a52f5" opacity=".28"/>
+      <circle cx="215" cy="108" r="15" fill="#e8eeff"/>
+      <circle cx="215" cy="108" r="8" fill="#1a52f5" opacity=".28"/>
+      <rect x="101" y="83" width="98" height="50" rx="15" fill="#0d1a4a"/>
+      <rect x="105" y="87" width="90" height="18" rx="9" fill="rgba(255,255,255,0.05)"/>
+      <ellipse cx="128" cy="108" rx="13" ry="15" fill="#1a52f5" opacity=".45"/>
+      <ellipse cx="172" cy="108" rx="13" ry="15" fill="#1a52f5" opacity=".45"/>
+      <ellipse cx="128" cy="108" rx="9" ry="11" fill="#60a5fa"/>
+      <ellipse cx="172" cy="108" rx="9" ry="11" fill="#60a5fa"/>
+      <ellipse cx="124" cy="104" rx="3.5" ry="4.5" fill="white" opacity=".8"/>
+      <ellipse cx="168" cy="104" rx="3.5" ry="4.5" fill="white" opacity=".8"/>
+      <line x1="150" y1="46" x2="150" y2="28" stroke="#1a52f5" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="150" cy="20" r="10" fill="#1a52f5"/>
+      <path d="M144 20l4 4 8-8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+
+    <!-- Floating shift card -->
+    <div class="phone-float">
+      <div class="pf-header">
+        <img src="logo.png" style="height:14px;width:14px;object-fit:contain;"/>
+        <span>Upcoming Shifts</span>
+      </div>
+      <div class="pf-row"><span>Barista · Wed</span><span><span class="pf-badge conf">Confirmed</span></span></div>
+      <div class="pf-row"><span>Server · Fri</span><span><span class="pf-badge pend">Pending</span></span></div>
+      <div class="pf-row"><span>Cashier · Sat</span><span><span class="pf-badge open">Open</span></span></div>
+    </div>
+
+    <!-- Wallet float -->
+    <div class="wallet-float">
+      <div class="w-label">💰 Wallet</div>
+      <div class="w-amount">£1,280</div>
+      <div class="w-trend">↑ +£90 this week</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SERVICES ── -->
+<div id="services" style="background:var(--ink);" class="dk-wrap">
+  <div class="dk-inner">
+    <p class="sl amber reveal">What we do</p>
+    <h2 class="st reveal" style="color:white;">Built for real-world staffing.</h2>
+    <p class="sb reveal" style="color:rgba(255,255,255,.5);">Everything you need to post shifts, reach students, and keep operations running — no recruitment agency required.</p>
+    <div class="srv-grid">
+      <div class="srv-card reveal">
+        <div class="srv-icon"><svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <h3>Instant shift promotion</h3>
+        <p>Post roles in under 60 seconds. See views, alerts sent and how long it's been live — all from your dashboard. No calling around.</p>
+        <span class="srv-tag">Employers</span>
+      </div>
+      <div class="srv-card reveal">
+        <div class="srv-icon"><svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <h3>Timetable sync &amp; smart matching</h3>
+        <p>Students link their university calendar via SSO. AI parses availability and matches them only to conflict-free shifts automatically.</p>
+        <span class="srv-tag">Students</span>
+      </div>
+      <div class="srv-card reveal">
+        <div class="srv-icon"><svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <h3>Group shift invites</h3>
+        <p>Invite friends via WhatsApp, iMessage or in-app link. Attendance rates increase by 40% when students work with people they know.</p>
+        <span class="srv-tag">Groups</span>
+      </div>
+      <div class="srv-card reveal">
+        <div class="srv-icon"><svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+        <h3>In-app VOIP &amp; messaging</h3>
+        <p>Managers and workers message and call safely — no personal numbers shared. Instructions, location and updates all in one place.</p>
+        <span class="srv-tag">Pro+</span>
+      </div>
+      <div class="srv-card reveal">
+        <div class="srv-icon"><svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Clock-in &amp; incident reports</h3>
+        <p>Students clock in on arrival with a live timer. Report incidents, confirm breaks and log hours — all without paper or manual timesheets.</p>
+        <span class="srv-tag">Students</span>
+      </div>
+      <div class="srv-card reveal">
+        <div class="srv-icon"><svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+        <h3>Wallet &amp; earnings tracker</h3>
+        <p>Students see total earnings, completed shifts and an earnings chart — right in the app. Pay that's reliable, clear and on time.</p>
+        <span class="srv-tag">Students</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── APP SCREENS ── -->
+<div id="app-screens" style="background:linear-gradient(160deg,var(--blue-dark) 0%,#0f2060 100%);padding:96px 0;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 48px;">
+    <p class="sl mint reveal" style="margin-bottom:12px;">The app</p>
+    <h2 class="st reveal" style="color:white;margin-bottom:10px;">See ShiftMatch in action.</h2>
+    <p class="sb reveal" style="color:rgba(255,255,255,.5);margin-bottom:36px;">Every feature, in a single clean app. Designed for students on the go and businesses that need results fast.</p>
+    <div class="screens-scroll">
+
+      <div class="screen-card reveal">
+        <div class="screen-label">💰 Wallet</div>
+        <div class="fake-phone">
+          <div class="fp-hd"><img class="fp-logo" src="logo.png"/><span class="fp-logo-sm">ShiftMatch</span></div>
+          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-bottom:4px;">Wallet</div>
+          <div class="fp-amount">£1,280.00</div>
+          <div style="font-size:9px;color:var(--muted);font-weight:500;margin-bottom:8px;">Completed</div>
+          <div class="fp-row"><span class="fp-row-l">Wed, Sep 6 — Server</span><span class="fp-row-r">£50.00</span></div>
+          <div class="fp-row"><span class="fp-row-l">Sat, Sep 2 — Barista</span><span class="fp-row-r">£90.00</span></div>
+          <div class="fp-row"><span class="fp-row-l">Fri, Aug 30 — Cashier</span><span class="fp-row-r">£60.00</span></div>
+        </div>
+      </div>
+
+      <div class="screen-card reveal">
+        <div class="screen-label">📅 Timetable</div>
+        <div class="fake-phone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px 12px;">
+          <svg width="58" height="58" viewBox="0 0 60 60" fill="none" style="margin-bottom:10px;"><rect x="6" y="10" width="48" height="44" rx="8" fill="#eff6ff" stroke="#1a52f5" stroke-width="2"/><path d="M6 22h48" stroke="#1a52f5" stroke-width="2"/><rect x="14" y="18" width="4" height="8" rx="2" fill="#1a52f5"/><rect x="42" y="18" width="4" height="8" rx="2" fill="#1a52f5"/><rect x="14" y="30" width="8" height="6" rx="2" fill="#1a52f5" opacity=".3"/><rect x="26" y="30" width="8" height="6" rx="2" fill="#1a52f5"/><rect x="38" y="30" width="8" height="6" rx="2" fill="#1a52f5" opacity=".3"/></svg>
+          <div class="fp-title">Sync Your Timetable</div>
+          <p style="font-size:10px;color:var(--muted);line-height:1.5;margin-bottom:12px;">Link your university schedule to automatically filter shifts by availability.</p>
+          <button class="fp-btn">Link Timetable</button>
+        </div>
+      </div>
+
+      <div class="screen-card reveal">
+        <div class="screen-label">🔍 Available Jobs</div>
+        <div class="fake-phone">
+          <div class="fp-hd"><img class="fp-logo" src="logo.png"/><span class="fp-logo-sm">ShiftMatch</span></div>
+          <div class="fp-title" style="margin-bottom:3px;">Available Jobs</div>
+          <div style="font-size:9px;color:var(--blue);font-weight:600;margin-bottom:8px;">📍 Manchester</div>
+          <div class="fp-shift-item"><div class="fp-ci"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#1a52f5" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8v4h8V3z"/></svg></div><div class="fp-si"><div class="n">Tuffs Warehouse Ltd</div><div class="d">Night Stock · Fri 25 Jul · 3:38 AM</div></div><div class="fp-pay">£14/hr</div></div>
+          <div class="fp-shift-item"><div class="fp-ci"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#1a52f5" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="fp-si"><div class="n">NorthEnd Logistics</div><div class="d">PickerPacker · Sat 26 Jul</div></div><div class="fp-pay">£12/hr</div></div>
+          <div class="fp-shift-item"><div class="fp-ci"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#1a52f5" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="fp-si"><div class="n">Compact Storage Co</div><div class="d">Warehouse Assist · Mon 28 Jul</div></div><div class="fp-pay">£13/hr</div></div>
+        </div>
+      </div>
+
+      <div class="screen-card reveal">
+        <div class="screen-label">⏱ Clock-In</div>
+        <div class="fake-phone">
+          <div class="fp-hd"><img class="fp-logo" src="logo.png"/><span class="fp-logo-sm">ShiftMatch</span></div>
+          <div class="fp-title">Working as Front Desk</div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:10px;">Wed 24 Nov · 8:00 PM – 7 PM · Ridgehill Hotel</div>
+          <div class="fp-timer-wrap">
+            <div class="fp-timer-ring">
+              <svg width="88" height="88" viewBox="0 0 88 88"><circle cx="44" cy="44" r="38" fill="none" stroke="#e0e8ff" stroke-width="6"/><circle cx="44" cy="44" r="38" fill="none" stroke="#1a52f5" stroke-width="6" stroke-dasharray="200 239" stroke-linecap="round" transform="rotate(-90 44 44)"/></svg>
+              <div class="fp-timer-text"><span class="fp-timer-time">2h 40m</span><span class="fp-timer-lbl">Remaining</span></div>
+            </div>
+          </div>
+          <button class="fp-btn" style="background:#ef4444;">Clock Out</button>
+        </div>
+      </div>
+
+      <div class="screen-card reveal">
+        <div class="screen-label">📊 My Stats</div>
+        <div class="fake-phone">
+          <div class="fp-hd"><img class="fp-logo" src="logo.png"/><span class="fp-logo-sm">ShiftMatch</span></div>
+          <div class="fp-title">My Stats</div>
+          <div class="fp-stat-row">
+            <div class="fp-stat"><strong>22</strong><span>Shifts</span></div>
+            <div class="fp-stat"><strong>4.9</strong><span>Rating</span></div>
+            <div class="fp-stat"><strong>96%</strong><span>On-time</span></div>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:var(--ink);margin-bottom:6px;font-family:var(--font);">Total Earnings — £2,880</div>
+          <div style="display:flex;align-items:flex-end;gap:4px;height:48px;padding:0 2px;">
+            <div style="flex:1;background:#eff6ff;border-radius:3px 3px 0 0;height:38%;"></div>
+            <div style="flex:1;background:#eff6ff;border-radius:3px 3px 0 0;height:52%;"></div>
+            <div style="flex:1;background:#eff6ff;border-radius:3px 3px 0 0;height:68%;"></div>
+            <div style="flex:1;background:#1a52f5;border-radius:3px 3px 0 0;height:83%;"></div>
+            <div style="flex:1;background:#1a52f5;border-radius:3px 3px 0 0;height:100%;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--muted);margin-top:3px;padding:0 2px;"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span></div>
+        </div>
+      </div>
+
+      <div class="screen-card reveal">
+        <div class="screen-label">📍 Location</div>
+        <div class="fake-phone">
+          <div class="fp-hd"><img class="fp-logo" src="logo.png"/><span class="fp-logo-sm">ShiftMatch</span></div>
+          <div class="fp-map"><svg width="100%" height="100%" viewBox="0 0 190 64" fill="none" style="position:absolute;inset:0;"><rect width="190" height="64" fill="#e8f0fe"/><line x1="0" y1="32" x2="190" y2="32" stroke="#c5d5f0" stroke-width="1"/><line x1="95" y1="0" x2="95" y2="64" stroke="#c5d5f0" stroke-width="1"/><rect x="20" y="10" width="38" height="18" rx="3" fill="#d0dffa"/><rect x="128" y="28" width="38" height="22" rx="3" fill="#d0dffa"/></svg><span style="position:relative;z-index:1;font-size:26px;">📍</span></div>
+          <div class="fp-booked">✓ Booked</div>
+          <div style="font-size:12px;font-weight:700;color:var(--ink);font-family:var(--font);">Manchester Piccadilly</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">Wed, Nov 15 · 9:00 AM – 3:00 PM</div>
+          <div style="font-size:10px;color:var(--muted);">City Coffee · 1 Station Approach</div>
+          <div style="font-size:11px;font-weight:700;color:var(--blue);margin-top:6px;font-family:var(--font);">£15.00 per hour</div>
+        </div>
+      </div>
+
+      <div class="screen-card reveal">
+        <div class="screen-label">✅ Verification</div>
+        <div class="fake-phone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#eff6ff;padding:18px 12px;">
+          <div class="fp-verify-icon"><svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="fp-title" style="margin-top:8px;">Verification Required</div>
+          <p style="font-size:10px;color:var(--muted);line-height:1.5;margin-bottom:12px;">To access all app features, verify your identity and university email.</p>
+          <button class="fp-btn">Begin Verification</button>
+        </div>
+      </div>
+
+      <div class="screen-card reveal">
+        <div class="screen-label">⚠️ Incident Report</div>
+        <div class="fake-phone">
+          <div class="fp-hd"><img class="fp-logo" src="logo.png"/><span class="fp-logo-sm">ShiftMatch</span></div>
+          <div class="fp-title">Incident Report</div>
+          <div class="fp-field"><label>Position</label><div class="val">Warehouse Assistant</div></div>
+          <div class="fp-field"><label>Company</label><div class="val">Lauries Ltd</div></div>
+          <div class="fp-field"><label>Date &amp; Time</label><div class="val">Tue, 5 Sep · 11:30 PM</div></div>
+          <div class="fp-field"><label>Type</label><div class="val">Pro-Shift</div></div>
+          <button class="fp-btn" style="margin-top:6px;">Submit Report</button>
+        </div>
+      </div>
+
+      <div class="screen-card reveal">
+        <div class="screen-label">🏢 Dashboard</div>
+        <div class="fake-phone">
+          <div class="fp-hd"><img class="fp-logo" src="logo.png"/><span class="fp-logo-sm">ShiftMatch</span></div>
+          <div class="fp-dash-stat">
+            <div class="fp-ds"><strong>12</strong><span>Shifts</span></div>
+            <div class="fp-ds"><strong>2</strong><span>New</span></div>
+            <div class="fp-ds"><strong>58h</strong><span>Hours</span></div>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:var(--ink);margin-bottom:5px;font-family:var(--font);">Recent Activity</div>
+          <div class="fp-activity"><span class="hi">John Doe</span> confirmed for Server, May 9</div>
+          <div class="fp-activity"><span class="hi">Michael Lee</span> applied for Cashier</div>
+          <div class="fp-activity">A Barista shift was created</div>
+          <div class="fp-activity"><span class="hi">Emma Brown</span> added as new student</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── SHIFTY ── -->
+<div style="background:linear-gradient(135deg,#0d1a4a 0%,#1a2d6e 100%);padding:96px 0;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 48px;">
+    <div class="shifty-grid">
+      <div class="shifty-mascot-wrap reveal">
+        <div class="shifty-glow"></div>
+        <svg class="shifty-big" viewBox="0 0 300 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="150" cy="312" rx="88" ry="18" fill="rgba(26,82,245,0.15)"/>
+          <rect x="89" y="258" width="43" height="66" rx="20" fill="#e8eeff"/>
+          <rect x="168" y="258" width="43" height="66" rx="20" fill="#e8eeff"/>
+          <rect x="89" y="275" width="43" height="8" fill="rgba(26,82,245,0.18)"/>
+          <rect x="168" y="275" width="43" height="8" fill="rgba(26,82,245,0.18)"/>
+          <rect x="81" y="316" width="56" height="18" rx="9" fill="#c7d4f7"/>
+          <rect x="163" y="316" width="56" height="18" rx="9" fill="#c7d4f7"/>
+          <rect x="75" y="148" width="150" height="122" rx="26" fill="white"/>
+          <rect x="75" y="238" width="150" height="14" fill="rgba(26,82,245,0.07)"/>
+          <rect x="23" y="158" width="50" height="26" rx="13" fill="#e8eeff"/>
+          <rect x="9" y="164" width="30" height="18" rx="9" fill="#d0daff"/>
+          <rect x="227" y="148" width="50" height="26" rx="13" fill="#e8eeff"/>
+          <rect x="261" y="128" width="18" height="42" rx="9" fill="#d0daff"/>
+          <ellipse cx="261" cy="124" rx="11" ry="9" fill="#d0daff"/>
+          <path d="M150 180 L168 198 L150 218 L132 198 Z" fill="rgba(26,82,245,0.1)"/>
+          <path d="M150 186 L164 198 L150 212 L136 198 Z" fill="#1a52f5"/>
+          <path d="M143 198l5 5 9-9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="150" y="234" font-family="Outfit,sans-serif" font-size="8.5" font-weight="700" fill="rgba(26,82,245,0.55)" text-anchor="middle">ShiftMatch</text>
+          <rect x="131" y="140" width="38" height="14" rx="7" fill="#c7d4f7"/>
+          <ellipse cx="150" cy="108" rx="66" ry="63" fill="white"/>
+          <circle cx="85" cy="108" r="15" fill="#e8eeff"/>
+          <circle cx="85" cy="108" r="8" fill="#1a52f5" opacity=".28"/>
+          <circle cx="215" cy="108" r="15" fill="#e8eeff"/>
+          <circle cx="215" cy="108" r="8" fill="#1a52f5" opacity=".28"/>
+          <rect x="101" y="83" width="98" height="50" rx="15" fill="#0d1a4a"/>
+          <rect x="105" y="87" width="90" height="18" rx="9" fill="rgba(255,255,255,0.05)"/>
+          <ellipse cx="128" cy="108" rx="13" ry="15" fill="#1a52f5" opacity=".45"/>
+          <ellipse cx="172" cy="108" rx="13" ry="15" fill="#1a52f5" opacity=".45"/>
+          <ellipse cx="128" cy="108" rx="9" ry="11" fill="#60a5fa"/>
+          <ellipse cx="172" cy="108" rx="9" ry="11" fill="#60a5fa"/>
+          <ellipse cx="124" cy="104" rx="3.5" ry="4.5" fill="white" opacity=".8"/>
+          <ellipse cx="168" cy="104" rx="3.5" ry="4.5" fill="white" opacity=".8"/>
+          <line x1="150" y1="46" x2="150" y2="28" stroke="#1a52f5" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="150" cy="20" r="10" fill="#1a52f5"/>
+          <path d="M144 20l4 4 8-8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <p class="sl mint" style="margin-bottom:12px;">Meet Shifty</p>
+        <h2 class="st" style="color:white;">Your AI-powered<br/>shift assistant.</h2>
+        <p class="sb" style="color:rgba(255,255,255,.55);">Shifty is the ShiftMatch mascot and in-app guide. Powered by intelligent matching, Shifty helps students find the right shifts at the right time — and helps businesses fill them fast.</p>
+        <div class="shifty-feats">
+          <div class="sf"><div class="sf-icon"><svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div><h4>Smart shift discovery</h4><p>Shifty surfaces the best shifts for your skills, location and timetable — instantly, no scrolling needed.</p></div></div>
+          <div class="sf"><div class="sf-icon"><svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/></svg></div><div><h4>Onboarding &amp; guidance</h4><p>New to ShiftMatch? Shifty walks you through setup, timetable linking and your first shift step by step.</p></div></div>
+          <div class="sf"><div class="sf-icon"><svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><h4>Always improving</h4><p>The more you use ShiftMatch, the smarter Shifty gets at matching you to roles you'll enjoy.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="section" id="how">
+  <p class="sl reveal">The process</p>
+  <h2 class="st reveal">Up and running in minutes.</h2>
+  <p class="sb reveal">Whether you're a business needing cover or a student looking for flexible income, getting started is simple.</p>
+  <div class="dash-preview reveal">
+    <div class="dash-top">
+      <h3>Business Dashboard</h3>
+      <button class="btn-primary" style="font-size:13px;padding:9px 18px;">+ Post New Shift</button>
+    </div>
+    <div class="dash-stats">
+      <div class="ds-box"><strong>12</strong><span>Available Shifts</span></div>
+      <div class="ds-box"><strong>58h</strong><span>Total Hours</span></div>
+      <div class="ds-box"><strong>96%</strong><span>Fill Rate</span></div>
+    </div>
+    <table class="dash-table">
+      <thead><tr><th>Date</th><th>Time</th><th>Role</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Tue, May 9</td><td>6:00 – 12:00 AM</td><td>Server</td><td><span class="sb-pending">Pending</span></td></tr>
+        <tr><td>Tue, May 9</td><td>10:00 – 1:00 PM</td><td>Cashier</td><td><span class="sb-open">Open</span></td></tr>
+        <tr><td>Wed, May 10</td><td>9:00 – 1:00 PM</td><td>Cashier</td><td><span class="sb-confirmed">Confirmed</span></td></tr>
+        <tr><td>Thu, May 11</td><td>12:00 – 4:00 PM</td><td>Barista</td><td><span class="sb-confirmed">Confirmed</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="steps">
+    <div class="step reveal"><div class="step-num">01</div><div class="step-content"><h3>Register with your university login</h3><p>Students sign in via SSO (Microsoft Azure, Google Workspace, or Shibboleth). Businesses create a verified employer account. No paperwork, no back-and-forth.</p></div></div>
+    <div class="step reveal"><div class="step-num">02</div><div class="step-content"><h3>Link your timetable or post your shift</h3><p>Students grant ShiftMatch permission to read their iCal/Outlook calendar feed — public timetable only, never personal emails. Businesses post a shift in under 60 seconds.</p></div></div>
+    <div class="step reveal"><div class="step-num">03</div><div class="step-content"><h3>Smart matching happens automatically</h3><p>Shifty checks availability against the shift window and surfaces the right students. Pro+ members get priority vibration alerts first before anyone else.</p></div></div>
+    <div class="step reveal"><div class="step-num">04</div><div class="step-content"><h3>Invite friends &amp; work as a group</h3><p>After accepting, students see "Invite friends to this shift." Friends check timetable compatibility and tap Join Shift. The employer sees the group as one unit — easy to manage.</p></div></div>
+    <div class="step reveal"><div class="step-num">05</div><div class="step-content"><h3>Clock in, complete the shift, get paid</h3><p>Students clock in live with a timer. Hours tracked automatically. Timesheets, incident reports and break logs all handled in-app. Pay is reliable and fully transparent.</p></div></div>
+  </div>
+</section>
+
+<!-- ── PRO ── -->
+<div id="pro" style="background:#0a0f1e;padding:96px 0;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 48px;">
+    <div class="pro-grid">
+      <div>
+        <div class="pro-badge-wrap">⭐ ShiftMatch Pro+</div>
+        <h2 class="pro-title">More features.<br/>Faster shifts.<br/>More cash.</h2>
+        <p class="pro-sub">Upgrade to Pro+ and unlock priority placement, in-app VOIP calling, boosted listings, advanced analytics and exclusive perks — for students and businesses alike.</p>
+        <div class="pro-feats">
+          <div class="pf-item">Priority vibration alerts — first access to new shifts before anyone else.</div>
+          <div class="pf-item">In-built VOIP calling — contact managers safely, no personal numbers needed.</div>
+          <div class="pf-item">Boosted shift listings — businesses get shifts filled faster with Pro promotion.</div>
+          <div class="pf-item">Advanced dashboard analytics — views, acceptance rates, fill times.</div>
+          <div class="pf-item">Dedicated account support — priority help when you need it.</div>
+        </div>
+        <button class="btn-primary" style="margin-top:28px;" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Ask about Pro+</button>
+      </div>
+      <div class="pro-logo-card reveal">
+        <div class="pro-diamond">
+          <div class="pro-diamond-inner">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#0a0f1e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/><path d="M14 17l3-3" opacity=".4"/></svg>
+            <span style="font-family:var(--font);font-weight:800;font-size:14px;color:#0a0f1e;">Shiftmatch</span>
+            <span style="font-size:11px;color:rgba(0,0,0,.5);font-family:var(--font);font-weight:600;">Pro+</span>
+          </div>
+        </div>
+        <p class="pro-tagline">"Scratch another off proudly,<br/>and with extra cash 🤑"</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── REGISTER ── -->
+<div id="register" style="background:var(--paper);padding:96px 0;">
+<div style="max-width:1200px;margin:0 auto;padding:0 48px;">
+  <div class="reg-grid">
+    <div class="reveal">
+      <p class="sl" style="margin-bottom:12px;">Get started</p>
+      <h2 style="font-family:var(--font);font-weight:800;font-size:clamp(28px,4vw,44px);line-height:1.05;letter-spacing:-.02em;margin-bottom:12px;">Join ShiftMatch<br/>in minutes.</h2>
+      <p style="font-size:15px;color:var(--muted);line-height:1.65;font-weight:400;">Sign up in under 60 seconds. We'll handle everything else — timetable sync, vetting, and shift matching — so you don't have to.</p>
+      <div class="reg-perks" style="margin-top:24px;">
+        <div class="reg-perk"><div class="rp-icon"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>60 second sign up — no lengthy forms</div>
+        <div class="reg-perk"><div class="rp-icon"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>We sync your timetable automatically</div>
+        <div class="reg-perk"><div class="rp-icon"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg></div>We email you next steps after sign up</div>
+        <div class="reg-perk"><div class="rp-icon"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Fully vetted before your first shift</div>
+      </div>
+
+      <!-- What happens next -->
+      <div style="margin-top:32px;background:white;border-radius:16px;padding:20px;border:1px solid var(--border);box-shadow:0 4px 16px rgba(10,15,30,.07);">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;">What happens after you sign up</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <div style="width:24px;height:24px;border-radius:7px;background:var(--blue);color:white;font-size:11px;font-weight:800;display:grid;place-items:center;flex-shrink:0;">1</div>
+            <div style="font-size:13px;"><strong>Welcome email</strong> — we send you a verification link and next steps within minutes</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <div style="width:24px;height:24px;border-radius:7px;background:var(--blue);color:white;font-size:11px;font-weight:800;display:grid;place-items:center;flex-shrink:0;">2</div>
+            <div style="font-size:13px;"><strong>Quick vetting</strong> — NI number, right to work and bank details collected securely via email link</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <div style="width:24px;height:24px;border-radius:7px;background:var(--blue);color:white;font-size:11px;font-weight:800;display:grid;place-items:center;flex-shrink:0;">3</div>
+            <div style="font-size:13px;"><strong>Timetable linked</strong> — we sync your university calendar and find your free slots automatically</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <div style="width:24px;height:24px;border-radius:7px;background:#10b981;color:white;font-size:11px;font-weight:800;display:grid;place-items:center;flex-shrink:0;">✓</div>
+            <div style="font-size:13px;"><strong>You're live</strong> — shifts matched to your timetable start coming in</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <div class="reg-tabs">
+        <button class="reg-tab active" onclick="switchTab(this,'student')">🎓 I'm a Student</button>
+        <button class="reg-tab" onclick="switchTab(this,'business')">🏢 I'm a Business</button>
+      </div>
+      <div class="reg-card">
+        <div class="reg-header">
+          <img src="logo.png" alt="ShiftMatch logo"/>
+          <span>REGISTRATION</span>
+        </div>
+
+        <!-- STUDENT FIELDS -->
+        <div id="student-fields">
+          <div class="form-group">
+            <label>Full name</label>
+            <input id="reg-name" type="text" placeholder="e.g. Alex Johnson"/>
+          </div>
+          <div class="form-group">
+            <label>University email</label>
+            <input id="reg-email" type="email" placeholder="e.g. a.johnson@mmu.ac.uk"/>
+          </div>
+          <div class="form-group">
+            <label>University</label>
+            <select id="reg-university" style="width:100%;padding:12px 16px;background:var(--paper);border:1.5px solid rgba(10,15,30,.1);border-radius:12px;font-family:var(--font);font-size:14px;color:var(--ink);outline:none;transition:border-color .2s;">
+              <option value="">Select your university</option>
+              <option>Manchester Metropolitan University (MMU)</option>
+              <option>University of Manchester (UoM)</option>
+              <option>University of Salford</option>
+              <option>University of Bolton</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>What are you studying?</label>
+            <select id="reg-degree" style="width:100%;padding:12px 16px;background:var(--paper);border:1.5px solid rgba(10,15,30,.1);border-radius:12px;font-family:var(--font);font-size:14px;color:var(--ink);outline:none;transition:border-color .2s;">
+              <option value="">Select your subject</option>
+              <option>Business & Finance</option>
+              <option>Law</option>
+              <option>Nursing & Health Sciences</option>
+              <option>Computer Science & IT</option>
+              <option>Media, Film & Journalism</option>
+              <option>Engineering</option>
+              <option>Sport Science</option>
+              <option>Psychology</option>
+              <option>Education</option>
+              <option>Art & Design</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>What kind of work interests you?</label>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;">
+              <label class="interest-tag"><input type="checkbox" value="hospitality"/> 🍽️ Hospitality</label>
+              <label class="interest-tag"><input type="checkbox" value="events"/> 🎪 Events</label>
+              <label class="interest-tag"><input type="checkbox" value="retail"/> 🛍️ Retail</label>
+              <label class="interest-tag"><input type="checkbox" value="logistics"/> 📦 Logistics</label>
+              <label class="interest-tag"><input type="checkbox" value="security"/> 🛡️ Security</label>
+              <label class="interest-tag"><input type="checkbox" value="healthcare"/> 🏥 Healthcare</label>
+              <label class="interest-tag"><input type="checkbox" value="admin"/> 💼 Admin</label>
+              <label class="interest-tag"><input type="checkbox" value="driving"/> 🚗 Driving</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input id="reg-password" type="password" placeholder="At least 6 characters"/>
+          </div>
+          <div style="background:#f0f4ff;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(26,82,245,.1);">
+            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--muted);line-height:1.5;">
+              <input type="checkbox" id="gdpr-consent" style="margin-top:2px;flex-shrink:0;accent-color:var(--blue);"/>
+              <span>I agree to ShiftMatch collecting and storing my data to match me to shifts. I can withdraw consent at any time. <a href="#" style="color:var(--blue);">Privacy Policy</a>.</span>
+            </label>
+          </div>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5;">
+            <input type="checkbox" id="marketing-consent" style="margin-top:2px;flex-shrink:0;accent-color:var(--blue);"/>
+            <span>Send me shift alerts, ShiftSave deals and ShiftMatch updates. (Optional)</span>
+          </label>
+        </div>
+
+        <!-- BUSINESS FIELDS -->
+        <div id="business-fields" style="display:none;">
+          <div class="form-group"><label>Your name</label><input id="reg-biz-contact" type="text" placeholder="e.g. Sarah Mitchell"/></div>
+          <div class="form-group"><label>Business name</label><input id="reg-company" type="text" placeholder="e.g. Manchester Arena Ltd"/></div>
+          <div class="form-group"><label>Business email</label><input id="reg-biz-email" type="email" placeholder="e.g. hr@yourbusiness.co.uk"/></div>
+          <div class="form-group">
+            <label>Industry</label>
+            <select id="reg-industry" style="width:100%;padding:12px 16px;background:var(--paper);border:1.5px solid rgba(10,15,30,.1);border-radius:12px;font-family:var(--font);font-size:14px;color:var(--ink);outline:none;">
+              <option value="">Select your industry</option>
+              <option>Hospitality & Food</option>
+              <option>Events & Entertainment</option>
+              <option>Retail</option>
+              <option>Logistics & Warehousing</option>
+              <option>Healthcare</option>
+              <option>Security</option>
+              <option>Office & Admin</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Approx. shifts needed per month</label>
+            <select id="reg-shiftvolume" style="width:100%;padding:12px 16px;background:var(--paper);border:1.5px solid rgba(10,15,30,.1);border-radius:12px;font-family:var(--font);font-size:14px;color:var(--ink);outline:none;">
+              <option value="">Select volume</option>
+              <option value="1-5">1–5 shifts</option>
+              <option value="6-20">6–20 shifts</option>
+              <option value="21-50">21–50 shifts</option>
+              <option value="50+">50+ shifts</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Password</label><input id="reg-biz-password" type="password" placeholder="At least 6 characters"/></div>
+          <div style="background:#f0f4ff;border-radius:10px;padding:12px 14px;margin-bottom:14px;border:1px solid rgba(26,82,245,.1);">
+            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--muted);line-height:1.5;">
+              <input type="checkbox" id="biz-gdpr-consent" style="margin-top:2px;flex-shrink:0;accent-color:var(--blue);"/>
+              <span>I agree to ShiftMatch's <a href="#" style="color:var(--blue);">Terms of Service</a> and <a href="#" style="color:var(--blue);">Privacy Policy</a>.</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="reg-btn" style="width:100%;margin-top:6px;" onclick="submitRegistration()">Sign Up Free</button>
+        <div id="reg-success" style="display:none;margin-top:14px;background:#d1fae5;border:1px solid #6ee7b7;border-radius:12px;padding:16px;font-size:13px;color:#065f46;text-align:center;line-height:1.6;"></div>
+        <div id="reg-error" style="display:none;margin-top:12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:10px;padding:12px 16px;font-size:13px;color:#991b1b;text-align:center;"></div>
+        <p class="reg-note" style="margin-top:12px;">🔒 Your data is stored securely and never shared without your consent.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ── SHIFTSAVE ── -->
+<div id="shiftsave" style="background:var(--ink);padding:96px 0;position:relative;overflow:hidden;">
+  <!-- decorative background elements -->
+  <div style="position:absolute;top:-80px;right:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(236,72,153,0.12),transparent 70%);pointer-events:none;"></div>
+  <div style="position:absolute;bottom:-60px;left:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,0.1),transparent 70%);pointer-events:none;"></div>
+  <div style="max-width:1200px;margin:0 auto;padding:0 48px;position:relative;z-index:1;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:64px;">
+      <div style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(236,72,153,.15),rgba(245,158,11,.15));border:1px solid rgba(236,72,153,.25);padding:8px 20px;border-radius:999px;margin-bottom:20px;">
+        <span style="font-size:18px;">💸</span>
+        <span style="font-family:var(--font);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(135deg,#ec4899,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Introducing ShiftSave</span>
+      </div>
+      <h2 style="font-family:var(--font);font-weight:800;font-size:clamp(32px,5vw,58px);line-height:1.0;letter-spacing:-.025em;color:white;margin-bottom:16px;">Work more.<br/><span style="background:linear-gradient(135deg,#ec4899,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Save more.</span></h2>
+      <p style="font-size:17px;color:rgba(255,255,255,.55);max-width:520px;margin:0 auto;line-height:1.7;">ShiftSave gives every ShiftMatch student access to exclusive discounts that actually make a difference. Not the watered-down deals on other platforms — real savings on the things students actually spend on.</p>
+    </div>
+
+    <!-- VS comparison -->
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center;margin-bottom:64px;">
+      <!-- UniDays -->
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px;">
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;">Other platforms</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.4);">
+            <span style="color:#ef4444;font-size:16px;">✕</span> Same deals everyone else gets
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.4);">
+            <span style="color:#ef4444;font-size:16px;">✕</span> 5–10% off already-expensive brands
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.4);">
+            <span style="color:#ef4444;font-size:16px;">✕</span> No connection to what you earn
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.4);">
+            <span style="color:#ef4444;font-size:16px;">✕</span> Cluttered with irrelevant offers
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.4);">
+            <span style="color:#ef4444;font-size:16px;">✕</span> No reward for working hard
+          </div>
+        </div>
+      </div>
+      <!-- VS badge -->
+      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#f59e0b);display:grid;place-items:center;font-family:var(--font);font-size:13px;font-weight:800;color:white;flex-shrink:0;">VS</div>
+      <!-- ShiftSave -->
+      <div style="background:linear-gradient(135deg,rgba(236,72,153,.12),rgba(245,158,11,.08));border:1px solid rgba(236,72,153,.25);border-radius:20px;padding:28px;">
+        <div style="font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;background:linear-gradient(135deg,#ec4899,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">ShiftSave</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);">
+            <span style="color:#10b981;font-size:16px;">✓</span> Exclusive deals not available anywhere else
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);">
+            <span style="color:#10b981;font-size:16px;">✓</span> Up to 40% off — real savings, real brands
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);">
+            <span style="color:#10b981;font-size:16px;">✓</span> Unlock better deals the more shifts you do
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);">
+            <span style="color:#10b981;font-size:16px;">✓</span> Curated for student life — food, travel, tech
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.85);">
+            <span style="color:#10b981;font-size:16px;">✓</span> Earn shifts = earn savings. Simple.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discount tiers -->
+    <div style="margin-bottom:64px;">
+      <div style="text-align:center;margin-bottom:32px;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px;">ShiftSave Tiers</div>
+        <div style="font-size:22px;font-weight:800;color:white;">The more you work, the more you save.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+        <!-- Starter -->
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:22px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:10px;">🔵</div>
+          <div style="font-family:var(--font);font-size:15px;font-weight:800;color:white;margin-bottom:4px;">Starter</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px;">0–4 shifts completed</div>
+          <div style="font-family:var(--font);font-size:28px;font-weight:800;background:linear-gradient(135deg,#60a5fa,#93c5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;">10%</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);">avg discount</div>
+          <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,.5);line-height:1.6;">Food delivery · Coffee shops · Streaming</div>
+        </div>
+        <!-- Hustler -->
+        <div style="background:rgba(255,255,255,.06);border:1px solid rgba(139,92,246,.3);border-radius:18px;padding:22px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:10px;">🟣</div>
+          <div style="font-family:var(--font);font-size:15px;font-weight:800;color:white;margin-bottom:4px;">Hustler</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px;">5–14 shifts completed</div>
+          <div style="font-family:var(--font);font-size:28px;font-weight:800;background:linear-gradient(135deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;">20%</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);">avg discount</div>
+          <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,.5);line-height:1.6;">Everything in Starter + transport · fashion · gym</div>
+        </div>
+        <!-- Pro -->
+        <div style="background:linear-gradient(135deg,rgba(236,72,153,.1),rgba(245,158,11,.08));border:1px solid rgba(236,72,153,.3);border-radius:18px;padding:22px;text-align:center;position:relative;">
+          <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ec4899,#f59e0b);color:white;font-size:9px;font-weight:800;padding:3px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;">Most reached</div>
+          <div style="font-size:28px;margin-bottom:10px;">🌟</div>
+          <div style="font-family:var(--font);font-size:15px;font-weight:800;color:white;margin-bottom:4px;">Pro Earner</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px;">15–29 shifts completed</div>
+          <div style="font-family:var(--font);font-size:28px;font-weight:800;background:linear-gradient(135deg,#ec4899,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;">30%</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);">avg discount</div>
+          <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,.5);line-height:1.6;">Everything + travel · tech · nights out · grocery</div>
+        </div>
+        <!-- Elite -->
+        <div style="background:linear-gradient(135deg,rgba(245,200,66,.1),rgba(245,158,11,.08));border:1px solid rgba(245,200,66,.3);border-radius:18px;padding:22px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:10px;">👑</div>
+          <div style="font-family:var(--font);font-size:15px;font-weight:800;color:white;margin-bottom:4px;">Elite</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px;">30+ shifts completed</div>
+          <div style="font-family:var(--font);font-size:28px;font-weight:800;background:linear-gradient(135deg,#f5c842,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;">40%</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);">avg discount</div>
+          <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,.5);line-height:1.6;">Everything + exclusive brand deals · cashback</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sample deals -->
+    <div style="margin-bottom:48px;">
+      <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;text-align:center;margin-bottom:24px;">Example ShiftSave Deals</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:26px;">🍕</div>
+          <div><div style="font-size:13px;font-weight:700;color:white;">Domino's</div><div style="font-size:12px;color:rgba(255,255,255,.5);">30% off all orders</div><div style="font-size:10px;color:#ec4899;font-weight:700;margin-top:2px;">Pro Earner+</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:26px;">🚂</div>
+          <div><div style="font-size:13px;font-weight:700;color:white;">Trainline</div><div style="font-size:12px;color:rgba(255,255,255,.5);">25% off rail bookings</div><div style="font-size:10px;color:#8b5cf6;font-weight:700;margin-top:2px;">Hustler+</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:26px;">💻</div>
+          <div><div style="font-size:13px;font-weight:700;color:white;">Apple / Samsung</div><div style="font-size:12px;color:rgba(255,255,255,.5);">Up to 15% off tech</div><div style="font-size:10px;color:#ec4899;font-weight:700;margin-top:2px;">Pro Earner+</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:26px;">☕</div>
+          <div><div style="font-size:13px;font-weight:700;color:white;">Costa Coffee</div><div style="font-size:12px;color:rgba(255,255,255,.5);">Free drink after 5 shifts</div><div style="font-size:10px;color:#60a5fa;font-weight:700;margin-top:2px;">Starter</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:26px;">🏋️</div>
+          <div><div style="font-size:13px;font-weight:700;color:white;">PureGym</div><div style="font-size:12px;color:rgba(255,255,255,.5);">40% off membership</div><div style="font-size:10px;color:#f5c842;font-weight:700;margin-top:2px;">Elite only</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:26px;">🛒</div>
+          <div><div style="font-size:13px;font-weight:700;color:white;">ASOS</div><div style="font-size:12px;color:rgba(255,255,255,.5);">35% off + free returns</div><div style="font-size:10px;color:#ec4899;font-weight:700;margin-top:2px;">Pro Earner+</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:26px;">🎬</div>
+          <div><div style="font-size:13px;font-weight:700;color:white;">Vue Cinema</div><div style="font-size:12px;color:rgba(255,255,255,.5);">2-for-1 tickets</div><div style="font-size:10px;color:#8b5cf6;font-weight:700;margin-top:2px;">Hustler+</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:26px;">🎵</div>
+          <div><div style="font-size:13px;font-weight:700;color:white;">Spotify / Apple</div><div style="font-size:12px;color:rgba(255,255,255,.5);">6 months free Premium</div><div style="font-size:10px;color:#60a5fa;font-weight:700;margin-top:2px;">Starter</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center;">
+      <p style="font-size:14px;color:rgba(255,255,255,.4);margin-bottom:20px;">ShiftSave is included free with every ShiftMatch student account. The more shifts you work, the better your tier.</p>
+      <button class="btn-primary" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})" style="background:linear-gradient(135deg,#ec4899,#f59e0b);box-shadow:0 8px 24px rgba(236,72,153,.35);">Get ShiftSave free →</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── PRICING ── -->
+<section class="section" id="pricing">
+  <p class="sl reveal">Pricing</p>
+  <h2 class="st reveal">Flexible for every size.</h2>
+  <p class="sb reveal">Free for students. Businesses pay based on shift volume. Enterprise packages for multi-site organisations like Royal Mail, NHS and major retailers.</p>
+
+  <!-- Student + Pro+ row -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+    <div class="pc reveal">
+      <p class="pc-label">Students — Free</p>
+      <h3>£0</h3>
+      <p class="pc-price">Always free to join &amp; find shifts</p>
+      <p class="pc-desc">Get matched to shifts that fit your timetable. Accept, invite friends, clock in, track stats and unlock ShiftSave discounts.</p>
+      <div class="pc-feats">
+        <div class="pc-feat">University SSO login + timetable sync</div>
+        <div class="pc-feat">Smart shift matching to your schedule</div>
+        <div class="pc-feat">Group shift invites via WhatsApp / iMessage</div>
+        <div class="pc-feat">Wallet &amp; earnings tracker</div>
+        <div class="pc-feat">ShiftSave — exclusive student discounts</div>
+        <div class="pc-feat">Shift clock-in, incident reports</div>
+      </div>
+      <button class="btn-plan" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Join free as a student</button>
+    </div>
+    <div class="pc featured reveal">
+      <div class="best-badge">Most popular</div>
+      <p class="pc-label">Pro+ Membership</p>
+      <h3>£4.99 / month</h3>
+      <p class="pc-price">Students &amp; businesses</p>
+      <p class="pc-desc">Priority shift alerts, in-app VOIP, boosted listings, and ShiftSave Elite tier — the full ShiftMatch experience.</p>
+      <div class="pc-feats">
+        <div class="pc-feat">Everything in Free</div>
+        <div class="pc-feat">Priority vibration alerts — first pick on every shift</div>
+        <div class="pc-feat">In-app VOIP calling — no number exchange needed</div>
+        <div class="pc-feat">ShiftSave Elite — up to 40% off exclusive brands</div>
+        <div class="pc-feat">Boosted shift listings (businesses)</div>
+        <div class="pc-feat">Advanced analytics + dedicated support</div>
+      </div>
+      <button class="btn-plan" style="background:var(--amber);color:#0a0f1e;box-shadow:0 6px 20px rgba(245,200,66,.28);" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get Pro+</button>
+    </div>
+  </div>
+
+  <!-- Business tiers -->
+  <div style="margin-bottom:12px;">
+    <p class="sl" style="margin-bottom:6px;">For Businesses</p>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:16px;">Lower agency fees than anyone else. One clean platform. No phone calls at 6am.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px;">
+    <!-- Standard -->
+    <div style="background:white;border-radius:18px;padding:24px;border:1.5px solid var(--border);box-shadow:0 8px 28px rgba(10,15,30,.07);">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">Standard</div>
+      <div style="font-family:var(--font);font-size:22px;font-weight:800;margin-bottom:4px;">£49<span style="font-size:13px;font-weight:500;color:var(--muted);">/mo</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Single site</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px;">Perfect for independent businesses — cafés, restaurants, small retailers. Post unlimited shifts, fill them fast.</div>
+      <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px;">10% hourly markup</div>
+      <div style="font-size:11px;color:var(--muted);">vs 20–25% at agencies</div>
+      <button style="width:100%;margin-top:16px;padding:11px;border-radius:10px;border:1.5px solid var(--blue);background:transparent;color:var(--blue);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get started</button>
+    </div>
+    <!-- Regional -->
+    <div style="background:white;border-radius:18px;padding:24px;border:1.5px solid var(--border);box-shadow:0 8px 28px rgba(10,15,30,.07);">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8b5cf6;margin-bottom:10px;">Regional</div>
+      <div style="font-family:var(--font);font-size:22px;font-weight:800;margin-bottom:4px;">£199<span style="font-size:13px;font-weight:500;color:var(--muted);">/mo</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">2–10 sites</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px;">For growing businesses with multiple locations. One dashboard, one invoice, sub-accounts per site.</div>
+      <div style="font-size:12px;font-weight:700;color:#8b5cf6;margin-bottom:6px;">10% hourly markup</div>
+      <div style="font-size:11px;color:var(--muted);">+ volume discounts</div>
+      <button style="width:100%;margin-top:16px;padding:11px;border-radius:10px;border:1.5px solid #8b5cf6;background:transparent;color:#8b5cf6;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get started</button>
+    </div>
+    <!-- Enterprise -->
+    <div style="background:var(--ink);border-radius:18px;padding:24px;border:1.5px solid transparent;box-shadow:0 8px 28px rgba(10,15,30,.15);position:relative;">
+      <div style="position:absolute;top:-10px;right:16px;background:var(--amber);color:#0a0f1e;font-size:9px;font-weight:800;padding:3px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;">Best value</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:10px;">Enterprise</div>
+      <div style="font-family:var(--font);font-size:22px;font-weight:800;color:white;margin-bottom:4px;">£599<span style="font-size:13px;font-weight:500;color:rgba(255,255,255,.4);">/mo</span></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px;">11–50 sites</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:16px;">For large employers. Master account + depot sub-accounts, regional analytics and dedicated account manager.</div>
+      <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:6px;">8% hourly markup</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);">our lowest rate — you earn it</div>
+      <button style="width:100%;margin-top:16px;padding:11px;border-radius:10px;border:none;background:var(--amber);color:#0a0f1e;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Talk to us</button>
+    </div>
+    <!-- Enterprise+ -->
+    <div style="background:linear-gradient(135deg,#0d1a4a,#1a2d6e);border-radius:18px;padding:24px;border:1.5px solid rgba(255,255,255,.1);">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#60a5fa;margin-bottom:10px;">Enterprise+</div>
+      <div style="font-family:var(--font);font-size:22px;font-weight:800;color:white;margin-bottom:4px;">Custom</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px;">50+ sites nationwide</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:16px;">Royal Mail. NHS. Major retailers. Fully custom contract, API integration, white-label options available.</div>
+      <div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:6px;">Negotiated markup rate</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);">based on volume &amp; contract length</div>
+      <button style="width:100%;margin-top:16px;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:white;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Request a call</button>
+    </div>
+  </div>
+
+  <!-- Comparison note -->
+  <div style="background:linear-gradient(135deg,rgba(26,82,245,.06),rgba(16,185,129,.06));border:1px solid rgba(26,82,245,.12);border-radius:16px;padding:22px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+    <div style="font-size:22px;">💡</div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Why businesses switch to ShiftMatch</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;">Traditional staffing agencies charge 20–25% on top of worker wages, offer no real tech, and make you call them at 6am for last-minute cover. ShiftMatch charges 8–10%, gives you a live dashboard, and fills shifts in minutes — not hours.</div>
+    </div>
+    <button class="btn-primary" style="font-size:13px;padding:11px 22px;white-space:nowrap;" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Book a demo</button>
+  </div>
+
+</section>
+
+<!-- ── SHIFTSKILLS ── -->
+<div id="shiftskills" style="background:var(--paper);padding:96px 0;">
+<div style="max-width:1200px;margin:0 auto;padding:0 48px;">
+
+  <!-- Header -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-bottom:72px;">
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(6,182,212,.1));border:1px solid rgba(16,185,129,.2);padding:7px 18px;border-radius:999px;margin-bottom:20px;">
+        <span style="font-size:16px;">🎓</span>
+        <span style="font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#0d9488;">Introducing ShiftSkills</span>
+      </div>
+      <h2 style="font-family:var(--font);font-weight:800;font-size:clamp(30px,4.5vw,52px);line-height:1.0;letter-spacing:-.025em;margin-bottom:16px;">Earn more by<br/>learning more.</h2>
+      <p style="font-size:16px;color:var(--muted);line-height:1.7;margin-bottom:28px;">ShiftMatch handles everything — we partner with certified training providers, negotiate wholesale rates, and pass the savings on to you. Book a course, get qualified, unlock higher-paying shifts. All in one place.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500;">
+          <div style="width:24px;height:24px;border-radius:7px;background:#d1fae5;display:grid;place-items:center;flex-shrink:0;"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#065f46" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          Partner wholesale price — you pay less than anywhere else
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500;">
+          <div style="width:24px;height:24px;border-radius:7px;background:#d1fae5;display:grid;place-items:center;flex-shrink:0;"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#065f46" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          We handle all booking, paperwork and scheduling
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500;">
+          <div style="width:24px;height:24px;border-radius:7px;background:#d1fae5;display:grid;place-items:center;flex-shrink:0;"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#065f46" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          Pay upfront or spread cost across your shift earnings
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500;">
+          <div style="width:24px;height:24px;border-radius:7px;background:#d1fae5;display:grid;place-items:center;flex-shrink:0;"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#065f46" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          Certificate added to your ShiftMatch profile instantly
+        </div>
+      </div>
+    </div>
+    <!-- Earnings uplift visual -->
+    <div style="background:white;border-radius:24px;padding:28px;border:1px solid var(--border);box-shadow:0 16px 48px rgba(10,15,30,.1);">
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:20px;text-transform:uppercase;letter-spacing:.07em;">Hourly rate before vs after</div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="font-weight:600;">General shifts (no cert)</span><span style="font-weight:800;color:var(--muted);">£11.50/hr</span></div>
+          <div style="background:var(--paper);border-radius:999px;height:10px;overflow:hidden;"><div style="width:46%;height:100%;border-radius:999px;background:#cbd5e1;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="font-weight:600;">Food Hygiene L2 🍽️</span><span style="font-weight:800;color:#10b981;">£13.00/hr</span></div>
+          <div style="background:var(--paper);border-radius:999px;height:10px;overflow:hidden;"><div style="width:52%;height:100%;border-radius:999px;background:#10b981;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="font-weight:600;">First Aid at Work 🩺</span><span style="font-weight:800;color:#06b6d4;">£14.00/hr</span></div>
+          <div style="background:var(--paper);border-radius:999px;height:10px;overflow:hidden;"><div style="width:56%;height:100%;border-radius:999px;background:#06b6d4;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="font-weight:600;">Personal Licence 🍺</span><span style="font-weight:800;color:#8b5cf6;">£14.50/hr</span></div>
+          <div style="background:var(--paper);border-radius:999px;height:10px;overflow:hidden;"><div style="width:58%;height:100%;border-radius:999px;background:#8b5cf6;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="font-weight:600;">SIA Door Supervisor 🛡️</span><span style="font-weight:800;color:var(--blue);">£16.00/hr</span></div>
+          <div style="background:var(--paper);border-radius:999px;height:10px;overflow:hidden;"><div style="width:64%;height:100%;border-radius:999px;background:var(--blue);"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="font-weight:600;">Forklift RTITB 🏭</span><span style="font-weight:800;color:var(--amber);">£17.50/hr</span></div>
+          <div style="background:var(--paper);border-radius:999px;height:10px;overflow:hidden;"><div style="width:70%;height:100%;border-radius:999px;background:var(--amber);"></div></div>
+        </div>
+      </div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.5;">An SIA badge earns you <strong style="color:var(--ink);">£4.50/hr more</strong> than general shifts. Over 20 shifts of 6 hours that's <strong style="color:var(--green);">£540 extra</strong> — paying for the course in under a month.</div>
+    </div>
+  </div>
+
+  <!-- Certificate cards -->
+  <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:20px;">Available Courses</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:48px;">
+
+    <!-- SIA -->
+    <div style="background:white;border-radius:20px;padding:24px;border:2px solid var(--blue);box-shadow:0 8px 28px rgba(26,82,245,.1);position:relative;">
+      <div style="position:absolute;top:-10px;right:18px;background:var(--blue);color:white;font-size:9px;font-weight:800;padding:3px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;">Most popular</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:48px;height:48px;border-radius:14px;background:#eff6ff;display:grid;place-items:center;font-size:24px;">🛡️</div>
+        <div>
+          <div style="font-family:var(--font);font-size:16px;font-weight:800;">SIA Door Supervisor</div>
+          <div style="font-size:12px;color:var(--muted);">Nationally recognised licence · Required by law</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <div style="flex:1;background:var(--paper);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Partner rate</div>
+          <div style="font-size:13px;font-weight:700;color:var(--muted);text-decoration:line-through;">£280</div>
+        </div>
+        <div style="flex:1;background:#eff6ff;border-radius:10px;padding:10px;text-align:center;border:1px solid rgba(26,82,245,.15);">
+          <div style="font-size:10px;color:var(--blue);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">You pay</div>
+          <div style="font-size:20px;font-weight:800;color:var(--blue);">£349</div>
+        </div>
+        <div style="flex:1;background:#d1fae5;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:#065f46;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Hourly boost</div>
+          <div style="font-size:20px;font-weight:800;color:#10b981;">+£4.50</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;">4-day course · Covers conflict management, physical intervention, law &amp; legislation · Includes first aid requirement · SIA badge valid 3 years</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-primary" style="flex:1;padding:11px;font-size:13px;" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Book now</button>
+        <button style="padding:11px 16px;border-radius:999px;border:1.5px solid var(--border);background:white;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Pay via earnings</button>
+      </div>
+    </div>
+
+    <!-- Food Hygiene -->
+    <div style="background:white;border-radius:20px;padding:24px;border:1px solid var(--border);box-shadow:0 6px 20px rgba(10,15,30,.07);">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:48px;height:48px;border-radius:14px;background:#d1fae5;display:grid;place-items:center;font-size:24px;">🍽️</div>
+        <div>
+          <div style="font-family:var(--font);font-size:16px;font-weight:800;">Food Hygiene Level 2</div>
+          <div style="font-size:12px;color:var(--muted);">Online · Instant certificate · 1–2 hours</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <div style="flex:1;background:var(--paper);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Partner rate</div>
+          <div style="font-size:13px;font-weight:700;color:var(--muted);text-decoration:line-through;">£15</div>
+        </div>
+        <div style="flex:1;background:#f0fdf4;border-radius:10px;padding:10px;text-align:center;border:1px solid rgba(16,185,129,.2);">
+          <div style="font-size:10px;color:#10b981;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">You pay</div>
+          <div style="font-size:20px;font-weight:800;color:#10b981;">£29</div>
+        </div>
+        <div style="flex:1;background:#d1fae5;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:#065f46;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Hourly boost</div>
+          <div style="font-size:20px;font-weight:800;color:#10b981;">+£1.50</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;">Online course · Complete in your own time · Certificate emailed same day · Required for all kitchen and food-handling roles</div>
+      <button class="btn-primary" style="width:100%;padding:11px;font-size:13px;background:#10b981;box-shadow:0 6px 18px rgba(16,185,129,.3);" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Book now — £29</button>
+    </div>
+
+    <!-- First Aid -->
+    <div style="background:white;border-radius:20px;padding:24px;border:1px solid var(--border);box-shadow:0 6px 20px rgba(10,15,30,.07);">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:48px;height:48px;border-radius:14px;background:#cffafe;display:grid;place-items:center;font-size:24px;">🩺</div>
+        <div>
+          <div style="font-family:var(--font);font-size:16px;font-weight:800;">First Aid at Work</div>
+          <div style="font-size:12px;color:var(--muted);">1-day course · Ofqual regulated · 3 year validity</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <div style="flex:1;background:var(--paper);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Partner rate</div>
+          <div style="font-size:13px;font-weight:700;color:var(--muted);text-decoration:line-through;">£120</div>
+        </div>
+        <div style="flex:1;background:#ecfeff;border-radius:10px;padding:10px;text-align:center;border:1px solid rgba(6,182,212,.2);">
+          <div style="font-size:10px;color:#06b6d4;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">You pay</div>
+          <div style="font-size:20px;font-weight:800;color:#06b6d4;">£159</div>
+        </div>
+        <div style="flex:1;background:#d1fae5;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:#065f46;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Hourly boost</div>
+          <div style="font-size:20px;font-weight:800;color:#10b981;">+£2.50</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;">Classroom course in Manchester city centre · Covers CPR, AED, emergency scenarios · Opens events, festivals and medical support shifts</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-primary" style="flex:1;padding:11px;font-size:13px;background:#06b6d4;box-shadow:0 6px 18px rgba(6,182,212,.3);" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Book now</button>
+        <button style="padding:11px 16px;border-radius:999px;border:1.5px solid var(--border);background:white;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Pay via earnings</button>
+      </div>
+    </div>
+
+    <!-- Personal Licence -->
+    <div style="background:white;border-radius:20px;padding:24px;border:1px solid var(--border);box-shadow:0 6px 20px rgba(10,15,30,.07);">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:48px;height:48px;border-radius:14px;background:#ede9fe;display:grid;place-items:center;font-size:24px;">🍺</div>
+        <div>
+          <div style="font-family:var(--font);font-size:16px;font-weight:800;">Personal Licence</div>
+          <div style="font-size:12px;color:var(--muted);">APLH Award · Required to sell alcohol</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <div style="flex:1;background:var(--paper);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Partner rate</div>
+          <div style="font-size:13px;font-weight:700;color:var(--muted);text-decoration:line-through;">£80</div>
+        </div>
+        <div style="flex:1;background:#f5f3ff;border-radius:10px;padding:10px;text-align:center;border:1px solid rgba(139,92,246,.2);">
+          <div style="font-size:10px;color:#8b5cf6;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">You pay</div>
+          <div style="font-size:20px;font-weight:800;color:#8b5cf6;">£109</div>
+        </div>
+        <div style="flex:1;background:#d1fae5;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:#065f46;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Hourly boost</div>
+          <div style="font-size:20px;font-weight:800;color:#10b981;">+£3.00</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;">1-day APLH exam prep course · We handle council application paperwork · Opens all licensed bar and venue management shifts · Valid for life</div>
+      <button class="btn-primary" style="width:100%;padding:11px;font-size:13px;background:#8b5cf6;box-shadow:0 6px 18px rgba(139,92,246,.3);" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Book now — £109</button>
+    </div>
+
+    <!-- WSET -->
+    <div style="background:white;border-radius:20px;padding:24px;border:1px solid var(--border);box-shadow:0 6px 20px rgba(10,15,30,.07);">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:48px;height:48px;border-radius:14px;background:#fef3c7;display:grid;place-items:center;font-size:24px;">🍷</div>
+        <div>
+          <div style="font-family:var(--font);font-size:16px;font-weight:800;">WSET Level 1</div>
+          <div style="font-size:12px;color:var(--muted);">Wine &amp; Spirits · Globally recognised</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <div style="flex:1;background:var(--paper);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Partner rate</div>
+          <div style="font-size:13px;font-weight:700;color:var(--muted);text-decoration:line-through;">£120</div>
+        </div>
+        <div style="flex:1;background:#fffbeb;border-radius:10px;padding:10px;text-align:center;border:1px solid rgba(245,158,11,.2);">
+          <div style="font-size:10px;color:var(--amber);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">You pay</div>
+          <div style="font-size:20px;font-weight:800;color:var(--amber);">£155</div>
+        </div>
+        <div style="flex:1;background:#d1fae5;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:#065f46;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Hourly boost</div>
+          <div style="font-size:20px;font-weight:800;color:#10b981;">+£2.50</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;">1-day classroom course · Covers wines, spirits and service · Opens premium bar, restaurant and hospitality venue shifts · Certificate globally recognised</div>
+      <button class="btn-primary" style="width:100%;padding:11px;font-size:13px;background:var(--amber);color:#0a0f1e;box-shadow:0 6px 18px rgba(245,158,11,.3);" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Book now — £155</button>
+    </div>
+
+    <!-- Forklift -->
+    <div style="background:white;border-radius:20px;padding:24px;border:1px solid var(--border);box-shadow:0 6px 20px rgba(10,15,30,.07);">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:48px;height:48px;border-radius:14px;background:#fef9c3;display:grid;place-items:center;font-size:24px;">🏭</div>
+        <div>
+          <div style="font-family:var(--font);font-size:16px;font-weight:800;">Forklift RTITB</div>
+          <div style="font-size:12px;color:var(--muted);">Counterbalance · 3–5 day course</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <div style="flex:1;background:var(--paper);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Partner rate</div>
+          <div style="font-size:13px;font-weight:700;color:var(--muted);text-decoration:line-through;">£180</div>
+        </div>
+        <div style="flex:1;background:#fefce8;border-radius:10px;padding:10px;text-align:center;border:1px solid rgba(234,179,8,.2);">
+          <div style="font-size:10px;color:#ca8a04;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">You pay</div>
+          <div style="font-size:20px;font-weight:800;color:#ca8a04;">£229</div>
+        </div>
+        <div style="flex:1;background:#d1fae5;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:#065f46;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Hourly boost</div>
+          <div style="font-size:20px;font-weight:800;color:#10b981;">+£6.00</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;">3–5 day practical course · RTITB nationally recognised · Opens warehouse, logistics and distribution shifts · Highest earning category on ShiftMatch</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-primary" style="flex:1;padding:11px;font-size:13px;" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Book now</button>
+        <button style="padding:11px 16px;border-radius:999px;border:1.5px solid var(--border);background:white;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Pay via earnings</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pay via earnings explainer -->
+  <div style="background:linear-gradient(135deg,#0d1a4a,#1a2d6e);border-radius:22px;padding:36px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;">
+    <div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:12px;">Can't afford it upfront?</div>
+      <h3 style="font-family:var(--font);font-weight:800;font-size:clamp(22px,3vw,34px);color:white;line-height:1.1;margin-bottom:14px;">Pay through<br/>your shift earnings.</h3>
+      <p style="font-size:14px;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:24px;">No money needed upfront. We cover the course cost and deduct a small amount from each shift you complete until it's paid off. You start earning more per hour before you've even finished paying.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.8);">
+          <div style="width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.1);display:grid;place-items:center;flex-shrink:0;"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          Zero upfront cost — start training immediately
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.8);">
+          <div style="width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.1);display:grid;place-items:center;flex-shrink:0;"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          Small fixed deduction per shift — never more than 15%
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.8);">
+          <div style="width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.1);display:grid;place-items:center;flex-shrink:0;"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          You earn more per hour from day one — pays itself off fast
+        </div>
+      </div>
+    </div>
+    <!-- Example breakdown -->
+    <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:24px;border:1px solid rgba(255,255,255,.1);">
+      <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.07em;margin-bottom:16px;">Example — SIA Badge via earnings</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08);">
+          <span style="font-size:13px;color:rgba(255,255,255,.6);">Course price</span>
+          <span style="font-size:13px;font-weight:700;color:white;">£349</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08);">
+          <span style="font-size:13px;color:rgba(255,255,255,.6);">Instalment fee</span>
+          <span style="font-size:13px;font-weight:700;color:white;">£30 (convenience)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08);">
+          <span style="font-size:13px;color:rgba(255,255,255,.6);">Total repaid</span>
+          <span style="font-size:13px;font-weight:700;color:white;">£379</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08);">
+          <span style="font-size:13px;color:rgba(255,255,255,.6);">Deduction per shift</span>
+          <span style="font-size:13px;font-weight:700;color:white;">£20 (from earnings)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08);">
+          <span style="font-size:13px;color:rgba(255,255,255,.6);">Paid off in</span>
+          <span style="font-size:13px;font-weight:700;color:white;">~19 shifts</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-size:13px;color:rgba(255,255,255,.6);">Extra earned after repaid</span>
+          <span style="font-size:14px;font-weight:800;color:#10b981;">£540/mo more</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ── SHIFTFUTURE ── -->
+<div id="shiftfuture" style="background:var(--ink);padding:96px 0;position:relative;overflow:hidden;">
+
+  <!-- bg decorations -->
+  <div style="position:absolute;top:-100px;left:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,0.08),transparent 70%);pointer-events:none;"></div>
+  <div style="position:absolute;bottom:-80px;right:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(6,182,212,0.08),transparent 70%);pointer-events:none;"></div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 48px;position:relative;z-index:1;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:64px;">
+      <div style="display:inline-flex;align-items:center;gap:10px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);padding:7px 18px;border-radius:999px;margin-bottom:20px;">
+        <span style="font-size:16px;">🚀</span>
+        <span style="font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#10b981;">ShiftFuture — Career Pathfinder</span>
+      </div>
+      <h2 style="font-family:var(--font);font-weight:800;font-size:clamp(32px,5vw,58px);line-height:1.0;letter-spacing:-.025em;color:white;margin-bottom:16px;">Your shifts.<br/><span style="background:linear-gradient(135deg,#10b981,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Your future.</span></h2>
+      <p style="font-size:17px;color:rgba(255,255,255,.5);max-width:540px;margin:0 auto;line-height:1.7;">ShiftMatch knows what you study. So we match you to shifts that don't just pay — they build the career you actually want. And when you're ready, we connect you with someone already doing it.</p>
+    </div>
+
+    <!-- How it works — 3 steps -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:64px;">
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px;position:relative;">
+        <div style="width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#10b981,#059669);display:grid;place-items:center;margin-bottom:18px;">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        </div>
+        <div style="font-family:var(--font);font-size:17px;font-weight:700;color:white;margin-bottom:10px;">1. We read your timetable</div>
+        <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.65;">When you link your university calendar, we see your course, your modules and your schedule. Combined with your degree subject, we build your ShiftFuture profile automatically.</p>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px;">
+        <div style="width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#06b6d4,#0891b2);display:grid;place-items:center;margin-bottom:18px;">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div style="font-family:var(--font);font-size:17px;font-weight:700;color:white;margin-bottom:10px;">2. We match career-relevant shifts</div>
+        <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.65;">Studying law? We surface legal admin, court support and professional events shifts. Nursing? Healthcare support, care homes, first aid roles. Business? Operations, logistics, events coordination.</p>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px;">
+        <div style="width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);display:grid;place-items:center;margin-bottom:18px;">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div style="font-family:var(--font);font-size:17px;font-weight:700;color:white;margin-bottom:10px;">3. Talk to someone doing it</div>
+        <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.65;">Book a free 20-minute chat with a verified professional in your target field. Ask real questions, get honest answers. No careers advisor fluff — just someone who's actually in the role.</p>
+      </div>
+    </div>
+
+    <!-- Career path examples -->
+    <div style="margin-bottom:64px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);text-align:center;margin-bottom:28px;">Career Paths We Support</div>
+
+      <!-- interactive tabs -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:28px;" id="career-tabs">
+        <button onclick="showCareer('law',this)" class="ctab ctab-active">⚖️ Law</button>
+        <button onclick="showCareer('nursing',this)" class="ctab">🩺 Nursing & Health</button>
+        <button onclick="showCareer('business',this)" class="ctab">📊 Business</button>
+        <button onclick="showCareer('media',this)" class="ctab">🎬 Media & Film</button>
+        <button onclick="showCareer('tech',this)" class="ctab">💻 Computer Science</button>
+        <button onclick="showCareer('sport',this)" class="ctab">⚽ Sport Science</button>
+        <button onclick="showCareer('engineering',this)" class="ctab">⚙️ Engineering</button>
+        <button onclick="showCareer('psychology',this)" class="ctab">🧠 Psychology</button>
+      </div>
+
+      <style>
+      .ctab{font-family:var(--font);font-size:13px;font-weight:600;padding:9px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);cursor:pointer;transition:all .2s;}
+      .ctab:hover{background:rgba(255,255,255,.1);color:white;}
+      .ctab-active{background:rgba(16,185,129,.15)!important;border-color:rgba(16,185,129,.4)!important;color:#10b981!important;}
+      .career-panel{display:none;}
+      .career-panel.active{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+      @media(max-width:768px){.career-panel.active{grid-template-columns:1fr;}}
+      </style>
+
+      <!-- Law panel -->
+      <div class="career-panel active" id="career-law">
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;">
+          <div style="font-size:14px;font-weight:700;color:white;margin-bottom:6px;">⚖️ Studying Law at MMU or Salford?</div>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:18px;">Your ShiftFuture profile surfaces shifts that expose you to the legal world — not just any work. Build relevant experience while you study.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;">
+              <div><div style="font-size:13px;font-weight:600;color:white;">Legal Events Coordinator</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Manchester Crown Court · £13/hr</div></div>
+              <span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span>
+            </div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;">
+              <div><div style="font-size:13px;font-weight:600;color:white;">Conference Support Staff</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Bridgewater Hall · £12.50/hr</div></div>
+              <span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span>
+            </div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;">
+              <div><div style="font-size:13px;font-weight:600;color:white;">Admin Support — Law Firm</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Pannone Corporate · £13.50/hr</div></div>
+              <span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span>
+            </div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;">
+          <div style="font-size:14px;font-weight:700;color:white;margin-bottom:6px;">🗣️ Talk to a Lawyer — free 20 mins</div>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:18px;">Book a real conversation with a qualified solicitor or barrister who was once in your exact position.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;">
+              <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#10b981,#06b6d4);display:grid;place-items:center;font-size:16px;flex-shrink:0;">👩‍⚖️</div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">Sarah M.</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Solicitor · Pannone Corporate · MMU Grad 2021</div></div>
+              <button style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Book chat</button>
+            </div>
+            <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;">
+              <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#ec4899);display:grid;place-items:center;font-size:16px;flex-shrink:0;">👨‍⚖️</div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">James K.</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Junior Barrister · Lincoln's Inn · Salford Grad 2020</div></div>
+              <button style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Book chat</button>
+            </div>
+          </div>
+          <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,.3);">All mentors are verified professionals. Sessions are free. 20 minutes over video call.</div>
+        </div>
+      </div>
+
+      <!-- Nursing panel -->
+      <div class="career-panel" id="career-nursing">
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;">
+          <div style="font-size:14px;font-weight:700;color:white;margin-bottom:6px;">🩺 Studying Nursing or Health Sciences?</div>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:18px;">Build patient-facing experience while you earn. Every shift counts toward your portfolio.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">Healthcare Support Worker</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Manchester Care Homes · £13/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">First Aid Event Cover</div><div style="font-size:11px;color:rgba(255,255,255,.4);">AO Arena Events · £14/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">Mental Health Support Assistant</div><div style="font-size:11px;color:rgba(255,255,255,.4);">NHS Greater Manchester · £13.50/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;">
+          <div style="font-size:14px;font-weight:700;color:white;margin-bottom:6px;">🗣️ Talk to an NHS professional — free</div>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:18px;">Speak to a registered nurse, healthcare assistant or ward manager about life on the front line.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#06b6d4,#10b981);display:grid;place-items:center;font-size:16px;flex-shrink:0;">👩‍⚕️</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">Priya D.</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Registered Nurse · MFT · Salford Grad 2022</div></div><button style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Book chat</button></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:grid;place-items:center;font-size:16px;flex-shrink:0;">👨‍⚕️</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">Marcus O.</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Paramedic · NWAS · UoM Grad 2019</div></div><button style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Book chat</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Business panel -->
+      <div class="career-panel" id="career-business">
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;">
+          <div style="font-size:14px;font-weight:700;color:white;margin-bottom:6px;">📊 Studying Business or Finance?</div>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:18px;">Operations, events, logistics — shifts that give you real commercial exposure before you graduate.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">Operations Coordinator</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Trafford Centre · £13/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">Events Logistics Support</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Manchester Arena · £13.50/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">Supply Chain Assistant</div><div style="font-size:11px;color:rgba(255,255,255,.4);">NorthEnd Logistics · £14/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;">
+          <div style="font-size:14px;font-weight:700;color:white;margin-bottom:6px;">🗣️ Talk to a Business professional</div>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:18px;">From startup founders to corporate managers — get real insight into the business world before you graduate.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--amber),#f59e0b);display:grid;place-items:center;font-size:16px;flex-shrink:0;">👩‍💼</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">Zoe T.</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Operations Manager · Boohoo · MMU Grad 2021</div></div><button style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Book chat</button></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1a52f5,#8b5cf6);display:grid;place-items:center;font-size:16px;flex-shrink:0;">👨‍💼</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">Alex R.</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Founder · Tech Startup · Salford Grad 2018</div></div><button style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Book chat</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Media panel -->
+      <div class="career-panel" id="career-media">
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;">
+          <div style="font-size:14px;font-weight:700;color:white;margin-bottom:6px;">🎬 Studying Media, Film or Journalism?</div>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:18px;">Get inside the buildings and around the people. Every creative shift is a foot in the door.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">Event Production Runner</div><div style="font-size:11px;color:rgba(255,255,255,.4);">ITV Studios Manchester · £12.50/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">Box Office & Front of House</div><div style="font-size:11px;color:rgba(255,255,255,.4);">HOME Manchester · £12/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">Festival Production Support</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Parklife / Warehouse Project · £13/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;">
+          <div style="font-size:14px;font-weight:700;color:white;margin-bottom:6px;">🗣️ Talk to someone in media</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#f59e0b);display:grid;place-items:center;font-size:16px;flex-shrink:0;">🎥</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">Layla S.</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Producer · BBC Manchester · MMU Grad 2020</div></div><button style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Book chat</button></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1a52f5,#06b6d4);display:grid;place-items:center;font-size:16px;flex-shrink:0;">🎙️</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">Dom P.</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Journalist · Manchester Evening News · Salford 2019</div></div><button style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Book chat</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remaining panels — compact versions -->
+      <div class="career-panel" id="career-tech">
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;grid-column:1/-1;">
+          <div style="font-size:14px;font-weight:700;color:white;margin-bottom:6px;">💻 Studying Computer Science or IT?</div>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:18px;">Tech support at events, data entry, IT helpdesk — build your professional CV while earning.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">IT Support Technician</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Manchester Met IT Dept · £14/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;color:white;">Event Tech Setup</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Venues across Manchester · £13.50/hr</div></div><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;">Career Relevant</span></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1a52f5,#06b6d4);display:grid;place-items:center;font-size:16px;flex-shrink:0;">👨‍💻</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">Kai B. — Software Engineer, Booking.com</div><div style="font-size:11px;color:rgba(255,255,255,.4);">MMU Grad 2021 · Available for 20-min chats</div></div><button style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Book chat</button></div>
+            <div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#ec4899);display:grid;place-items:center;font-size:16px;flex-shrink:0;">👩‍💻</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:white;">Nia W. — UX Designer, Auto Trader</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Salford Grad 2020 · Available for 20-min chats</div></div><button style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Book chat</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="career-panel" id="career-sport"><div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;grid-column:1/-1;"><div style="font-size:14px;font-weight:700;color:white;margin-bottom:10px;">⚽ Sport Science — Career Relevant Shifts</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;"><div style="font-size:13px;font-weight:600;color:white;">Match Day Operations</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Manchester City FC · £13/hr</div></div><div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;"><div style="font-size:13px;font-weight:600;color:white;">Gym Floor Assistant</div><div style="font-size:11px;color:rgba(255,255,255,.4);">PureGym · £12.50/hr</div></div><div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;"><div style="font-size:13px;font-weight:600;color:white;">Sports Event Coordinator</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Manchester Marathon · £13/hr</div></div><div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;"><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#10b981,var(--amber));display:grid;place-items:center;font-size:14px;flex-shrink:0;">🏃</div><div style="flex:1;"><div style="font-size:12px;font-weight:600;color:white;">Jamie H. — Performance Coach, Sale Sharks</div></div><button style="background:var(--blue);color:white;border:none;border-radius:7px;padding:5px 10px;font-family:var(--font);font-size:10px;font-weight:700;cursor:pointer;">Book</button></div></div></div></div>
+
+      <div class="career-panel" id="career-engineering"><div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;grid-column:1/-1;"><div style="font-size:14px;font-weight:700;color:white;margin-bottom:10px;">⚙️ Engineering — Career Relevant Shifts</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;"><div style="font-size:13px;font-weight:600;color:white;">Warehouse Operative (Forklift)</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Royal Mail Depot · £17.50/hr</div></div><div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;"><div style="font-size:13px;font-weight:600;color:white;">Technical Event Setup</div><div style="font-size:11px;color:rgba(255,255,255,.4);">AO Arena · £14/hr</div></div><div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;"><div style="font-size:13px;font-weight:600;color:white;">Logistics Coordinator</div><div style="font-size:11px;color:rgba(255,255,255,.4);">NorthEnd Logistics · £14/hr</div></div><div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;"><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--amber),#f97316);display:grid;place-items:center;font-size:14px;flex-shrink:0;">⚙️</div><div style="flex:1;"><div style="font-size:12px;font-weight:600;color:white;">Ravi M. — Structural Engineer, Arup Manchester</div></div><button style="background:var(--blue);color:white;border:none;border-radius:7px;padding:5px 10px;font-family:var(--font);font-size:10px;font-weight:700;cursor:pointer;">Book</button></div></div></div></div>
+
+      <div class="career-panel" id="career-psychology"><div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;grid-column:1/-1;"><div style="font-size:14px;font-weight:700;color:white;margin-bottom:10px;">🧠 Psychology — Career Relevant Shifts</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;"><div style="font-size:13px;font-weight:600;color:white;">Mental Health Support Worker</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Mind Charity · £13.50/hr</div></div><div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;"><div style="font-size:13px;font-weight:600;color:white;">Youth Support Assistant</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Manchester City Council · £13/hr</div></div><div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;"><div style="font-size:13px;font-weight:600;color:white;">Peer Support Coordinator</div><div style="font-size:11px;color:rgba(255,255,255,.4);">Student Minds UK · £12.50/hr</div></div><div style="background:rgba(255,255,255,.06);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;"><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#06b6d4);display:grid;place-items:center;font-size:14px;flex-shrink:0;">🧠</div><div style="flex:1;"><div style="font-size:12px;font-weight:600;color:white;">Amara J. — Clinical Psychologist, NHS</div></div><button style="background:var(--blue);color:white;border:none;border-radius:7px;padding:5px 10px;font-family:var(--font);font-size:10px;font-weight:700;cursor:pointer;">Book</button></div></div></div></div>
+
+    </div>
+
+    <!-- Notification preview -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:12px;">What personalised notifications look like</div>
+        <h3 style="font-family:var(--font);font-weight:800;font-size:24px;color:white;margin-bottom:12px;">The right message at the right moment.</h3>
+        <p style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;">We don't send generic push notifications. Every message is tailored to your degree, your shift history and your career goals. Students actually open them.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <!-- notification mockups -->
+        <div style="background:rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;border:1px solid rgba(255,255,255,.1);">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--blue);display:grid;place-items:center;flex-shrink:0;"><svg width="18" height="18" viewBox="0 0 80 80" fill="none"><rect x="8" y="8" width="64" height="64" rx="14" transform="rotate(45 40 40)" fill="white" opacity=".9"/><path d="M26 40l10 10 18-18" stroke="#1a52f5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div style="font-size:12px;font-weight:700;color:white;margin-bottom:2px;">ShiftMatch · Career Match 🎓</div><div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5;">Hey Aisha — a legal admin shift just opened at Pannone Corporate near you. Perfect for your LLB. Pays £13.50/hr and you're free Thursday.</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;border:1px solid rgba(255,255,255,.1);">
+          <div style="width:36px;height:36px;border-radius:10px;background:#10b981;display:grid;place-items:center;flex-shrink:0;">🗣️</div>
+          <div><div style="font-size:12px;font-weight:700;color:white;margin-bottom:2px;">ShiftMatch · Mentor Available</div><div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5;">Sarah M., a solicitor at Pannone who studied at MMU, has a 20-min slot free this Friday. Want to book a chat about life in law?</div></div>
+        </div>
+        <div style="background:rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;border:1px solid rgba(255,255,255,.1);">
+          <div style="width:36px;height:36px;border-radius:10px;background:#8b5cf6;display:grid;place-items:center;flex-shrink:0;">🎓</div>
+          <div><div style="font-size:12px;font-weight:700;color:white;margin-bottom:2px;">ShiftMatch · ShiftSkills</div><div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5;">You've done 8 shifts — amazing. A Personal Licence would unlock bar management roles at premium venues. Book for £109 or pay through earnings.</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── CONTACT ── -->
+<div id="contact" style="background:var(--ink);padding:96px 0;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 48px;">
+    <p class="sl amber reveal">Get in touch</p>
+    <h2 class="st reveal" style="color:white;">Let's talk about your staffing.</h2>
+    <p class="sb reveal" style="color:rgba(255,255,255,.5);margin-bottom:44px;">Tell us about your business and shift needs — we'll walk you through the platform, no hard sell.</p>
+    <div class="contact-grid">
+      <div class="cf-dark reveal">
+        <input id="cf-name" placeholder="Your name"/>
+        <input id="cf-company" placeholder="Company name"/>
+        <input id="cf-email" type="email" placeholder="Email address"/>
+        <textarea id="cf-message" placeholder="Tell us about your staffing needs — industry, typical shifts, team size, peak seasons..."></textarea>
+        <button class="btn-primary" id="cf-btn" style="width:100%;margin-top:4px;" onclick="submitContact()">Send message</button>
+        <div id="cf-success" style="display:none;margin-top:12px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:12px 16px;font-size:13px;color:#10b981;text-align:center;">
+          ✅ Message sent! We'll be in touch within 24 hours.
+        </div>
+        <div id="cf-error" style="display:none;margin-top:12px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:12px 16px;font-size:13px;color:#ef4444;text-align:center;">
+          ⚠️ Something went wrong — please try again or email us directly.
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="ic"><h4>Who we work with</h4><p>🍺 Hospitality &amp; retail filling last-minute shifts<br/>🎓 Universities connecting students with local work<br/>🎪 Venues staffing events &amp; match days<br/>📦 Logistics &amp; warehouses needing flexible cover<br/>🚗 Driving &amp; delivery roles across all hours</p></div>
+        <div class="ic"><h4>Already a student?</h4><p>Download the ShiftMatch app — coming soon to iOS &amp; Android — and sign up with your university email. Shifty will guide you through the rest.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a class="footer-logo" href="#">
+    <img src="logo.png" alt="ShiftMatch"/>
+    ShiftMatch
+  </a>
+  <span>© 2025 ShiftMatch — All rights reserved.</span>
+  <span>Built for UK students &amp; businesses.</span>
+</footer>
+
+
+<script>
+function switchTab(el, type) {
+  document.querySelectorAll('.reg-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('student-fields').style.display = type === 'student' ? '' : 'none';
+  document.getElementById('business-fields').style.display = type === 'business' ? '' : 'none';
+  document.getElementById('reg-btn').dataset.type = type;
+}
+function showCareer(id, el){
+  document.querySelectorAll('.career-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ctab').forEach(b=>b.classList.remove('ctab-active'));
+  document.getElementById('career-'+id).classList.add('active');
+  el.classList.add('ctab-active');
+}
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 65);
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+</script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+// Initialize Firebase using compat SDK (works with onclick handlers)
+const firebaseConfig = {
+  apiKey: "AIzaSyDlzTSRbIJEIE70nbV2VuFUFp8-a9b6I_4",
+  authDomain: "shiftmatch-c5cd0.firebaseapp.com",
+  projectId: "shiftmatch-c5cd0",
+  storageBucket: "shiftmatch-c5cd0.firebasestorage.app",
+  messagingSenderId: "828722512268",
+  appId: "1:828722512268:web:06bd98494fbb24b3a7d6a9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db   = firebase.firestore();
+const auth = firebase.auth();
+
+// CONTACT FORM
+function submitContact(){
+  const name    = document.getElementById('cf-name').value.trim();
+  const company = document.getElementById('cf-company').value.trim();
+  const email   = document.getElementById('cf-email').value.trim();
+  const message = document.getElementById('cf-message').value.trim();
+  const btn     = document.getElementById('cf-btn');
+  const success = document.getElementById('cf-success');
+  const error   = document.getElementById('cf-error');
+
+  if(!name||!email||!message){
+    error.style.display='block';
+    error.textContent='Please fill in your name, email and message.';
+    success.style.display='none';
+    return;
+  }
+  if(!email.includes('@')){
+    error.style.display='block';
+    error.textContent='Please enter a valid email address.';
+    success.style.display='none';
+    return;
+  }
+
+  btn.textContent='Sending...';
+  btn.disabled=true;
+  error.style.display='none';
+
+  db.collection('messages').add({
+    name, company, email, message,
+    status:'new',
+    source:'website-contact-form',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(){
+    success.style.display='block';
+    btn.textContent='Message sent ✓';
+    btn.style.background='#10b981';
+    document.getElementById('cf-name').value='';
+    document.getElementById('cf-company').value='';
+    document.getElementById('cf-email').value='';
+    document.getElementById('cf-message').value='';
+  }).catch(function(e){
+    error.style.display='block';
+    error.textContent='Error: '+e.message;
+    btn.textContent='Send message';
+    btn.disabled=false;
+  });
+}
+
+// REGISTRATION FORM
+function submitRegistration(){
+  var btn    = document.getElementById('reg-btn');
+  var success= document.getElementById('reg-success');
+  var errEl  = document.getElementById('reg-error');
+  var type   = btn.dataset.type || 'student';
+
+  errEl.style.display='none';
+  success.style.display='none';
+
+  if(type === 'student'){
+    var name       = document.getElementById('reg-name').value.trim();
+    var email      = document.getElementById('reg-email').value.trim();
+    var password   = document.getElementById('reg-password').value;
+    var university = document.getElementById('reg-university').value;
+    var degree     = document.getElementById('reg-degree').value;
+    var gdpr       = document.getElementById('gdpr-consent').checked;
+    var marketing  = document.getElementById('marketing-consent').checked;
+
+    var interests = [];
+    document.querySelectorAll('.interest-tag input:checked').forEach(function(cb){ interests.push(cb.value); });
+
+    // Validate
+    if(!name){ errEl.style.display='block'; errEl.textContent='Please enter your full name.'; return; }
+    if(!email||!email.includes('@')){ errEl.style.display='block'; errEl.textContent='Please enter a valid email address.'; return; }
+    if(password.length<6){ errEl.style.display='block'; errEl.textContent='Password must be at least 6 characters.'; return; }
+    if(!university){ errEl.style.display='block'; errEl.textContent='Please select your university.'; return; }
+    if(!gdpr){ errEl.style.display='block'; errEl.textContent='Please accept our Privacy Policy to continue.'; return; }
+
+    btn.textContent='Creating account...';
+    btn.disabled=true;
+
+    // Create Firebase Auth account first, then save to Firestore
+    auth.createUserWithEmailAndPassword(email, password).then(function(cred){
+      var uid = cred.user.uid;
+      return db.collection('students').doc(uid).set({
+        uid: uid,
+        name: name,
+        email: email,
+        university: university,
+        degree: degree,
+        interests: interests,
+        marketingConsent: marketing,
+        gdprConsent: true,
+        gdprTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        type: 'student',
+        status: 'pending_vetting',
+        vetted: false,
+        plan: 'free',
+        shiftsCount: 0,
+        earnings: 0,
+        availability: [],
+        source: 'website-registration',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }).then(function(){
+      return db.collection('activity').add({
+        text: 'New student registered: '+name+' ('+university+') — awaiting vetting',
+        type: 'student',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }).then(function(){
+      // Send welcome email via Brevo
+      fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': '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'
+        },
+        body: JSON.stringify({
+          sender: { name: 'ShiftMatch', email: 'nuradinehassanwork@gmail.com' },
+          to: [{ email: email, name: name }],
+          subject: 'Welcome to ShiftMatch — Complete Your Verification 🎉',
+          htmlContent: `
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+              <img src="https://joinshiftmatch.netlify.app/logo.png" height="40" style="margin-bottom:20px;"/>
+              <h2 style="color:#0a0f1e;">Hi ${name}, welcome to ShiftMatch! 🎉</h2>
+              <p>Your account has been created successfully.</p>
+              <p>Before we can match you to shifts, we need to verify a few things. It only takes 5 minutes.</p>
+              <a href="https://joinshiftmatch.netlify.app/verify.html" style="display:inline-block;background:#1a52f5;color:white;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;margin:20px 0;">
+                👉 Complete Your Verification
+              </a>
+              <p><strong>Log in with:</strong><br/>
+              📧 Email: ${email}<br/>
+              🔑 Password: the one you chose when registering</p>
+              <p><strong>You'll need:</strong><br/>
+              ✅ Your National Insurance number<br/>
+              ✅ A photo of your passport or birth certificate<br/>
+              ✅ Your bank account details</p>
+              <p style="color:#6b7280;font-size:13px;">Once verified we'll start matching you to shifts that fit around your university timetable.</p>
+              <p style="color:#6b7280;font-size:13px;">The ShiftMatch Team<br/>joinshiftmatch.netlify.app</p>
+            </div>
+          `
+        })
+      }).then(function(res){
+        if(res.ok){
+          console.log('Email sent successfully via Brevo');
+        } else {
+          res.json().then(function(d){ console.log('Brevo error:', JSON.stringify(d)); });
+        }
+      }).catch(function(err){
+        console.log('Email fetch error:', err);
+      });
+
+      success.style.display='block';
+      success.innerHTML='<strong>🎉 Welcome to ShiftMatch, '+name+'!</strong><br/><br/>Your account has been created. <strong>Check your email</strong> — we\'ve sent you a verification link.<br/><br/>🔗 Or go straight to <a href="verify.html" style="color:#065f46;font-weight:700;">verify your account now</a> to upload your documents.<br/><br/>✅ Once approved — shifts matched to your timetable will start coming in';
+      btn.textContent='Registered ✓';
+      btn.style.background='#10b981';
+      document.getElementById('reg-name').value='';
+      document.getElementById('reg-email').value='';
+      document.getElementById('reg-password').value='';
+      document.getElementById('reg-university').value='';
+      document.getElementById('reg-degree').value='';
+      document.querySelectorAll('.interest-tag input').forEach(function(cb){ cb.checked=false; });
+      document.getElementById('gdpr-consent').checked=false;
+      document.getElementById('marketing-consent').checked=false;
+    }).catch(function(e){
+      errEl.style.display='block';
+      if(e.code==='auth/email-already-in-use'){
+        errEl.textContent='This email is already registered. Go to verify.html to continue your verification.';
+      } else if(e.code==='auth/weak-password'){
+        errEl.textContent='Password must be at least 6 characters.';
+      } else {
+        errEl.textContent='Error: '+e.message;
+      }
+      btn.textContent='Sign Up Free';
+      btn.disabled=false;
+    });
+
+  } else {
+    // BUSINESS registration
+    var contactName = document.getElementById('reg-biz-contact').value.trim();
+    var company     = document.getElementById('reg-company').value.trim();
+    var bizEmail    = document.getElementById('reg-biz-email').value.trim();
+    var industry    = document.getElementById('reg-industry').value;
+    var shiftVolume = document.getElementById('reg-shiftvolume').value;
+    var bizPassword = document.getElementById('reg-biz-password').value;
+    var bizGdpr     = document.getElementById('biz-gdpr-consent').checked;
+
+    if(!contactName){ errEl.style.display='block'; errEl.textContent='Please enter your name.'; return; }
+    if(!company){ errEl.style.display='block'; errEl.textContent='Please enter your business name.'; return; }
+    if(!bizEmail||!bizEmail.includes('@')){ errEl.style.display='block'; errEl.textContent='Please enter a valid email address.'; return; }
+    if(!industry){ errEl.style.display='block'; errEl.textContent='Please select your industry.'; return; }
+    if(bizPassword.length<6){ errEl.style.display='block'; errEl.textContent='Password must be at least 6 characters.'; return; }
+    if(!bizGdpr){ errEl.style.display='block'; errEl.textContent='Please accept our Terms to continue.'; return; }
+
+    btn.textContent='Submitting...';
+    btn.disabled=true;
+
+    db.collection('businesses').add({
+      name: company,
+      contactName: contactName,
+      email: bizEmail,
+      industry: industry,
+      shiftVolume: shiftVolume,
+      gdprConsent: true,
+      gdprTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      type: 'business',
+      status: 'pending',
+      plan: 'free',
+      shiftsCount: 0,
+      monthlyRev: 0,
+      sites: 1,
+      source: 'website-registration',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function(){
+      db.collection('activity').add({
+        text: 'New business registered: '+company+' ('+industry+') — awaiting approval',
+        type: 'business',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      success.style.display='block';
+      success.innerHTML='✅ <strong>Thank you, '+contactName+'!</strong><br/><br/>Your business account is being reviewed. We\'ll be in touch within 24 hours to set up your account and walk you through posting your first shift.';
+      btn.textContent='Submitted ✓';
+      btn.style.background='#10b981';
+    }).catch(function(e){
+      errEl.style.display='block';
+      errEl.textContent='Error: '+e.message;
+      btn.textContent='Sign Up Free';
+      btn.disabled=false;
+    });
+  }
+}
+</script>
+</body>
+</html>

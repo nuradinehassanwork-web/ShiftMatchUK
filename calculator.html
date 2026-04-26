@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>ShiftMatch — Revenue Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --blue:#1a52f5;--blue2:#0f3cd4;--ink:#0a0f1e;--paper:#f0f2f8;
+  --green:#10b981;--amber:#f59e0b;--red:#ef4444;--purple:#8b5cf6;
+  --pink:#ec4899;--teal:#06b6d4;--border:rgba(10,15,30,.09);
+  --font:'Outfit',sans-serif;
+}
+html,body{min-height:100%;font-family:var(--font);background:var(--paper);color:var(--ink);}
+
+/* ── HEADER ── */
+.portal-header{
+  background:white;border-bottom:1px solid var(--border);
+  padding:16px 32px;display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:10;
+}
+.portal-header img{height:34px;width:34px;object-fit:contain;}
+.portal-header h1{font-size:18px;font-weight:800;}
+.portal-header span{font-size:13px;color:#6b7280;margin-left:4px;}
+.back-btn{margin-left:auto;padding:8px 18px;background:var(--paper);border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;color:var(--ink);}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1200px;margin:0 auto;padding:28px 32px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+@media(max-width:900px){.two-col,.three-col,.four-col{grid-template-columns:1fr;}}
+
+/* ── CARDS ── */
+.card{background:white;border-radius:18px;padding:24px;border:1px solid var(--border);}
+.card h3{font-size:15px;font-weight:700;margin-bottom:4px;}
+.card .sub{font-size:12px;color:#6b7280;margin-bottom:20px;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:12px;}
+
+/* ── SLIDERS ── */
+.slider-group{margin-bottom:18px;}
+.slider-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.slider-label{font-size:13px;font-weight:500;color:var(--ink);}
+.slider-val{font-size:14px;font-weight:800;color:var(--blue);min-width:60px;text-align:right;}
+input[type=range]{width:100%;height:6px;border-radius:999px;background:var(--paper);outline:none;border:none;cursor:pointer;accent-color:var(--blue);}
+input[type=range]::-webkit-slider-track{height:6px;border-radius:999px;background:var(--paper);}
+
+/* ── OUTPUT STAT CARDS ── */
+.out-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+.out-card{border-radius:14px;padding:16px;position:relative;overflow:hidden;}
+.out-card.blue{background:linear-gradient(135deg,#1a52f5,#3b6ef8);}
+.out-card.green{background:linear-gradient(135deg,#10b981,#34d399);}
+.out-card.amber{background:linear-gradient(135deg,#f59e0b,#fbbf24);}
+.out-card.purple{background:linear-gradient(135deg,#8b5cf6,#a78bfa);}
+.out-card.pink{background:linear-gradient(135deg,#ec4899,#f472b6);}
+.out-card.teal{background:linear-gradient(135deg,#06b6d4,#22d3ee);}
+.out-label{font-size:11px;font-weight:600;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.out-val{font-size:26px;font-weight:800;color:white;line-height:1;}
+.out-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:4px;}
+
+/* ── BREAKDOWN TABLE ── */
+.breakdown{width:100%;border-collapse:collapse;margin-top:4px;}
+.breakdown th{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:8px 0;border-bottom:1px solid var(--border);}
+.breakdown td{font-size:13px;padding:10px 0;border-bottom:1px solid rgba(10,15,30,.05);}
+.breakdown tr:last-child td{border-bottom:none;font-weight:700;}
+.breakdown .pos{color:var(--green);font-weight:700;}
+.breakdown .neg{color:var(--red);}
+.breakdown .neutral{color:#6b7280;}
+
+/* ── CHARITY POT ── */
+.charity-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.charity-icon{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--pink),#f472b6);display:grid;place-items:center;flex-shrink:0;}
+.charity-icon svg{width:26px;height:26px;}
+.pot-display{background:linear-gradient(135deg,#0d1a4a,#1a2d6e);border-radius:18px;padding:28px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden;}
+.pot-display::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.04);}
+.pot-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.pot-amount{font-size:52px;font-weight:800;color:white;line-height:1;}
+.pot-amount span{font-size:28px;}
+.pot-sub{font-size:13px;color:rgba(255,255,255,.5);margin-top:8px;}
+.pot-bar-wrap{background:rgba(255,255,255,.1);border-radius:999px;height:10px;margin:16px 0;overflow:hidden;}
+.pot-bar{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--pink),var(--amber));transition:width .6s ease;}
+.pot-target{font-size:12px;color:rgba(255,255,255,.4);display:flex;justify-content:space-between;}
+
+/* charity breakdown */
+.charity-stream{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(10,15,30,.06);}
+.charity-stream:last-child{border-bottom:none;}
+.cs-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.cs-label{flex:1;font-size:13px;font-weight:500;}
+.cs-amt{font-size:14px;font-weight:800;color:var(--ink);}
+.cs-rate{font-size:11px;color:#6b7280;margin-top:1px;}
+
+/* charity history */
+.charity-hist{display:flex;flex-direction:column;gap:10px;}
+.ch-item{display:flex;align-items:center;gap:14px;background:var(--paper);border-radius:12px;padding:12px 16px;}
+.ch-badge{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--pink),var(--amber));display:grid;place-items:center;font-size:18px;flex-shrink:0;}
+.ch-info{flex:1;}
+.ch-info strong{display:block;font-size:13px;font-weight:700;}
+.ch-info span{font-size:11px;color:#6b7280;}
+.ch-amount{font-size:15px;font-weight:800;color:var(--pink);}
+
+/* donate toggle */
+.toggle-wrap{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-radius:12px;padding:12px 16px;margin-bottom:10px;}
+.toggle-label{font-size:13px;font-weight:600;}
+.toggle-sub{font-size:11px;color:#6b7280;}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#d1d5db;border-radius:999px;cursor:pointer;transition:.2s;}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.toggle input:checked + .toggle-slider{background:var(--pink);}
+.toggle input:checked + .toggle-slider::before{transform:translateX(20px);}
+
+/* next charity */
+.next-charity{background:linear-gradient(135deg,rgba(236,72,153,.1),rgba(245,158,11,.1));border:1px solid rgba(236,72,153,.2);border-radius:14px;padding:18px;display:flex;align-items:center;gap:16px;}
+.nc-icon{font-size:32px;}
+.nc-info strong{display:block;font-size:14px;font-weight:700;}
+.nc-info span{font-size:12px;color:#6b7280;}
+.nc-badge{margin-left:auto;background:var(--pink);color:white;font-size:10px;font-weight:700;padding:4px 12px;border-radius:999px;white-space:nowrap;}
+
+/* ── SCENARIO COMPARISON ── */
+.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:4px;}
+.scenario{border-radius:14px;padding:18px;border:1.5px solid var(--border);background:white;cursor:pointer;transition:all .2s;}
+.scenario.active{border-color:var(--blue);background:#f0f4ff;box-shadow:0 4px 16px rgba(26,82,245,.12);}
+.scenario h4{font-size:14px;font-weight:700;margin-bottom:4px;}
+.scenario p{font-size:12px;color:#6b7280;line-height:1.5;margin-bottom:12px;}
+.scenario .s-val{font-size:20px;font-weight:800;color:var(--blue);}
+.scenario .s-sub{font-size:11px;color:#6b7280;}
+
+/* ── ANNUAL PROJECTION ── */
+.proj-bar{margin-bottom:12px;}
+.proj-bar-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;}
+.proj-bar-label{font-weight:600;}
+.proj-bar-val{font-weight:700;color:var(--blue);}
+.proj-bar-track{background:var(--paper);border-radius:999px;height:10px;overflow:hidden;}
+.proj-bar-fill{height:100%;border-radius:999px;transition:width .5s ease;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .wrap{padding:16px;}
+  .portal-header{padding:12px 16px;}
+  .scenario-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="portal-header">
+  <img src="logo.png" alt="ShiftMatch"/>
+  <h1>Revenue Calculator <span>& Charity Pot</span></h1>
+  <a href="admin.html" class="back-btn">← Back to Portal</a>
+</div>
+
+<div class="wrap">
+
+  <!-- ── TOP OUTPUTS ── -->
+  <div style="margin-bottom:8px;">
+    <div class="section-label">Projected Revenue</div>
+  </div>
+  <div class="four-col" style="margin-bottom:24px;">
+    <div class="out-card blue"><div class="out-label">Monthly Revenue</div><div class="out-val" id="out-monthly">£0</div><div class="out-sub">All streams combined</div></div>
+    <div class="out-card green"><div class="out-label">Annual Revenue</div><div class="out-val" id="out-annual">£0</div><div class="out-sub">Projected 12 months</div></div>
+    <div class="out-card purple"><div class="out-label">Per Shift Earned</div><div class="out-val" id="out-per-shift">£0</div><div class="out-sub">Avg commission per shift</div></div>
+    <div class="out-card pink"><div class="out-label">Charity Pot / mo</div><div class="out-val" id="out-charity-mo">£0</div><div class="out-sub">From donations this month</div></div>
+  </div>
+
+  <div class="two-col" style="margin-bottom:20px;">
+
+    <!-- ── LEFT: SLIDERS ── -->
+    <div>
+      <!-- BUSINESS SETTINGS -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3>Business Settings</h3>
+        <div class="sub">How you charge the businesses using ShiftMatch</div>
+
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Number of active businesses</span><span class="slider-val" id="v-biz">50</span></div>
+          <input type="range" min="1" max="500" value="50" step="1" oninput="update('biz',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Business subscription fee</span><span class="slider-val" id="v-biz-sub">£49/mo</span></div>
+          <input type="range" min="9" max="199" value="49" step="1" oninput="update('biz-sub',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Avg shifts posted per business/mo</span><span class="slider-val" id="v-biz-shifts">8</span></div>
+          <input type="range" min="1" max="50" value="8" step="1" oninput="update('biz-shifts',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Avg shift duration (hours)</span><span class="slider-val" id="v-hours">6h</span></div>
+          <input type="range" min="2" max="12" value="6" step="0.5" oninput="update('hours',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Avg worker hourly rate (student gets)</span><span class="slider-val" id="v-worker-rate">£12/hr</span></div>
+          <input type="range" min="8" max="25" value="12" step="0.5" oninput="update('worker-rate',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Your markup on hourly rate</span><span class="slider-val" id="v-markup">12%</span></div>
+          <input type="range" min="3" max="25" value="12" step="0.5" oninput="update('markup',this.value)"/>
+          <div style="font-size:11px;color:#6b7280;margin-top:4px;">Industry standard is 20–25%. Your competitive advantage is going lower.</div>
+        </div>
+      </div>
+
+      <!-- STUDENT SETTINGS -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3>Student Settings</h3>
+        <div class="sub">How students contribute to your revenue</div>
+
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Number of active students</span><span class="slider-val" id="v-students">300</span></div>
+          <input type="range" min="10" max="5000" value="300" step="10" oninput="update('students',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Student subscription fee</span><span class="slider-val" id="v-stu-sub">£2.99/mo</span></div>
+          <input type="range" min="0" max="9.99" value="2.99" step="0.5" oninput="update('stu-sub',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">% of students on paid plan</span><span class="slider-val" id="v-stu-paid">35%</span></div>
+          <input type="range" min="0" max="100" value="35" step="1" oninput="update('stu-paid',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Student platform deduction</span><span class="slider-val" id="v-stu-cut">5%</span></div>
+          <input type="range" min="0" max="15" value="5" step="0.5" oninput="update('stu-cut',this.value)"/>
+          <div style="font-size:11px;color:#6b7280;margin-top:4px;">Taken from earnings per shift. Keep this low to retain students.</div>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Avg shifts worked per student/mo</span><span class="slider-val" id="v-stu-shifts">4</span></div>
+          <input type="range" min="0" max="20" value="4" step="1" oninput="update('stu-shifts',this.value)"/>
+        </div>
+      </div>
+
+      <!-- CHARITY SETTINGS -->
+      <div class="card">
+        <h3>🤝 Charity Pot Settings</h3>
+        <div class="sub">Configure donation options for students and businesses</div>
+
+        <div class="toggle-wrap">
+          <div><div class="toggle-label">Student round-up donations</div><div class="toggle-sub">After each shift, option to round up earnings</div></div>
+          <label class="toggle"><input type="checkbox" checked onchange="calc()"/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-wrap">
+          <div><div class="toggle-label">Business monthly donation</div><div class="toggle-sub">Optional add-on when paying monthly invoice</div></div>
+          <label class="toggle"><input type="checkbox" checked onchange="calc()"/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-wrap">
+          <div><div class="toggle-label">Per-shift business pledge</div><div class="toggle-sub">£0.50 donated per confirmed shift filled</div></div>
+          <label class="toggle"><input type="checkbox" onchange="calc()"/><span class="toggle-slider"></span></label>
+        </div>
+
+        <div class="slider-group" style="margin-top:16px;">
+          <div class="slider-row"><span class="slider-label">% of students who donate (avg round-up)</span><span class="slider-val" id="v-stu-donate">40%</span></div>
+          <input type="range" min="0" max="100" value="40" step="1" oninput="update('stu-donate',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Avg student round-up amount</span><span class="slider-val" id="v-roundup">£1.50</span></div>
+          <input type="range" min="0.5" max="10" value="1.5" step="0.5" oninput="update('roundup',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">% of businesses who donate monthly</span><span class="slider-val" id="v-biz-donate">60%</span></div>
+          <input type="range" min="0" max="100" value="60" step="1" oninput="update('biz-donate',this.value)"/>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row"><span class="slider-label">Avg business monthly donation</span><span class="slider-val" id="v-biz-gift">£15</span></div>
+          <input type="range" min="1" max="100" value="15" step="1" oninput="update('biz-gift',this.value)"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT: OUTPUTS ── -->
+    <div>
+
+      <!-- Revenue Breakdown -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3>Monthly Revenue Breakdown</h3>
+        <div class="sub">Where every pound comes from</div>
+
+        <div style="margin-bottom:16px;" id="proj-bars"></div>
+
+        <table class="breakdown">
+          <thead><tr><th>Stream</th><th>Calculation</th><th>Monthly</th></tr></thead>
+          <tbody id="breakdown-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Scenario Comparison -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3>Growth Scenarios</h3>
+        <div class="sub">Click to model different stages of ShiftMatch</div>
+        <div class="scenario-grid">
+          <div class="scenario active" onclick="setScenario('launch',this)">
+            <h4>🚀 Launch</h4>
+            <p>First 3 months. Small but real.</p>
+            <div class="s-val" id="sc-launch">£0</div>
+            <div class="s-sub">/month</div>
+          </div>
+          <div class="scenario" onclick="setScenario('growth',this)">
+            <h4>📈 Growth</h4>
+            <p>6–12 months in. Getting traction.</p>
+            <div class="s-val" id="sc-growth">£0</div>
+            <div class="s-sub">/month</div>
+          </div>
+          <div class="scenario" onclick="setScenario('scale',this)">
+            <h4>🏆 Scale</h4>
+            <p>Year 2+. Real platform volume.</p>
+            <div class="s-val" id="sc-scale">£0</div>
+            <div class="s-sub">/month</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Annual Projection -->
+      <div class="card">
+        <h3>12-Month Projection</h3>
+        <div class="sub">Assuming steady month-on-month growth of 15%</div>
+        <div id="annual-proj"></div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;font-weight:600;">Total Year 1 Revenue</span>
+          <span style="font-size:22px;font-weight:800;color:var(--blue);" id="year-total">£0</span>
+        </div>
+        <div style="margin-top:6px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;font-weight:600;color:var(--pink);">Total Charity Donated Year 1</span>
+          <span style="font-size:18px;font-weight:800;color:var(--pink);" id="year-charity">£0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHARITY POT ── -->
+  <div class="section-label" style="margin-top:8px;">Charity Pot Tracker</div>
+  <div class="two-col">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="charity-header">
+          <div class="charity-icon"><svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+          <div>
+            <div style="font-size:16px;font-weight:800;">ShiftMatch Charity Pot</div>
+            <div style="font-size:12px;color:#6b7280;">Q2 2025 — Donations open until 30 June</div>
+          </div>
+        </div>
+        <div class="pot-display">
+          <div class="pot-label">Current Pot Balance (this quarter)</div>
+          <div class="pot-amount"><span>£</span><span id="pot-live">0</span></div>
+          <div class="pot-sub" id="pot-pct-label">Move the sliders above to calculate</div>
+          <div class="pot-bar-wrap"><div class="pot-bar" id="pot-bar" style="width:0%;"></div></div>
+          <div class="pot-target"><span>£0</span><span>Target: £1,500</span></div>
+        </div>
+
+        <div class="next-charity">
+          <div class="nc-icon">🏥</div>
+          <div class="nc-info">
+            <strong>Next recipient: Manchester Children's Hospital</strong>
+            <span>Randomly selected · Announced 1 July 2025</span>
+          </div>
+          <div class="nc-badge">Q2 Charity</div>
+        </div>
+      </div>
+
+      <!-- Donation streams -->
+      <div class="card">
+        <h3>Where Donations Come From</h3>
+        <div class="sub">This quarter's breakdown by source</div>
+        <div>
+          <div class="charity-stream">
+            <div class="cs-dot" style="background:var(--blue);"></div>
+            <div><div class="cs-label">Student round-ups</div><div class="cs-rate">avg £<span id="roundup-rate">1.50</span> per shift × donating students</div></div>
+            <div class="cs-amt" id="cs-students">£0</div>
+          </div>
+          <div class="charity-stream">
+            <div class="cs-dot" style="background:var(--green);"></div>
+            <div><div class="cs-label">Business monthly donations</div><div class="cs-rate">avg £<span id="biz-gift-rate">15</span>/mo × donating businesses</div></div>
+            <div class="cs-amt" id="cs-businesses">£0</div>
+          </div>
+          <div class="charity-stream">
+            <div class="cs-dot" style="background:var(--amber);"></div>
+            <div><div class="cs-label">Per-shift business pledges</div><div class="cs-rate">£0.50 per confirmed shift filled (toggle above)</div></div>
+            <div class="cs-amt" id="cs-pershift">£0</div>
+          </div>
+          <div class="charity-stream" style="border-top:1px solid var(--border);margin-top:4px;padding-top:16px;">
+            <div class="cs-dot" style="background:var(--pink);"></div>
+            <div><div class="cs-label" style="font-weight:700;">Monthly Total</div></div>
+            <div class="cs-amt" style="color:var(--pink);" id="cs-total">£0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <!-- Previous charities -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3>Previous Charity Donations</h3>
+        <div class="sub">Full transparency — every penny accounted for</div>
+        <div class="charity-hist">
+          <div class="ch-item">
+            <div class="ch-badge">🎓</div>
+            <div class="ch-info"><strong>Student Minds UK</strong><span>Q1 2025 · Jan–Mar · Donated 1 April</span></div>
+            <div class="ch-amount">£620</div>
+          </div>
+          <div class="ch-item">
+            <div class="ch-badge">🌱</div>
+            <div class="ch-info"><strong>Trees for Cities</strong><span>Q4 2024 · Oct–Dec · Donated 1 Jan</span></div>
+            <div class="ch-amount">£410</div>
+          </div>
+          <div class="ch-item">
+            <div class="ch-badge">🤲</div>
+            <div class="ch-info"><strong>Shelter UK</strong><span>Q3 2024 · Jul–Sep · Donated 1 Oct</span></div>
+            <div class="ch-amount">£284</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;font-weight:600;color:#6b7280;">All-time total donated</span>
+          <span style="font-size:18px;font-weight:800;color:var(--pink);">£2,161</span>
+        </div>
+      </div>
+
+      <!-- Impact stats -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3>Community Impact</h3>
+        <div class="sub">What your platform has contributed</div>
+        <div class="three-col" style="gap:10px;">
+          <div style="background:linear-gradient(135deg,rgba(236,72,153,.1),rgba(245,158,11,.1));border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:var(--pink);">£2,161</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:3px;">Total donated</div>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(26,82,245,.08),rgba(139,92,246,.08));border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:var(--blue);">4</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:3px;">Charities helped</div>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(6,182,212,.08));border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:var(--green);">432</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:3px;">Donors total</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="card">
+        <h3>How the Charity Pot Works</h3>
+        <div class="sub">Simple, transparent, impactful</div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px;">
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:8px;background:var(--blue);color:white;display:grid;place-items:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
+            <div><div style="font-size:13px;font-weight:600;">Students &amp; businesses opt in to donate</div><div style="font-size:12px;color:#6b7280;">Completely optional. Students round up earnings, businesses add a monthly pledge.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:8px;background:var(--pink);color:white;display:grid;place-items:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
+            <div><div style="font-size:13px;font-weight:600;">Pot grows throughout the quarter</div><div style="font-size:12px;color:#6b7280;">Every donation is logged in real time. The community can see the pot growing on the website.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:8px;background:var(--amber);color:white;display:grid;place-items:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
+            <div><div style="font-size:13px;font-weight:600;">Charity randomly selected at end of quarter</div><div style="font-size:12px;color:#6b7280;">A verified UK registered charity is selected and the full pot is transferred with proof.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:8px;background:var(--green);color:white;display:grid;place-items:center;font-size:12px;font-weight:800;flex-shrink:0;">4</div>
+            <div><div style="font-size:13px;font-weight:600;">Full transparency published</div><div style="font-size:12px;color:#6b7280;">Donation receipt, charity confirmation and impact report shared with the whole community.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── STATE ──
+const S = {
+  biz:50, 'biz-sub':49, 'biz-shifts':8, hours:6,
+  'worker-rate':12, markup:12,
+  students:300, 'stu-sub':2.99, 'stu-paid':35, 'stu-cut':5, 'stu-shifts':4,
+  'stu-donate':40, roundup:1.5, 'biz-donate':60, 'biz-gift':15
+};
+
+function update(key, val){
+  S[key] = parseFloat(val);
+  const fmt2 = {
+    'biz':v=>Math.round(v), 'biz-sub':v=>`£${Math.round(v)}/mo`,
+    'biz-shifts':v=>Math.round(v), hours:v=>`${v}h`,
+    'worker-rate':v=>`£${v}/hr`, markup:v=>`${v}%`,
+    students:v=>Math.round(v), 'stu-sub':v=>`£${parseFloat(v).toFixed(2)}/mo`,
+    'stu-paid':v=>`${Math.round(v)}%`, 'stu-cut':v=>`${v}%`,
+    'stu-shifts':v=>Math.round(v), 'stu-donate':v=>`${Math.round(v)}%`,
+    roundup:v=>`£${parseFloat(v).toFixed(2)}`, 'biz-donate':v=>`${Math.round(v)}%`,
+    'biz-gift':v=>`£${Math.round(v)}`
+  };
+  document.getElementById('v-'+key).textContent = fmt2[key](val);
+  // update charity rate labels
+  const rl = document.getElementById('roundup-rate');
+  const bl = document.getElementById('biz-gift-rate');
+  if(rl) rl.textContent = S['roundup'].toFixed(2);
+  if(bl) bl.textContent = Math.round(S['biz-gift']);
+  calc();
+}
+
+function fmt(n){return '£'+Math.round(n).toLocaleString('en-GB');}
+function fmtd(n){return '£'+parseFloat(n).toFixed(0);}
+
+function calc(){
+  const s = S;
+
+  // Read toggle states
+  const toggles = document.querySelectorAll('.toggle input[type=checkbox]');
+  const stuDonateOn  = toggles[0] ? toggles[0].checked : true;
+  const bizDonateOn  = toggles[1] ? toggles[1].checked : true;
+  const perShiftOn   = toggles[2] ? toggles[2].checked : false;
+
+  // Business revenue
+  const bizSubs    = s.biz * s['biz-sub'];
+  const totalShifts= s.biz * s['biz-shifts'];
+  const bizRate    = s['worker-rate'] * (1 + s.markup/100);
+  const markupPerShift = (bizRate - s['worker-rate']) * s.hours;
+  const bizCommission  = totalShifts * markupPerShift;
+
+  // Student revenue
+  const payingStudents = s.students * (s['stu-paid']/100);
+  const stuSubs        = payingStudents * s['stu-sub'];
+  const stuHoursTotal  = s.students * s['stu-shifts'] * s.hours;
+  const stuCut         = stuHoursTotal * s['worker-rate'] * (s['stu-cut']/100);
+
+  // Charity — respect toggle states
+  const donatingStudents = s.students * (s['stu-donate']/100);
+  const stuDonations     = stuDonateOn ? donatingStudents * s['stu-shifts'] * s.roundup : 0;
+  const donatingBiz      = s.biz * (s['biz-donate']/100);
+  const bizDonations     = bizDonateOn ? donatingBiz * s['biz-gift'] : 0;
+  const perShiftDon      = perShiftOn  ? totalShifts * 0.5 : 0;
+  const charityTotal     = stuDonations + bizDonations + perShiftDon;
+
+  const monthly = bizSubs + bizCommission + stuSubs + stuCut;
+  const annual  = monthly * 12;
+  const perShiftRev = totalShifts > 0 ? (bizCommission + stuCut) / totalShifts : 0;
+
+  // Update top cards
+  document.getElementById('out-monthly').textContent    = fmt(monthly);
+  document.getElementById('out-annual').textContent     = fmt(annual);
+  document.getElementById('out-per-shift').textContent  = fmt(perShiftRev);
+  document.getElementById('out-charity-mo').textContent = fmt(charityTotal);
+
+  // Breakdown table
+  const rows = [
+    ['Business subscriptions', `${Math.round(s.biz)} × £${Math.round(s['biz-sub'])}/mo`, bizSubs, 'pos'],
+    ['Hourly markup commission', `${Math.round(totalShifts)} shifts × £${markupPerShift.toFixed(2)}/shift`, bizCommission, 'pos'],
+    ['Student subscriptions', `${Math.round(payingStudents)} students × £${parseFloat(s['stu-sub']).toFixed(2)}/mo`, stuSubs, 'pos'],
+    ['Student platform deduction', `${Math.round(stuHoursTotal)}h × £${s['worker-rate']} × ${s['stu-cut']}%`, stuCut, 'pos'],
+    ['Total Monthly Revenue', '', monthly, 'pos'],
+  ];
+  document.getElementById('breakdown-body').innerHTML = rows.map((r,i)=>`
+    <tr style="${i===rows.length-1?'font-weight:700;font-size:14px;':''}">
+      <td>${r[0]}</td>
+      <td style="color:#6b7280;font-size:12px;">${r[1]}</td>
+      <td class="${r[3]}">${fmt(r[2])}</td>
+    </tr>`).join('');
+
+  // Progress bars
+  const streams = [
+    {label:'Business subscriptions', val:bizSubs, color:'#1a52f5'},
+    {label:'Hourly commission', val:bizCommission, color:'#10b981'},
+    {label:'Student subscriptions', val:stuSubs, color:'#8b5cf6'},
+    {label:'Student deduction', val:stuCut, color:'#f59e0b'},
+  ];
+  const maxStream = Math.max(...streams.map(s=>s.val),1);
+  document.getElementById('proj-bars').innerHTML = streams.map(s=>`
+    <div class="proj-bar">
+      <div class="proj-bar-top"><span class="proj-bar-label">${s.label}</span><span class="proj-bar-val">${fmt(s.val)}</span></div>
+      <div class="proj-bar-track"><div class="proj-bar-fill" style="width:${Math.max(2,(s.val/maxStream)*100)}%;background:${s.color};"></div></div>
+    </div>`).join('');
+
+  // Scenarios
+  function scenarioCalc(biz, stu, bizSub, stuSub, markup, stuCut){
+    const bs  = biz * bizSub;
+    const bc  = biz * 8 * (s['worker-rate'] * markup/100) * s.hours;
+    const ss  = stu * 0.35 * stuSub;
+    const sc  = stu * 4 * s.hours * s['worker-rate'] * (stuCut/100);
+    return bs + bc + ss + sc;
+  }
+  document.getElementById('sc-launch').textContent  = fmt(scenarioCalc(10, 80, 49, 2.99, 12, 5));
+  document.getElementById('sc-growth').textContent  = fmt(scenarioCalc(50, 300, 49, 2.99, 12, 5));
+  document.getElementById('sc-scale').textContent   = fmt(scenarioCalc(200, 2000, 49, 2.99, 12, 5));
+
+  // Annual projection with 15% growth
+  let running = monthly * 0.6; // start at 60% of current
+  let yearTotal = 0;
+  let yearCharity = 0;
+  const months = ['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr'];
+  const projHTML = months.map((m,i)=>{
+    running = running * 1.15;
+    if(running > monthly * 2.5) running = monthly * 2.5;
+    yearTotal += running;
+    yearCharity += charityTotal * (running/monthly);
+    const pct = Math.min(100,(running/(monthly*2.5))*100);
+    return `<div class="proj-bar">
+      <div class="proj-bar-top"><span class="proj-bar-label">${m}</span><span class="proj-bar-val">${fmt(running)}</span></div>
+      <div class="proj-bar-track"><div class="proj-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,#1a52f5,#10b981);"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('annual-proj').innerHTML = projHTML;
+  document.getElementById('year-total').textContent = fmt(yearTotal);
+  document.getElementById('year-charity').textContent = fmt(yearCharity);
+
+  // Charity pot
+  // Charity pot breakdown
+  document.getElementById('cs-students').textContent   = fmt(stuDonations);
+  document.getElementById('cs-businesses').textContent = fmt(bizDonations);
+  const csPerShiftEl = document.getElementById('cs-pershift');
+  if(csPerShiftEl) csPerShiftEl.textContent = fmt(perShiftDon);
+  document.getElementById('cs-total').textContent = fmt(charityTotal);
+
+  // Live pot bar — quarterly = 3 months of donations
+  const potQuarterly = charityTotal * 3;
+  const potTarget = 1500;
+  const potPct = Math.min(100, Math.round((potQuarterly / potTarget) * 100));
+  document.getElementById('pot-bar').style.width = potPct + '%';
+  document.getElementById('pot-live').textContent = Math.round(potQuarterly).toLocaleString('en-GB');
+  document.getElementById('pot-pct-label').textContent = potPct + '% of £' + potTarget.toLocaleString('en-GB') + ' target';
+}
+
+function setScenario(type, el){
+  document.querySelectorAll('.scenario').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  const scenarios = {
+    launch:  {biz:10, students:80,  'biz-sub':49, 'stu-sub':2.99, markup:12, 'stu-cut':5, 'biz-shifts':6, 'stu-shifts':3, 'biz-donate':50, 'stu-donate':30},
+    growth:  {biz:50, students:300, 'biz-sub':49, 'stu-sub':2.99, markup:12, 'stu-cut':5, 'biz-shifts':8, 'stu-shifts':4, 'biz-donate':60, 'stu-donate':40},
+    scale:   {biz:200,students:2000,'biz-sub':49, 'stu-sub':2.99, markup:12, 'stu-cut':5, 'biz-shifts':10,'stu-shifts':5, 'biz-donate':65, 'stu-donate':45},
+  };
+  const sc = scenarios[type];
+  Object.assign(S, sc);
+  // Update all sliders
+  Object.entries(sc).forEach(([k,v])=>{
+    const el = document.querySelector(`input[oninput*="'${k}'"]`);
+    if(el){el.value=v; update(k,v);}
+  });
+  calc();
+}
+
+// Initial calc
+calc();
+</script>
+</body>
+</html>
