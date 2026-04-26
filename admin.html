@@ -1481,10 +1481,25 @@ tbody tr:hover{background:#f9fafc;}
     <div class="login-field"><label>Email</label><input type="email" id="login-email" placeholder="admin@shiftmatch.co.uk" value="admin@shiftmatch.co.uk"/></div>
     <div class="login-field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"/></div>
     <div class="login-error" id="login-error"></div>
-    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign in to Portal</button>
+    <button class="login-btn" id="login-btn">Sign in to Portal</button>
     <p class="login-hint">Email: admin@shiftmatch.co.uk · Password: Admin123</p>
   </div>
 </div>
+
+<!-- Login button bridge — connects HTML button to module function -->
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const btn = document.getElementById('login-btn');
+  const passInput = document.getElementById('login-pass');
+  if(btn) btn.addEventListener('click', function(){
+    if(window.doLogin) window.doLogin();
+    else console.error('doLogin not loaded yet');
+  });
+  if(passInput) passInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && window.doLogin) window.doLogin();
+  });
+});
+</script>
 
 <!-- SIDEBAR -->
 <nav id="sidebar">
