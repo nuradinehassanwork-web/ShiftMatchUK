@@ -412,6 +412,7 @@ html,body{min-height:100%;font-family:var(--font);background:#f4f6fb;color:var(-
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <script>
+window.addEventListener('load', function() {
 // ── FIREBASE CONFIG ──
 const firebaseConfig = {
   apiKey: "AIzaSyDlzTSRbIJEIE70nbV2VuFUFp8-a9b6I_4",
@@ -806,6 +807,7 @@ document.addEventListener('keydown', function(e){
     if(loginScreen.style.display !== 'none') doLogin();
   }
 });
+}); // end window.addEventListener load
 </script>
 
 </body>
