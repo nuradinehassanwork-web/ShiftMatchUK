@@ -888,18 +888,38 @@ html,body{
       <!-- iCal Timetable Sync -->
       <div class="card" style="margin-bottom:14px;">
         <div style="font-size:15px;font-weight:700;margin-bottom:4px;">📅 University Timetable Sync</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Paste your university iCal link so we can automatically find your free slots between lectures.</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Sync your university timetable so we know exactly when you're free between lectures.</div>
+
+        <!-- How to get iCal guide -->
+        <div style="background:#eff6ff;border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px;">📖 How to get your iCal link:</div>
+          <div style="font-size:12px;color:#1e40af;line-height:1.7;">
+            <strong>MMU:</strong> mytimetable.mmu.ac.uk → click 📅 icon → Copy iCal URL<br/>
+            <strong>UoM:</strong> timetables.manchester.ac.uk → Subscribe → Copy link<br/>
+            <strong>Salford:</strong> Check your student portal for "Export timetable"
+          </div>
+        </div>
+
+        <!-- Test with dummy -->
+        <div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:8px;">🧪 Try it with a dummy timetable first:</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="downloadDummyIcal('cs')" style="background:white;border:1px solid #6ee7b7;color:#065f46;border-radius:8px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;">⬇️ CS Student</button>
+            <button onclick="downloadDummyIcal('business')" style="background:white;border:1px solid #6ee7b7;color:#065f46;border-radius:8px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;">⬇️ Business Student</button>
+            <button onclick="downloadDummyIcal('law')" style="background:white;border:1px solid #6ee7b7;color:#065f46;border-radius:8px;padding:7px 12px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;">⬇️ Law Student</button>
+          </div>
+        </div>
 
         <!-- Tabs -->
         <div style="display:flex;gap:0;background:#f0f2f8;border-radius:10px;padding:3px;margin-bottom:14px;">
-          <button id="ical-tab-url" onclick="switchIcalTab('url')" style="flex:1;padding:8px;border:none;background:white;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(10,15,30,.08);">🔗 URL</button>
-          <button id="ical-tab-file" onclick="switchIcalTab('file')" style="flex:1;padding:8px;border:none;background:none;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;">📁 Upload</button>
+          <button id="ical-tab-url" onclick="switchIcalTab('url')" style="flex:1;padding:8px;border:none;background:white;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(10,15,30,.08);">🔗 Paste URL</button>
+          <button id="ical-tab-file" onclick="switchIcalTab('file')" style="flex:1;padding:8px;border:none;background:none;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;">📁 Upload file</button>
         </div>
 
         <!-- URL input -->
         <div id="ical-url-section">
           <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">iCal URL</div>
-          <input type="url" id="ical-url-input" placeholder="https://timetable.mmu.ac.uk/ical/..." style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;background:#f8faff;outline:none;margin-bottom:10px;"/>
+          <input type="url" id="ical-url-input" placeholder="https://mytimetable.mmu.ac.uk/ical/..." style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;background:#f8faff;outline:none;margin-bottom:10px;"/>
           <button onclick="syncIcalFromURL()" style="width:100%;background:var(--blue);color:white;border:none;border-radius:12px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;">Sync timetable</button>
         </div>
 
@@ -909,7 +929,7 @@ html,body{
             <input type="file" accept=".ics,text/calendar" onchange="syncIcalFromFile(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;"/>
             <div style="font-size:28px;margin-bottom:6px;">📅</div>
             <div style="font-size:13px;font-weight:700;margin-bottom:4px;">Upload .ics file</div>
-            <div style="font-size:11px;color:var(--muted);">Download from your university timetable portal</div>
+            <div style="font-size:11px;color:var(--muted);">Tap to select your downloaded timetable file</div>
           </div>
         </div>
 
@@ -1416,6 +1436,28 @@ async function loadShifts(studentData){
       }).join('');
     }
   } catch(e){}
+}
+
+// ── DOWNLOAD DUMMY ICAL ──
+const DUMMY_ICALS = {
+  cs: `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MMU//Timetable//EN\r\nX-WR-CALNAME:MMU CS Timetable\r\nBEGIN:VEVENT\r\nDTSTART:20250505T090000Z\r\nDTEND:20250505T110000Z\r\nSUMMARY:Algorithms & Data Structures Lecture\r\nLOCATION:Computing Block Room 101\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250505T140000Z\r\nDTEND:20250505T160000Z\r\nSUMMARY:Algorithms & Data Structures Lab\r\nLOCATION:Computing Lab CL1\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250506T100000Z\r\nDTEND:20250506T120000Z\r\nSUMMARY:Software Engineering Lecture\r\nLOCATION:LT4 Lecture Theatre\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250507T090000Z\r\nDTEND:20250507T110000Z\r\nSUMMARY:Database Systems Lecture\r\nLOCATION:Computing Block Room 203\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250507T130000Z\r\nDTEND:20250507T150000Z\r\nSUMMARY:Database Systems Tutorial\r\nLOCATION:Computing Lab CL2\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250508T100000Z\r\nDTEND:20250508T120000Z\r\nSUMMARY:Computer Networks Lecture\r\nLOCATION:LT2 Lecture Theatre\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250509T090000Z\r\nDTEND:20250509T110000Z\r\nSUMMARY:Software Engineering Lab\r\nLOCATION:Computing Lab CL1\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250512T090000Z\r\nDTEND:20250512T110000Z\r\nSUMMARY:Algorithms & Data Structures Lecture\r\nLOCATION:Computing Block Room 101\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250514T090000Z\r\nDTEND:20250514T110000Z\r\nSUMMARY:Database Systems Lecture\r\nLOCATION:Computing Block Room 203\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250515T100000Z\r\nDTEND:20250515T120000Z\r\nSUMMARY:Computer Networks Lecture\r\nLOCATION:LT2 Lecture Theatre\r\nEND:VEVENT\r\nEND:VCALENDAR`,
+
+  business: `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MMU//Timetable//EN\r\nX-WR-CALNAME:MMU Business Timetable\r\nBEGIN:VEVENT\r\nDTSTART:20250505T090000Z\r\nDTEND:20250505T110000Z\r\nSUMMARY:Business Strategy Lecture\r\nLOCATION:Business School LT1\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250507T130000Z\r\nDTEND:20250507T150000Z\r\nSUMMARY:Marketing Management Seminar\r\nLOCATION:Room 204 Business School\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250509T090000Z\r\nDTEND:20250509T120000Z\r\nSUMMARY:Finance & Accounting Lecture\r\nLOCATION:LT3 Lecture Theatre\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250512T100000Z\r\nDTEND:20250512T120000Z\r\nSUMMARY:Business Strategy Lecture\r\nLOCATION:Business School LT1\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250514T140000Z\r\nDTEND:20250514T160000Z\r\nSUMMARY:Group Project Workshop\r\nLOCATION:Room 301\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250516T090000Z\r\nDTEND:20250516T110000Z\r\nSUMMARY:Finance & Accounting Lecture\r\nLOCATION:LT3 Lecture Theatre\r\nEND:VEVENT\r\nEND:VCALENDAR`,
+
+  law: `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//UoM//Timetable//EN\r\nX-WR-CALNAME:UoM Law Timetable\r\nBEGIN:VEVENT\r\nDTSTART:20250505T090000Z\r\nDTEND:20250505T110000Z\r\nSUMMARY:Law of Contract Lecture\r\nLOCATION:Law School LT1\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250505T140000Z\r\nDTEND:20250505T160000Z\r\nSUMMARY:Criminal Law Seminar\r\nLOCATION:Room 305 Law School\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250506T090000Z\r\nDTEND:20250506T110000Z\r\nSUMMARY:Constitutional Law Lecture\r\nLOCATION:LT2\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250507T090000Z\r\nDTEND:20250507T120000Z\r\nSUMMARY:Tort Law Lecture\r\nLOCATION:Law School LT1\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250508T140000Z\r\nDTEND:20250508T160000Z\r\nSUMMARY:Mooting Practice Session\r\nLOCATION:Moot Court\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20250509T090000Z\r\nDTEND:20250509T110000Z\r\nSUMMARY:Law of Contract Lecture\r\nLOCATION:Law School LT1\r\nEND:VEVENT\r\nEND:VCALENDAR`
+};
+
+function downloadDummyIcal(type){
+  const names = {cs:'MMU-CS-Timetable', business:'MMU-Business-Timetable', law:'UoM-Law-Timetable'};
+  const content = DUMMY_ICALS[type];
+  const blob = new Blob([content], {type:'text/calendar'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = names[type]+'.ics';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Downloading '+names[type]+'.ics — then upload it below! 📅','success');
 }
 
 // ── ICAL TAB SWITCH ──
