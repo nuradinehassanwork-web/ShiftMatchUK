@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ShiftMatch"/>
+<meta name="theme-color" content="#1a52f5"/>
+<title>ShiftMatch</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --blue:#1a52f5;--blue2:#0f3cd4;--ink:#0a0f1e;
+  --green:#10b981;--red:#ef4444;--amber:#f59e0b;
+  --muted:#6b7280;--border:rgba(10,15,30,.1);
+  --paper:#f4f6fb;--white:#fff;
+  --font:'Outfit',sans-serif;
+  --safe-top:env(safe-area-inset-top);
+  --safe-bottom:env(safe-area-inset-bottom);
+}
+html,body{
+  height:100%;width:100%;overflow:hidden;
+  font-family:var(--font);background:var(--paper);
+  color:var(--ink);-webkit-font-smoothing:antialiased;
+}
+
+/* ── APP SHELL ── */
+#app{
+  height:100vh;width:100%;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+  padding-top:var(--safe-top);
+}
+
+/* ── SCREENS ── */
+.screen{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s;
+  background:var(--paper);
+  padding-top:var(--safe-top);
+}
+.screen.hidden{transform:translateX(100%);opacity:0;pointer-events:none;}
+.screen.slide-left{transform:translateX(-100%);opacity:0;pointer-events:none;}
+
+/* ── SPLASH ── */
+#screen-splash{
+  background:linear-gradient(160deg,#0a0f1e 0%,#1a2d6e 100%);
+  align-items:center;justify-content:center;gap:20px;
+}
+.splash-logo{
+  width:100px;height:100px;border-radius:28px;
+  overflow:hidden;animation:splash-pop .6s cubic-bezier(.34,1.56,.64,1) both;
+}
+.splash-logo img{width:100%;height:100%;object-fit:cover;}
+.splash-name{
+  font-size:32px;font-weight:800;color:white;letter-spacing:-.02em;
+  animation:fade-up .5s .2s both;
+}
+.splash-tag{font-size:14px;color:rgba(255,255,255,.5);animation:fade-up .5s .35s both;}
+@keyframes splash-pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes fade-up{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ── AUTH SCREENS ── */
+.auth-header{
+  background:linear-gradient(160deg,#0a0f1e,#1a2d6e);
+  padding:48px 28px 32px;
+  flex-shrink:0;
+}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px;}
+.auth-logo img{width:36px;height:36px;border-radius:10px;object-fit:cover;}
+.auth-logo span{font-size:18px;font-weight:800;color:white;}
+.auth-title{font-size:28px;font-weight:800;color:white;line-height:1.1;margin-bottom:8px;}
+.auth-sub{font-size:14px;color:rgba(255,255,255,.5);line-height:1.5;}
+.auth-body{
+  flex:1;background:white;border-radius:24px 24px 0 0;
+  margin-top:-12px;padding:28px 24px;overflow-y:auto;
+}
+
+/* ── FORM FIELDS ── */
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.field input,.field select,.field textarea{
+  width:100%;padding:14px 16px;
+  border:1.5px solid rgba(10,15,30,.1);border-radius:14px;
+  font-family:var(--font);font-size:15px;color:var(--ink);
+  outline:none;background:#f8faff;
+  transition:border-color .2s,box-shadow .2s;
+  -webkit-appearance:none;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--blue);background:white;
+  box-shadow:0 0 0 4px rgba(26,82,245,.1);
+}
+.field textarea{min-height:80px;resize:none;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── BUTTONS ── */
+.btn{
+  width:100%;padding:16px;border:none;border-radius:16px;
+  font-family:var(--font);font-size:16px;font-weight:700;
+  cursor:pointer;transition:all .15s;
+}
+.btn-primary{background:var(--blue);color:white;}
+.btn-primary:active{background:var(--blue2);transform:scale(.98);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-ghost{background:transparent;color:var(--muted);font-size:14px;padding:12px;}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--ink);}
+.btn-green{background:var(--green);color:white;}
+.btn-sm{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;width:auto;border:none;cursor:pointer;font-family:var(--font);}
+
+/* ── ERROR/SUCCESS ── */
+.alert{padding:12px 16px;border-radius:12px;font-size:13px;margin-bottom:14px;display:none;line-height:1.5;}
+.alert.error{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;}
+.alert.success{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;}
+.alert.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;}
+
+/* ── DIVIDER ── */
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:13px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── LINK ── */
+.link{color:var(--blue);font-weight:600;cursor:pointer;background:none;border:none;font-family:var(--font);font-size:inherit;}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:white;padding:14px 20px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.topbar-back{
+  width:36px;height:36px;border-radius:10px;background:var(--paper);
+  display:grid;place-items:center;border:none;cursor:pointer;
+  flex-shrink:0;
+}
+.topbar-title{font-size:17px;font-weight:700;flex:1;}
+.topbar-action{background:none;border:none;color:var(--blue);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;padding:6px;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  background:white;border-top:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:8px 0;padding-bottom:calc(8px + var(--safe-bottom));
+  flex-shrink:0;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 0;cursor:pointer;border:none;background:none;font-family:var(--font);
+  color:var(--muted);transition:color .15s;
+}
+.nav-item.active{color:var(--blue);}
+.nav-item svg{width:22px;height:22px;}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:.02em;}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);margin-top:-2px;}
+
+/* ── HOME SCREEN ── */
+.home-header{
+  background:linear-gradient(160deg,#0a0f1e,#1a2d6e);
+  padding:20px 24px 28px;flex-shrink:0;
+}
+.home-greeting{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:4px;}
+.home-name{font-size:24px;font-weight:800;color:white;margin-bottom:16px;}
+.status-card{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  border-radius:16px;padding:16px;
+  display:flex;align-items:center;gap:14px;
+}
+.status-icon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;}
+.status-icon.pending{background:rgba(245,158,11,.2);}
+.status-icon.active{background:rgba(16,185,129,.2);}
+.status-icon.vetting{background:rgba(139,92,246,.2);}
+.status-text{flex:1;}
+.status-label{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:2px;}
+.status-value{font-size:15px;font-weight:700;color:white;}
+.status-action{font-size:12px;font-weight:600;color:var(--blue);background:rgba(26,82,245,.2);padding:6px 12px;border-radius:8px;border:none;cursor:pointer;font-family:var(--font);}
+.home-scroll{flex:1;overflow-y:auto;padding:20px;}
+
+/* ── CARDS ── */
+.section-title{font-size:16px;font-weight:700;margin-bottom:12px;}
+.section-sub{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.card{background:white;border-radius:18px;padding:18px;border:1px solid var(--border);margin-bottom:12px;box-shadow:0 2px 12px rgba(10,15,30,.05);}
+.card-row{display:flex;align-items:center;gap:12px;}
+.card-icon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;font-size:20px;}
+.card-title{font-size:15px;font-weight:700;margin-bottom:2px;}
+.card-sub{font-size:12px;color:var(--muted);}
+.card-badge{margin-left:auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.badge-green{background:#d1fae5;color:#065f46;}
+.badge-amber{background:#fef3c7;color:#92400e;}
+.badge-blue{background:#eff6ff;color:#1e40af;}
+.badge-red{background:#fee2e2;color:#991b1b;}
+
+/* ── SHIFT CARD ── */
+.shift-card{
+  background:white;border-radius:18px;padding:18px;
+  border:1px solid var(--border);margin-bottom:12px;
+  box-shadow:0 2px 12px rgba(10,15,30,.05);
+}
+.shift-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.shift-role{font-size:17px;font-weight:800;}
+.shift-business{font-size:13px;color:var(--muted);margin-top:2px;}
+.shift-pay{font-size:20px;font-weight:800;color:var(--blue);}
+.shift-pay-label{font-size:11px;color:var(--muted);text-align:right;}
+.shift-details{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.shift-tag{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--muted);background:var(--paper);padding:5px 10px;border-radius:8px;}
+.shift-tag svg{width:13px;height:13px;}
+.shift-footer{display:flex;gap:8px;}
+.shift-apply{flex:1;background:var(--blue);color:white;border:none;border-radius:12px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;}
+.shift-save{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--border);background:white;display:grid;place-items:center;cursor:pointer;flex-shrink:0;}
+
+/* ── VERIFY STEPS ── */
+.step-bar{display:flex;align-items:center;gap:0;padding:20px 24px 0;}
+.step-node{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;}
+.step-node:not(:last-child)::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:#e5e7eb;z-index:0;}
+.step-node.done::after,.step-node.active::after{background:var(--blue);}
+.step-circle{width:28px;height:28px;border-radius:50%;border:2px solid #e5e7eb;background:white;display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--muted);position:relative;z-index:1;transition:all .3s;}
+.step-node.done .step-circle{background:var(--green);border-color:var(--green);color:white;}
+.step-node.active .step-circle{background:var(--blue);border-color:var(--blue);color:white;}
+.step-name{font-size:9px;font-weight:600;color:var(--muted);margin-top:4px;text-align:center;letter-spacing:.02em;}
+.step-node.active .step-name{color:var(--blue);}
+.step-node.done .step-name{color:var(--green);}
+.step-content{flex:1;overflow-y:auto;padding:20px 24px;}
+
+/* ── PROFILE ── */
+.profile-header{
+  background:linear-gradient(160deg,#0a0f1e,#1a2d6e);
+  padding:24px;display:flex;flex-direction:column;align-items:center;
+  flex-shrink:0;
+}
+.profile-avatar{
+  width:80px;height:80px;border-radius:50%;background:var(--blue);
+  display:grid;place-items:center;font-size:28px;font-weight:800;color:white;
+  margin-bottom:12px;border:3px solid rgba(255,255,255,.2);overflow:hidden;
+}
+.profile-avatar img{width:100%;height:100%;object-fit:cover;}
+.profile-name{font-size:22px;font-weight:800;color:white;margin-bottom:4px;}
+.profile-email{font-size:13px;color:rgba(255,255,255,.5);}
+.profile-scroll{flex:1;overflow-y:auto;padding:20px;}
+.profile-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 0;border-bottom:1px solid var(--border);
+  cursor:pointer;
+}
+.profile-row:last-child{border-bottom:none;}
+.profile-row-left{display:flex;align-items:center;gap:12px;}
+.profile-row-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;}
+.profile-row-title{font-size:15px;font-weight:600;}
+.profile-row-sub{font-size:12px;color:var(--muted);}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;}
+.stat-pill{background:white;border-radius:14px;padding:14px;text-align:center;border:1px solid var(--border);}
+.stat-num{font-size:22px;font-weight:800;color:var(--blue);}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* ── NI INPUT ── */
+.ni-input{text-transform:uppercase;letter-spacing:.12em;font-weight:600;}
+.ni-hint{font-size:11px;color:var(--muted);margin-top:5px;}
+
+/* ── UPLOAD AREA ── */
+.upload-zone{
+  border:2px dashed rgba(10,15,30,.15);border-radius:16px;
+  padding:28px;text-align:center;background:#f8faff;
+  position:relative;cursor:pointer;transition:all .2s;
+}
+.upload-zone:hover,.upload-zone.has-file{border-color:var(--blue);background:#eff6ff;}
+.upload-zone.has-file{border-style:solid;background:#f0fdf4;border-color:var(--green);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.upload-icon{font-size:32px;margin-bottom:8px;}
+.upload-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.upload-sub{font-size:12px;color:var(--muted);}
+.upload-preview{margin-top:10px;}
+.upload-preview img{max-height:100px;border-radius:10px;object-fit:cover;}
+.progress-bar{height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:10px;}
+.progress-fill{height:100%;background:var(--blue);border-radius:999px;transition:width .3s;width:0%;}
+
+/* ── PHOTO CIRCLE ── */
+.photo-circle{
+  width:90px;height:90px;border-radius:50%;background:#f0f2f8;
+  border:2px dashed var(--border);display:grid;place-items:center;
+  font-size:32px;position:relative;cursor:pointer;overflow:hidden;
+  margin:0 auto 16px;
+}
+.photo-circle img{width:100%;height:100%;object-fit:cover;position:absolute;}
+.photo-circle input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+
+/* ── CAMERA OPTION ── */
+.camera-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.camera-opt{background:var(--paper);border:1.5px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;position:relative;transition:all .2s;}
+.camera-opt:hover{border-color:var(--blue);background:#eff6ff;}
+.camera-opt input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.camera-opt-icon{font-size:28px;margin-bottom:6px;}
+.camera-opt-label{font-size:13px;font-weight:600;}
+.camera-opt-sub{font-size:11px;color:var(--muted);}
+
+/* ── SORT CODE ── */
+.sort-code-wrap{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.sort-code-wrap input{text-align:center;font-weight:700;letter-spacing:.08em;}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:calc(80px + var(--safe-bottom));left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:white;padding:12px 20px;
+  border-radius:12px;font-size:14px;font-weight:600;
+  z-index:9999;opacity:0;transition:all .3s;white-space:nowrap;
+  pointer-events:none;max-width:90%;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.error{background:var(--red);}
+#toast.success{background:var(--green);}
+
+/* ── LOADING ── */
+#loading-overlay{
+  position:fixed;inset:0;background:rgba(10,15,30,.6);
+  display:grid;place-items:center;z-index:9998;opacity:0;
+  transition:opacity .3s;pointer-events:none;
+}
+#loading-overlay.show{opacity:1;pointer-events:all;}
+.spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:40px 20px;}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-title{font-size:18px;font-weight:700;margin-bottom:8px;}
+.empty-sub{font-size:14px;color:var(--muted);line-height:1.6;}
+
+/* ── QUICK STATS STRIP ── */
+.stats-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+.stats-strip::-webkit-scrollbar{display:none;}
+.stat-chip{flex-shrink:0;background:white;border-radius:12px;padding:12px 16px;border:1px solid var(--border);min-width:100px;}
+.stat-chip-num{font-size:22px;font-weight:800;color:var(--blue);}
+.stat-chip-lbl{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* ── CHECKBOX ── */
+.checkbox-field{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:12px;}
+.checkbox-field input{margin-top:3px;accent-color:var(--blue);flex-shrink:0;width:16px;height:16px;}
+.checkbox-field span{font-size:13px;color:var(--muted);line-height:1.5;}
+.checkbox-field a{color:var(--blue);}
+
+/* ── INTEREST TAGS ── */
+.interest-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.interest-tag{display:flex;align-items:center;gap:5px;padding:8px 14px;background:var(--paper);border:1.5px solid var(--border);border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.interest-tag.selected{background:#eff6ff;border-color:var(--blue);color:var(--blue);}
+
+/* ── AVAILABILITY ── */
+.avail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.avail-slot{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--paper);border:1.5px solid var(--border);border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.avail-slot.selected{background:#eff6ff;border-color:var(--blue);color:var(--blue);}
+.avail-slot input{display:none;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- LOADING -->
+  <div id="loading-overlay"><div class="spinner"></div></div>
+  <div id="toast"></div>
+
+  <!-- ── SPLASH ── -->
+  <div class="screen" id="screen-splash">
+    <div class="splash-logo">
+      <img src="app-icon.png" alt="ShiftMatch"/>
+    </div>
+    <div class="splash-name">ShiftMatch</div>
+    <div class="splash-tag">Flexible work around your lectures</div>
+  </div>
+
+  <!-- ── LOGIN ── -->
+  <div class="screen hidden" id="screen-login">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <img src="app-icon.png" alt="ShiftMatch"/>
+        <span>ShiftMatch</span>
+      </div>
+      <div class="auth-title">Welcome back 👋</div>
+      <div class="auth-sub">Sign in to your ShiftMatch account</div>
+    </div>
+    <div class="auth-body">
+      <div class="alert error" id="login-error"></div>
+      <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="your@university.ac.uk" autocomplete="email" inputmode="email"/></div>
+      <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/></div>
+      <button class="btn btn-primary" id="login-btn" style="margin-bottom:16px;">Sign In</button>
+      <div style="text-align:center;font-size:14px;color:var(--muted);">
+        Don't have an account? <button class="link" onclick="showScreen('register')">Sign up free</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── REGISTER ── -->
+  <div class="screen hidden" id="screen-register">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <img src="app-icon.png" alt="ShiftMatch"/>
+        <span>ShiftMatch</span>
+      </div>
+      <div class="auth-title">Create your account</div>
+      <div class="auth-sub">Sign up in 60 seconds. We handle the rest.</div>
+    </div>
+    <div class="auth-body">
+      <div class="alert error" id="reg-error"></div>
+      <div class="alert success" id="reg-success"></div>
+      <div class="field"><label>Full name</label><input type="text" id="reg-name" placeholder="e.g. Alex Johnson" autocomplete="name"/></div>
+      <div class="field"><label>University email</label><input type="email" id="reg-email" placeholder="e.g. a.johnson@mmu.ac.uk" inputmode="email"/></div>
+      <div class="field">
+        <label>University</label>
+        <select id="reg-uni">
+          <option value="">Select your university</option>
+          <option>Manchester Metropolitan University (MMU)</option>
+          <option>University of Manchester (UoM)</option>
+          <option>University of Salford</option>
+          <option>University of Bolton</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>What are you studying?</label>
+        <select id="reg-degree">
+          <option value="">Select your subject</option>
+          <option>Business & Finance</option>
+          <option>Law</option>
+          <option>Nursing & Health Sciences</option>
+          <option>Computer Science & IT</option>
+          <option>Media, Film & Journalism</option>
+          <option>Engineering</option>
+          <option>Sport Science</option>
+          <option>Psychology</option>
+          <option>Education</option>
+          <option>Art & Design</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>What kind of work interests you?</label>
+        <div class="interest-grid" id="reg-interests">
+          <div class="interest-tag" data-val="hospitality" onclick="toggleInterest(this)">🍽️ Hospitality</div>
+          <div class="interest-tag" data-val="events" onclick="toggleInterest(this)">🎪 Events</div>
+          <div class="interest-tag" data-val="retail" onclick="toggleInterest(this)">🛍️ Retail</div>
+          <div class="interest-tag" data-val="logistics" onclick="toggleInterest(this)">📦 Logistics</div>
+          <div class="interest-tag" data-val="security" onclick="toggleInterest(this)">🛡️ Security</div>
+          <div class="interest-tag" data-val="healthcare" onclick="toggleInterest(this)">🏥 Healthcare</div>
+          <div class="interest-tag" data-val="admin" onclick="toggleInterest(this)">💼 Admin</div>
+          <div class="interest-tag" data-val="driving" onclick="toggleInterest(this)">🚗 Driving</div>
+        </div>
+      </div>
+      <div class="field"><label>Password</label><input type="password" id="reg-pass" placeholder="At least 6 characters" autocomplete="new-password"/></div>
+      <label class="checkbox-field">
+        <input type="checkbox" id="reg-gdpr"/>
+        <span>I agree to ShiftMatch <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>. My data will be used to match me to relevant shifts.</span>
+      </label>
+      <label class="checkbox-field">
+        <input type="checkbox" id="reg-marketing"/>
+        <span>Send me shift alerts and ShiftSave deals. (Optional)</span>
+      </label>
+      <button class="btn btn-primary" id="reg-btn" style="margin-bottom:16px;">Create Account</button>
+      <div style="text-align:center;font-size:14px;color:var(--muted);">
+        Already have an account? <button class="link" onclick="showScreen('login')">Sign in</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VERIFY ── -->
+  <div class="screen hidden" id="screen-verify">
+    <div class="topbar">
+      <div style="font-size:16px;font-weight:700;">Verify Your Account</div>
+      <button class="topbar-action" onclick="auth.signOut()">Exit</button>
+    </div>
+    <div class="step-bar" id="verify-steps">
+      <div class="step-node active" id="vstep-1"><div class="step-circle">1</div><div class="step-name">Personal</div></div>
+      <div class="step-node" id="vstep-2"><div class="step-circle">2</div><div class="step-name">Photo</div></div>
+      <div class="step-node" id="vstep-3"><div class="step-circle">3</div><div class="step-name">ID</div></div>
+      <div class="step-node" id="vstep-4"><div class="step-circle">4</div><div class="step-name">Bank</div></div>
+    </div>
+    <div class="step-content">
+
+      <!-- Step 1 -->
+      <div id="vstep-content-1">
+        <div style="margin-bottom:20px;">
+          <div style="font-size:20px;font-weight:800;margin-bottom:6px;">Personal information</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;">We need this to verify your identity and right to work in the UK.</div>
+        </div>
+        <div class="alert error" id="vs1-error"></div>
+        <div class="field"><label>Full name (as on your ID)</label><input type="text" id="vs1-name" placeholder="e.g. Alexander Johnson"/></div>
+        <div class="field"><label>Date of birth</label><input type="date" id="vs1-dob"/></div>
+        <div class="field">
+          <label>National Insurance number</label>
+          <input type="text" id="vs1-ni" class="ni-input" placeholder="AB123456C" maxlength="9"/>
+          <div class="ni-hint">Format: 2 letters · 6 numbers · 1 letter</div>
+        </div>
+        <button class="btn btn-primary" onclick="verifyStep1()">Continue →</button>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="vstep-content-2" style="display:none;">
+        <div style="margin-bottom:20px;">
+          <div style="font-size:20px;font-weight:800;margin-bottom:6px;">Profile photo</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;">Used on your ShiftMatch profile and for identity verification.</div>
+        </div>
+        <div class="alert error" id="vs2-error"></div>
+        <div class="camera-options">
+          <label class="camera-opt">
+            <input type="file" id="vs2-camera" accept="image/*" capture="user" onchange="previewPhoto(this)"/>
+            <div class="camera-opt-icon">📷</div>
+            <div class="camera-opt-label">Take selfie</div>
+            <div class="camera-opt-sub">Use camera</div>
+          </label>
+          <label class="camera-opt">
+            <input type="file" id="vs2-gallery" accept="image/*" onchange="previewPhoto(this)"/>
+            <div class="camera-opt-icon">🖼️</div>
+            <div class="camera-opt-label">Choose photo</div>
+            <div class="camera-opt-sub">From gallery</div>
+          </label>
+        </div>
+        <div class="photo-circle" id="photo-preview-circle" style="font-size:32px;">📷
+          <img id="photo-preview-img" src="" style="display:none;"/>
+        </div>
+        <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px;">Clear face · No sunglasses · Good lighting</div>
+        <div class="progress-bar" id="vs2-progress" style="display:none;margin-bottom:12px;"><div class="progress-fill" id="vs2-fill"></div></div>
+        <button class="btn btn-primary" id="vs2-btn" onclick="verifyStep2()">Continue →</button>
+        <button class="btn btn-ghost" onclick="skipToStep(3)">Skip for now</button>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="vstep-content-3" style="display:none;">
+        <div style="margin-bottom:20px;">
+          <div style="font-size:20px;font-weight:800;margin-bottom:6px;">Verify your identity</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;">Upload a photo of your passport or birth certificate.</div>
+        </div>
+        <div class="alert error" id="vs3-error"></div>
+        <div class="upload-zone" id="vs3-zone">
+          <input type="file" id="vs3-file" accept="image/*,application/pdf" onchange="previewID(this)"/>
+          <div class="upload-icon">📄</div>
+          <div class="upload-title">Tap to upload document</div>
+          <div class="upload-sub">Passport · Birth certificate · Share code</div>
+          <div class="upload-preview" id="vs3-preview" style="display:none;">
+            <img id="vs3-img" src="" style="max-height:80px;border-radius:8px;"/>
+            <div id="vs3-filename" style="font-size:12px;font-weight:700;color:var(--green);margin-top:6px;"></div>
+          </div>
+        </div>
+        <div class="progress-bar" id="vs3-progress" style="display:none;margin-top:10px;margin-bottom:12px;"><div class="progress-fill" id="vs3-fill"></div></div>
+        <button class="btn btn-primary" id="vs3-btn" style="margin-top:16px;" onclick="verifyStep3()">Continue →</button>
+        <button class="btn btn-ghost" onclick="skipToStep(4)">Skip for now</button>
+      </div>
+
+      <!-- Step 4 -->
+      <div id="vstep-content-4" style="display:none;">
+        <div style="margin-bottom:20px;">
+          <div style="font-size:20px;font-weight:800;margin-bottom:6px;">Payment details</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;">This is where we'll send your earnings after each shift.</div>
+        </div>
+        <div class="alert error" id="vs4-error"></div>
+        <div class="alert info" style="display:block;margin-bottom:16px;">🔒 Your bank details are encrypted and stored securely.</div>
+        <div class="field"><label>Account holder name</label><input type="text" id="vs4-holder" placeholder="Full name on your bank account"/></div>
+        <div class="field">
+          <label>Bank name</label>
+          <select id="vs4-bank">
+            <option value="">Select your bank</option>
+            <option>Barclays</option><option>HSBC</option><option>Lloyds Bank</option>
+            <option>NatWest</option><option>Santander</option><option>Halifax</option>
+            <option>Nationwide</option><option>Monzo</option><option>Starling Bank</option>
+            <option>Revolut</option><option>TSB</option><option>Metro Bank</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Sort code</label>
+          <div class="sort-code-wrap">
+            <input type="text" id="vs4-sort1" placeholder="12" maxlength="2" inputmode="numeric" oninput="sortCodeInput(this,'vs4-sort2')"/>
+            <input type="text" id="vs4-sort2" placeholder="34" maxlength="2" inputmode="numeric" oninput="sortCodeInput(this,'vs4-sort3')"/>
+            <input type="text" id="vs4-sort3" placeholder="56" maxlength="2" inputmode="numeric"/>
+          </div>
+        </div>
+        <div class="field"><label>Account number</label><input type="text" id="vs4-account" placeholder="12345678" maxlength="8" inputmode="numeric"/></div>
+        <button class="btn btn-primary" id="vs4-btn" onclick="verifyStep4()">Complete Verification ✓</button>
+      </div>
+
+      <!-- Success -->
+      <div id="vstep-content-success" style="display:none;text-align:center;padding:20px 0;">
+        <div style="font-size:64px;margin-bottom:16px;">🎉</div>
+        <div style="font-size:24px;font-weight:800;margin-bottom:8px;">Verification Submitted!</div>
+        <div style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:28px;">We're reviewing your details. This usually takes less than 24 hours. We'll notify you once approved.</div>
+        <div class="card" style="text-align:left;">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">What happens next</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;"><div style="width:24px;height:24px;border-radius:7px;background:var(--blue);color:white;font-size:11px;font-weight:800;display:grid;place-items:center;flex-shrink:0;">1</div>We review your documents</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;"><div style="width:24px;height:24px;border-radius:7px;background:var(--blue);color:white;font-size:11px;font-weight:800;display:grid;place-items:center;flex-shrink:0;">2</div>You get notified when approved</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;"><div style="width:24px;height:24px;border-radius:7px;background:var(--green);color:white;font-size:11px;font-weight:800;display:grid;place-items:center;flex-shrink:0;">✓</div>Shifts matched to your timetable</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="goHome()">Go to Dashboard →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── HOME ── -->
+  <div class="screen hidden" id="screen-home">
+    <div class="home-header">
+      <div class="home-greeting" id="home-greeting">Good morning</div>
+      <div class="home-name" id="home-name">Loading...</div>
+      <div class="status-card" id="home-status-card">
+        <div class="status-icon pending">⏳</div>
+        <div class="status-text">
+          <div class="status-label">Account status</div>
+          <div class="status-value" id="home-status">Awaiting verification</div>
+        </div>
+        <button class="status-action" id="home-status-btn" onclick="showVerify()">Complete →</button>
+      </div>
+    </div>
+    <div class="home-scroll">
+      <!-- Quick stats -->
+      <div class="stats-strip" style="margin-bottom:20px;">
+        <div class="stat-chip"><div class="stat-chip-num" id="home-shifts">0</div><div class="stat-chip-lbl">Shifts done</div></div>
+        <div class="stat-chip"><div class="stat-chip-num" id="home-earnings">£0</div><div class="stat-chip-lbl">Total earned</div></div>
+        <div class="stat-chip"><div class="stat-chip-num" id="home-rating">—</div><div class="stat-chip-lbl">Rating</div></div>
+      </div>
+
+      <!-- Recent activity -->
+      <div class="section-title">Recent Activity</div>
+      <div id="home-activity">
+        <div class="empty">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">No activity yet</div>
+          <div class="empty-sub">Complete your verification to start getting matched to shifts around your lectures.</div>
+        </div>
+      </div>
+
+      <!-- Featured shifts preview -->
+      <div class="section-title" style="margin-top:20px;">Available Near You</div>
+      <div id="home-shifts-preview">
+        <div class="card" style="text-align:center;padding:24px;">
+          <div style="font-size:32px;margin-bottom:8px;">🔒</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Complete verification first</div>
+          <div style="font-size:12px;color:var(--muted);">Once approved you'll see shifts matched to your timetable.</div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item active" onclick="navTo('home',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" onclick="navTo('shifts',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="nav-label">Shifts</span>
+      </button>
+      <button class="nav-item" onclick="navTo('skills',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <span class="nav-label">Skills</span>
+      </button>
+      <button class="nav-item" onclick="navTo('profile',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-label">Profile</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── SHIFTS ── -->
+  <div class="screen hidden" id="screen-shifts">
+    <div class="topbar">
+      <div class="topbar-title">Available Shifts</div>
+      <button class="topbar-action">Filter</button>
+    </div>
+    <div style="padding:16px;flex:1;overflow-y:auto;">
+      <div class="alert info" style="display:block;margin-bottom:16px;">Shifts matched to your degree and availability will appear here once you're verified.</div>
+
+      <!-- Sample shifts -->
+      <div class="shift-card">
+        <div class="shift-header">
+          <div><div class="shift-role">Barista</div><div class="shift-business">City Coffee · Manchester City Centre</div></div>
+          <div style="text-align:right;"><div class="shift-pay">£13/hr</div><div class="shift-pay-label">6 hours</div></div>
+        </div>
+        <div class="shift-details">
+          <div class="shift-tag"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Sat 3 May · 9AM–3PM</div>
+          <div class="shift-tag"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>6 hours</div>
+          <div class="shift-tag">☕ Hospitality</div>
+        </div>
+        <div class="shift-footer">
+          <button class="shift-apply" onclick="toast('Sign up to apply for shifts','info')">Apply now</button>
+          <button class="shift-save" onclick="toast('Saved! ✓','success')">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="shift-card">
+        <div class="shift-header">
+          <div><div class="shift-role">Event Staff</div><div class="shift-business">AO Arena · Manchester</div></div>
+          <div style="text-align:right;"><div class="shift-pay">£12.50/hr</div><div class="shift-pay-label">8 hours</div></div>
+        </div>
+        <div class="shift-details">
+          <div class="shift-tag"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Fri 9 May · 4PM–12AM</div>
+          <div class="shift-tag">🎪 Events</div>
+          <div class="shift-tag" style="background:#d1fae5;color:#065f46;">3 spots left</div>
+        </div>
+        <div class="shift-footer">
+          <button class="shift-apply" onclick="toast('Sign up to apply for shifts','info')">Apply now</button>
+          <button class="shift-save">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="shift-card">
+        <div class="shift-header">
+          <div><div class="shift-role">Warehouse Operative</div><div class="shift-business">Royal Mail · Depot M16</div></div>
+          <div style="text-align:right;"><div class="shift-pay">£14/hr</div><div class="shift-pay-label">8 hours</div></div>
+        </div>
+        <div class="shift-details">
+          <div class="shift-tag"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Sun 11 May · 6AM–2PM</div>
+          <div class="shift-tag">📦 Logistics</div>
+        </div>
+        <div class="shift-footer">
+          <button class="shift-apply" onclick="toast('Sign up to apply for shifts','info')">Apply now</button>
+          <button class="shift-save">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="navTo('home',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item active" onclick="navTo('shifts',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="nav-label">Shifts</span>
+      </button>
+      <button class="nav-item" onclick="navTo('skills',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <span class="nav-label">Skills</span>
+      </button>
+      <button class="nav-item" onclick="navTo('profile',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-label">Profile</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── SKILLS ── -->
+  <div class="screen hidden" id="screen-skills">
+    <div class="topbar"><div class="topbar-title">ShiftSkills</div></div>
+    <div style="padding:16px;flex:1;overflow-y:auto;">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">Earn more by learning more. Book a course, get qualified, unlock higher-paying shifts.</div>
+      <div class="card card-row" style="margin-bottom:12px;">
+        <div class="card-icon" style="background:#eff6ff;">🛡️</div>
+        <div style="flex:1;"><div class="card-title">SIA Door Supervisor</div><div class="card-sub">4-day course · Unlocks security shifts</div></div>
+        <div style="text-align:right;"><div style="font-size:16px;font-weight:800;color:var(--blue);">£349</div><div style="font-size:10px;color:var(--green);font-weight:700;">+£4.50/hr</div></div>
+      </div>
+      <div class="card card-row" style="margin-bottom:12px;">
+        <div class="card-icon" style="background:#d1fae5;">🍽️</div>
+        <div style="flex:1;"><div class="card-title">Food Hygiene Level 2</div><div class="card-sub">Online · 1-2 hours · Instant cert</div></div>
+        <div style="text-align:right;"><div style="font-size:16px;font-weight:800;color:var(--green);">£29</div><div style="font-size:10px;color:var(--green);font-weight:700;">+£1.50/hr</div></div>
+      </div>
+      <div class="card card-row" style="margin-bottom:12px;">
+        <div class="card-icon" style="background:#cffafe;">🩺</div>
+        <div style="flex:1;"><div class="card-title">First Aid at Work</div><div class="card-sub">1-day course · 3 year validity</div></div>
+        <div style="text-align:right;"><div style="font-size:16px;font-weight:800;color:#06b6d4;">£159</div><div style="font-size:10px;color:var(--green);font-weight:700;">+£2.50/hr</div></div>
+      </div>
+      <div class="card card-row" style="margin-bottom:12px;">
+        <div class="card-icon" style="background:#fef9c3;">🏭</div>
+        <div style="flex:1;"><div class="card-title">Forklift RTITB</div><div class="card-sub">3-5 day course · Highest earning</div></div>
+        <div style="text-align:right;"><div style="font-size:16px;font-weight:800;color:var(--amber);">£229</div><div style="font-size:10px;color:var(--green);font-weight:700;">+£6.00/hr</div></div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="navTo('home',this)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="nav-label">Home</span></button>
+      <button class="nav-item" onclick="navTo('shifts',this)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="nav-label">Shifts</span></button>
+      <button class="nav-item active" onclick="navTo('skills',this)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg><span class="nav-label">Skills</span></button>
+      <button class="nav-item" onclick="navTo('profile',this)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- ── PROFILE ── -->
+  <div class="screen hidden" id="screen-profile">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profile-avatar-wrap">
+        <span id="profile-initial">?</span>
+        <img id="profile-photo" src="" style="display:none;"/>
+      </div>
+      <div class="profile-name" id="profile-name">Loading...</div>
+      <div class="profile-email" id="profile-email"></div>
+    </div>
+    <div class="profile-scroll">
+      <div class="profile-stats">
+        <div class="stat-pill"><div class="stat-num" id="profile-shifts">0</div><div class="stat-lbl">Shifts</div></div>
+        <div class="stat-pill"><div class="stat-num" id="profile-earned">£0</div><div class="stat-lbl">Earned</div></div>
+        <div class="stat-pill"><div class="stat-num" id="profile-status-dot">⏳</div><div class="stat-lbl">Status</div></div>
+      </div>
+      <div class="card">
+        <div class="profile-row" onclick="showVerify()">
+          <div class="profile-row-left">
+            <div class="profile-row-icon" style="background:#eff6ff;">🛡️</div>
+            <div><div class="profile-row-title">Verification</div><div class="profile-row-sub" id="profile-verify-status">Tap to complete</div></div>
+          </div>
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="profile-row">
+          <div class="profile-row-left">
+            <div class="profile-row-icon" style="background:#d1fae5;">📋</div>
+            <div><div class="profile-row-title">My Certificates</div><div class="profile-row-sub">View your ShiftSkills</div></div>
+          </div>
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="profile-row">
+          <div class="profile-row-left">
+            <div class="profile-row-icon" style="background:#fef3c7;">💰</div>
+            <div><div class="profile-row-title">Earnings & Payments</div><div class="profile-row-sub">View payment history</div></div>
+          </div>
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="profile-row" onclick="auth.signOut()">
+          <div class="profile-row-left">
+            <div class="profile-row-icon" style="background:#fee2e2;">🚪</div>
+            <div><div class="profile-row-title" style="color:var(--red);">Sign Out</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="navTo('home',this)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="nav-label">Home</span></button>
+      <button class="nav-item" onclick="navTo('shifts',this)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="nav-label">Shifts</span></button>
+      <button class="nav-item" onclick="navTo('skills',this)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg><span class="nav-label">Skills</span></button>
+      <button class="nav-item active" onclick="navTo('profile',this)"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ── FIREBASE ──
+const firebaseConfig = {
+  apiKey:"AIzaSyDlzTSRbIJEIE70nbV2VuFUFp8-a9b6I_4",
+  authDomain:"shiftmatch-c5cd0.firebaseapp.com",
+  projectId:"shiftmatch-c5cd0",
+  storageBucket:"shiftmatch-c5cd0.firebasestorage.app",
+  messagingSenderId:"828722512268",
+  appId:"1:828722512268:web:06bd98494fbb24b3a7d6a9"
+};
+firebase.initializeApp(firebaseConfig);
+const auth    = firebase.auth();
+const db      = firebase.firestore();
+const storage = firebase.storage();
+
+// ── STATE ──
+let currentUser = null;
+let studentDoc  = null;
+let studentId   = null;
+let currentVerifyStep = 1;
+let photoFile = null;
+let idFile    = null;
+
+// ── TOAST ──
+function toast(msg, type='success'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show '+(type||'');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.className='toast',3000);
+}
+
+// ── LOADING ──
+function loading(show){
+  document.getElementById('loading-overlay').classList[show?'add':'remove']('show');
+}
+
+// ── SCREEN NAVIGATION ──
+function showScreen(name, direction){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('hidden','slide-left');
+  });
+  const screens = ['splash','login','register','verify','home','shifts','skills','profile'];
+  screens.forEach(s=>{
+    if(s!==name){
+      const el = document.getElementById('screen-'+s);
+      if(el) el.classList.add(direction==='back'?'hidden':'hidden');
+    }
+  });
+  const target = document.getElementById('screen-'+name);
+  if(target) target.classList.remove('hidden','slide-left');
+}
+
+function navTo(name, el){
+  // Update nav active state
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  showScreen(name);
+}
+
+// ── AUTH STATE ──
+auth.onAuthStateChanged(async function(user){
+  loading(false);
+  if(user){
+    currentUser = user;
+    // Get student doc
+    try {
+      const snap = await db.collection('students').doc(user.uid).get();
+      if(snap.exists){
+        studentDoc = snap.data();
+        studentId  = user.uid;
+      } else {
+        // Try by email
+        const q = await db.collection('students').where('email','==',user.email).get();
+        if(!q.empty){ studentDoc=q.docs[0].data(); studentId=q.docs[0].id; }
+      }
+    } catch(e){ console.log('Fetch error:',e); }
+
+    // Check status
+    if(studentDoc && (studentDoc.status==='docs_submitted'||studentDoc.status==='active')){
+      showScreen('home');
+      loadHomeData();
+    } else {
+      showScreen('verify');
+      checkVerifyProgress();
+    }
+  } else {
+    currentUser = null;
+    studentDoc  = null;
+    showScreen('login');
+  }
+});
+
+// Init — show splash then check auth
+loading(true);
+setTimeout(()=>{ if(!currentUser) loading(false); },3000);
+
+// ── LOGIN ──
+document.getElementById('login-btn').addEventListener('click', function(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const err   = document.getElementById('login-error');
+  err.style.display='none';
+  if(!email||!pass){ err.style.display='block'; err.textContent='Please enter your email and password.'; return; }
+  this.textContent='Signing in...'; this.disabled=true;
+  const btn = this;
+  auth.signInWithEmailAndPassword(email,pass).catch(function(e){
+    err.style.display='block';
+    err.textContent='Incorrect email or password. Please try again.';
+    btn.textContent='Sign In'; btn.disabled=false;
+  });
+});
+
+// ── REGISTER ──
+function toggleInterest(el){
+  el.classList.toggle('selected');
+}
+
+document.getElementById('reg-btn').addEventListener('click', async function(){
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const uni   = document.getElementById('reg-uni').value;
+  const degree= document.getElementById('reg-degree').value;
+  const pass  = document.getElementById('reg-pass').value;
+  const gdpr  = document.getElementById('reg-gdpr').checked;
+  const marketing = document.getElementById('reg-marketing').checked;
+  const interests = [...document.querySelectorAll('#reg-interests .interest-tag.selected')].map(el=>el.dataset.val);
+  const err   = document.getElementById('reg-error');
+  const suc   = document.getElementById('reg-success');
+
+  err.style.display='none'; suc.style.display='none';
+
+  if(!name){ err.style.display='block'; err.textContent='Please enter your full name.'; return; }
+  if(!email||!email.includes('@')){ err.style.display='block'; err.textContent='Please enter a valid email address.'; return; }
+  if(!uni){ err.style.display='block'; err.textContent='Please select your university.'; return; }
+  if(pass.length<6){ err.style.display='block'; err.textContent='Password must be at least 6 characters.'; return; }
+  if(!gdpr){ err.style.display='block'; err.textContent='Please accept the Privacy Policy to continue.'; return; }
+
+  this.textContent='Creating account...'; this.disabled=true;
+  const btn = this;
+
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await db.collection('students').doc(cred.user.uid).set({
+      uid:cred.user.uid, name, email, university:uni, degree,
+      interests, marketingConsent:marketing,
+      gdprConsent:true, gdprTimestamp:firebase.firestore.FieldValue.serverTimestamp(),
+      type:'student', status:'pending_vetting', vetted:false,
+      plan:'free', shiftsCount:0, earnings:0,
+      source:'app-registration',
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await db.collection('activity').add({
+      text:'New student registered via app: '+name+' ('+uni+')',
+      type:'student', createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    suc.style.display='block';
+    suc.textContent='Account created! Taking you to verification...';
+    btn.textContent='Account created ✓'; btn.style.background='var(--green)';
+  } catch(e){
+    err.style.display='block';
+    err.textContent = e.code==='auth/email-already-in-use'
+      ? 'This email is already registered. Please sign in.'
+      : 'Error: '+e.message;
+    btn.textContent='Create Account'; btn.disabled=false;
+  }
+});
+
+// ── VERIFY ──
+function checkVerifyProgress(){
+  if(!studentDoc) return;
+  if(studentDoc.step1Complete) skipToStep(2, true);
+  if(studentDoc.step2Complete) skipToStep(3, true);
+  if(studentDoc.step3Complete) skipToStep(4, true);
+}
+
+function updateVerifySteps(active){
+  for(let i=1;i<=4;i++){
+    const node = document.getElementById('vstep-'+i);
+    const dot  = node.querySelector('.step-circle');
+    node.classList.remove('active','done');
+    if(i<active){ node.classList.add('done'); dot.innerHTML='✓'; }
+    else if(i===active){ node.classList.add('active'); dot.textContent=i; }
+    else { dot.textContent=i; }
+  }
+}
+
+function showVerifyStep(step){
+  for(let i=1;i<=4;i++){
+    const el = document.getElementById('vstep-content-'+i);
+    if(el) el.style.display = i===step?'':'none';
+  }
+  document.getElementById('vstep-content-success').style.display='none';
+  updateVerifySteps(step);
+  currentVerifyStep = step;
+}
+
+function skipToStep(step, silent){
+  showVerifyStep(step);
+  if(!silent) toast('Step '+(step-1)+' saved ✓');
+}
+
+async function verifyStep1(){
+  const name = document.getElementById('vs1-name').value.trim();
+  const dob  = document.getElementById('vs1-dob').value;
+  const ni   = document.getElementById('vs1-ni').value.trim().toUpperCase();
+  const err  = document.getElementById('vs1-error');
+  err.style.display='none';
+
+  if(!name){ err.style.display='block'; err.textContent='Please enter your full name.'; return; }
+  if(!dob){ err.style.display='block'; err.textContent='Please enter your date of birth.'; return; }
+  const age = (new Date()-new Date(dob))/(1000*60*60*24*365.25);
+  if(age<18){ err.style.display='block'; err.textContent='You must be 18 or over to work through ShiftMatch.'; return; }
+  if(!/^[A-Z]{2}[0-9]{6}[A-D]$/.test(ni)){ err.style.display='block'; err.textContent='Please enter a valid NI number (e.g. AB123456C).'; return; }
+
+  loading(true);
+  try {
+    await db.collection('students').doc(studentId||currentUser.uid).update({
+      verifiedName:name, dateOfBirth:dob, nationalInsurance:ni,
+      step1Complete:true, updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('Personal info saved ✓');
+    showVerifyStep(2);
+  } catch(e){ err.style.display='block'; err.textContent='Error: '+e.message; }
+  loading(false);
+}
+
+function previewPhoto(input){
+  const file = input.files[0];
+  if(!file) return;
+  photoFile = file;
+  const url = URL.createObjectURL(file);
+  const img = document.getElementById('photo-preview-img');
+  img.src=url; img.style.display='block';
+  document.getElementById('photo-preview-circle').style.fontSize='0';
+  toast('Photo selected ✓');
+}
+
+async function verifyStep2(){
+  const btn  = document.getElementById('vs2-btn');
+  const err  = document.getElementById('vs2-error');
+  err.style.display='none';
+
+  if(!photoFile){ skipToStep(3); return; }
+
+  btn.textContent='Uploading...'; btn.disabled=true;
+  document.getElementById('vs2-progress').style.display='block';
+
+  try {
+    const ref  = storage.ref('verifications/'+currentUser.uid+'/profile-photo');
+    const task = ref.put(photoFile);
+    task.on('state_changed',
+      function(snap){ document.getElementById('vs2-fill').style.width=Math.round((snap.bytesTransferred/snap.totalBytes)*100)+'%'; },
+      function(){ skipToStep(3); btn.textContent='Continue →'; btn.disabled=false; },
+      async function(){
+        let url=null;
+        try{ url=await ref.getDownloadURL(); }catch(e){}
+        const update={step2Complete:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+        if(url) update.profilePhotoURL=url;
+        await db.collection('students').doc(studentId||currentUser.uid).update(update);
+        btn.textContent='Continue →'; btn.disabled=false;
+        document.getElementById('vs2-progress').style.display='none';
+        showVerifyStep(3);
+        toast('Photo saved ✓');
+      }
+    );
+  } catch(e){ skipToStep(3); btn.textContent='Continue →'; btn.disabled=false; }
+}
+
+function previewID(input){
+  const file=input.files[0];
+  if(!file) return;
+  idFile=file;
+  const zone=document.getElementById('vs3-zone');
+  zone.classList.add('has-file');
+  document.getElementById('vs3-filename').textContent='✅ '+file.name;
+  document.getElementById('vs3-preview').style.display='block';
+  if(file.type.startsWith('image/')){
+    document.getElementById('vs3-img').src=URL.createObjectURL(file);
+  }
+  toast('Document selected ✓');
+}
+
+async function verifyStep3(){
+  const btn=document.getElementById('vs3-btn');
+  const err=document.getElementById('vs3-error');
+  err.style.display='none';
+
+  if(!idFile){ err.style.display='block'; err.textContent='Please upload your ID document.'; return; }
+
+  btn.textContent='Uploading...'; btn.disabled=true;
+  document.getElementById('vs3-progress').style.display='block';
+
+  try {
+    const ref=storage.ref('verifications/'+currentUser.uid+'/id-document');
+    const task=ref.put(idFile);
+    task.on('state_changed',
+      function(snap){ document.getElementById('vs3-fill').style.width=Math.round((snap.bytesTransferred/snap.totalBytes)*100)+'%'; },
+      function(){ skipToStep(4); btn.textContent='Continue →'; btn.disabled=false; },
+      async function(){
+        let url=null;
+        try{ url=await ref.getDownloadURL(); }catch(e){}
+        const update={step3Complete:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+        if(url) update.idDocumentURL=url;
+        await db.collection('students').doc(studentId||currentUser.uid).update(update);
+        btn.textContent='Continue →'; btn.disabled=false;
+        document.getElementById('vs3-progress').style.display='none';
+        showVerifyStep(4);
+        toast('ID saved ✓');
+      }
+    );
+  } catch(e){ skipToStep(4); btn.textContent='Continue →'; btn.disabled=false; }
+}
+
+function sortCodeInput(el, nextId){
+  el.value=el.value.replace(/\D/g,'');
+  if(el.value.length>=2&&nextId) document.getElementById(nextId).focus();
+}
+
+async function verifyStep4(){
+  const holder  = document.getElementById('vs4-holder').value.trim();
+  const bank    = document.getElementById('vs4-bank').value;
+  const sort1   = document.getElementById('vs4-sort1').value.trim();
+  const sort2   = document.getElementById('vs4-sort2').value.trim();
+  const sort3   = document.getElementById('vs4-sort3').value.trim();
+  const account = document.getElementById('vs4-account').value.trim();
+  const err     = document.getElementById('vs4-error');
+  const btn     = document.getElementById('vs4-btn');
+  err.style.display='none';
+
+  if(!holder){ err.style.display='block'; err.textContent='Please enter the account holder name.'; return; }
+  if(!bank){ err.style.display='block'; err.textContent='Please select your bank.'; return; }
+  if(sort1.length<2||sort2.length<2||sort3.length<2){ err.style.display='block'; err.textContent='Please enter a valid sort code.'; return; }
+  if(!/^\d{8}$/.test(account)){ err.style.display='block'; err.textContent='Please enter a valid 8-digit account number.'; return; }
+
+  btn.textContent='Submitting...'; btn.disabled=true;
+  loading(true);
+
+  try {
+    await db.collection('students').doc(studentId||currentUser.uid).update({
+      bankDetails:{
+        accountHolder:holder, bankName:bank,
+        sortCode:sort1+'-'+sort2+'-'+sort3, accountNumber:account
+      },
+      status:'docs_submitted', step4Complete:true,
+      docsSubmittedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await db.collection('activity').add({
+      text:'Student submitted verification docs: '+holder,
+      type:'student', createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // Show success
+    for(let i=1;i<=4;i++) document.getElementById('vstep-content-'+i).style.display='none';
+    document.getElementById('vstep-content-success').style.display='block';
+    // Update step dots all green
+    for(let i=1;i<=4;i++){
+      const n=document.getElementById('vstep-'+i);
+      n.classList.add('done'); n.classList.remove('active');
+      n.querySelector('.step-circle').innerHTML='✓';
+    }
+    toast('Verification submitted! 🎉','success');
+  } catch(e){
+    err.style.display='block'; err.textContent='Error: '+e.message;
+    btn.textContent='Complete Verification ✓'; btn.disabled=false;
+  }
+  loading(false);
+}
+
+function goHome(){
+  showScreen('home');
+  loadHomeData();
+}
+
+function showVerify(){
+  showScreen('verify');
+  checkVerifyProgress();
+}
+
+// ── HOME DATA ──
+async function loadHomeData(){
+  if(!currentUser) return;
+  const hour=new Date().getHours();
+  const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
+  document.getElementById('home-greeting').textContent=greeting;
+
+  try {
+    const snap=await db.collection('students').doc(currentUser.uid).get();
+    const data=snap.exists?snap.data():{};
+    const name=(data.name||currentUser.email||'').split(' ')[0];
+    document.getElementById('home-name').textContent=name;
+    document.getElementById('home-shifts').textContent=data.shiftsCount||0;
+    document.getElementById('home-earnings').textContent='£'+(data.earnings||0);
+
+    // Profile
+    document.getElementById('profile-name').textContent=data.name||'Student';
+    document.getElementById('profile-email').textContent=data.email||currentUser.email;
+    document.getElementById('profile-initial').textContent=(data.name||'?')[0].toUpperCase();
+    document.getElementById('profile-shifts').textContent=data.shiftsCount||0;
+    document.getElementById('profile-earned').textContent='£'+(data.earnings||0);
+
+    if(data.profilePhotoURL){
+      const img=document.getElementById('profile-photo');
+      img.src=data.profilePhotoURL; img.style.display='block';
+    }
+
+    // Status
+    const statusMap={
+      'pending_vetting':{icon:'⏳',text:'Complete verification',color:'pending',btn:'Complete →',show:true},
+      'vetting_emailed':{icon:'📧',text:'Check your email',color:'pending',btn:'Continue →',show:true},
+      'docs_submitted':{icon:'🔍',text:'Under review (24hrs)',color:'vetting',btn:'View →',show:false},
+      'active':{icon:'✅',text:'Active — ready for shifts!',color:'active',btn:'',show:false},
+    };
+    const s=statusMap[data.status]||statusMap['pending_vetting'];
+    document.getElementById('home-status-card').querySelector('.status-icon').textContent=s.icon;
+    document.getElementById('home-status-card').querySelector('.status-icon').className='status-icon '+s.color;
+    document.getElementById('home-status').textContent=s.text;
+    document.getElementById('profile-verify-status').textContent=s.text;
+    document.getElementById('profile-status-dot').textContent=s.icon;
+    if(!s.show) document.getElementById('home-status-btn').style.display='none';
+
+    // Load available shifts if active
+    if(data.status==='active') loadShifts(data);
+
+  } catch(e){ console.log('Load error:',e); }
+}
+
+async function loadShifts(studentData){
+  try {
+    const snap=await db.collection('shifts').where('status','==','open').limit(3).get();
+    if(!snap.empty){
+      document.getElementById('home-shifts-preview').innerHTML=snap.docs.map(function(d){
+        const s=d.data();
+        return '<div class="shift-card"><div class="shift-header"><div><div class="shift-role">'+s.role+'</div><div class="shift-business">'+s.business+'</div></div><div style="text-align:right;"><div class="shift-pay">'+s.pay+'</div></div></div><div class="shift-footer"><button class="shift-apply">View shift</button></div></div>';
+      }).join('');
+    }
+  } catch(e){}
+}
+
+// ── NI FORMAT ──
+document.getElementById('vs1-ni').addEventListener('input',function(){
+  this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+});
+</script>
+</body>
+</html>
