@@ -228,6 +228,10 @@ tbody tr:hover{background:#f9fafc;}
 .ts-bar{height:100%;border-radius:999px;}
 .ts-pct{font-size:12px;font-weight:700;width:36px;text-align:right;}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 </head>
 <body>
 
@@ -788,11 +792,7 @@ joinshiftmatch.netlify.app</div>
 
 
 
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-window.addEventListener('load', function() {
 const firebaseConfig = {
   apiKey: "AIzaSyDlzTSRbIJEIE70nbV2VuFUFp8-a9b6I_4",
   authDomain: "shiftmatch-c5cd0.firebaseapp.com",
@@ -1443,7 +1443,6 @@ function renderActivity(docs){
     return '<div class="af-item"><div class="af-icon '+cls+'"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="10"/></svg></div><div class="af-text"><p>'+(a.text||'Activity')+'</p><span>'+tsToDate(a.createdAt)+'</span></div></div>';
   }).join('');
 }
-}); // end window.addEventListener load
 </script>
 
 </body>
