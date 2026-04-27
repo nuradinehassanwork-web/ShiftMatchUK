@@ -615,7 +615,12 @@ html,body{
       </div>
     </div>
     <div class="home-scroll">
-      <!-- Quick stats -->
+      <!-- Congratulations banner (hidden by default) -->
+      <div id="home-congrats" style="display:none;background:linear-gradient(135deg,#d1fae5,#a7f3d0);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid #6ee7b7;">
+        <div style="font-size:20px;margin-bottom:4px;">🎉 Congratulations!</div>
+        <div style="font-size:15px;font-weight:700;color:#065f46;margin-bottom:4px;">You're verified and ready to earn!</div>
+        <div style="font-size:13px;color:#065f46;opacity:.8;">Shifts matched to your timetable will start appearing below.</div>
+      </div>
       <div class="stats-strip" style="margin-bottom:20px;">
         <div class="stat-chip"><div class="stat-chip-num" id="home-shifts">0</div><div class="stat-chip-lbl">Shifts done</div></div>
         <div class="stat-chip"><div class="stat-chip-num" id="home-earnings">£0</div><div class="stat-chip-lbl">Total earned</div></div>
@@ -666,7 +671,7 @@ html,body{
   <div class="screen hidden" id="screen-shifts">
     <div class="topbar">
       <div class="topbar-title">Available Shifts</div>
-      <button class="topbar-action">Filter</button>
+      <button class="topbar-action" onclick="toast('Filters coming soon! 🔧','')">Filter</button>
     </div>
     <div style="padding:16px;flex:1;overflow-y:auto;">
       <div class="alert info" style="display:block;margin-bottom:16px;">Shifts matched to your degree and availability will appear here once you're verified.</div>
@@ -683,7 +688,7 @@ html,body{
           <div class="shift-tag">☕ Hospitality</div>
         </div>
         <div class="shift-footer">
-          <button class="shift-apply" onclick="toast('Sign up to apply for shifts','info')">Apply now</button>
+          <button class="shift-apply" onclick="applyForShift(this,'Barista','City Coffee','Sat 3 May · 9AM-3PM','£13/hr')">Apply now</button>
           <button class="shift-save" onclick="toast('Saved! ✓','success')">
             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
           </button>
@@ -701,8 +706,8 @@ html,body{
           <div class="shift-tag" style="background:#d1fae5;color:#065f46;">3 spots left</div>
         </div>
         <div class="shift-footer">
-          <button class="shift-apply" onclick="toast('Sign up to apply for shifts','info')">Apply now</button>
-          <button class="shift-save">
+          <button class="shift-apply" onclick="applyForShift(this,'Event Staff','AO Arena','Fri 9 May · 4PM-12AM','£12.50/hr')">Apply now</button>
+          <button class="shift-save" onclick="toast('Saved! ✓','success')">
             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
           </button>
         </div>
@@ -718,8 +723,8 @@ html,body{
           <div class="shift-tag">📦 Logistics</div>
         </div>
         <div class="shift-footer">
-          <button class="shift-apply" onclick="toast('Sign up to apply for shifts','info')">Apply now</button>
-          <button class="shift-save">
+          <button class="shift-apply" onclick="applyForShift(this,'Warehouse Operative','Royal Mail','Sun 11 May · 6AM-2PM','£14/hr')">Apply now</button>
+          <button class="shift-save" onclick="toast('Saved! ✓','success')">
             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
           </button>
         </div>
@@ -748,27 +753,111 @@ html,body{
   <!-- ── SKILLS ── -->
   <div class="screen hidden" id="screen-skills">
     <div class="topbar"><div class="topbar-title">ShiftSkills</div></div>
-    <div style="padding:16px;flex:1;overflow-y:auto;">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">Earn more by learning more. Book a course, get qualified, unlock higher-paying shifts.</div>
-      <div class="card card-row" style="margin-bottom:12px;">
-        <div class="card-icon" style="background:#eff6ff;">🛡️</div>
-        <div style="flex:1;"><div class="card-title">SIA Door Supervisor</div><div class="card-sub">4-day course · Unlocks security shifts</div></div>
-        <div style="text-align:right;"><div style="font-size:16px;font-weight:800;color:var(--blue);">£349</div><div style="font-size:10px;color:var(--green);font-weight:700;">+£4.50/hr</div></div>
+    <div style="flex:1;overflow-y:auto;">
+      <!-- Header banner -->
+      <div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:20px 24px 28px;">
+        <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:4px;">Earn more. Learn more.</div>
+        <div style="font-size:22px;font-weight:800;color:white;margin-bottom:8px;">Unlock higher-paying shifts</div>
+        <div style="display:flex;gap:8px;">
+          <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;color:white;">📜 6 courses</div>
+          <div style="background:rgba(16,185,129,.2);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;color:#6ee7b7;">💰 Pay via earnings</div>
+        </div>
       </div>
-      <div class="card card-row" style="margin-bottom:12px;">
-        <div class="card-icon" style="background:#d1fae5;">🍽️</div>
-        <div style="flex:1;"><div class="card-title">Food Hygiene Level 2</div><div class="card-sub">Online · 1-2 hours · Instant cert</div></div>
-        <div style="text-align:right;"><div style="font-size:16px;font-weight:800;color:var(--green);">£29</div><div style="font-size:10px;color:var(--green);font-weight:700;">+£1.50/hr</div></div>
-      </div>
-      <div class="card card-row" style="margin-bottom:12px;">
-        <div class="card-icon" style="background:#cffafe;">🩺</div>
-        <div style="flex:1;"><div class="card-title">First Aid at Work</div><div class="card-sub">1-day course · 3 year validity</div></div>
-        <div style="text-align:right;"><div style="font-size:16px;font-weight:800;color:#06b6d4;">£159</div><div style="font-size:10px;color:var(--green);font-weight:700;">+£2.50/hr</div></div>
-      </div>
-      <div class="card card-row" style="margin-bottom:12px;">
-        <div class="card-icon" style="background:#fef9c3;">🏭</div>
-        <div style="flex:1;"><div class="card-title">Forklift RTITB</div><div class="card-sub">3-5 day course · Highest earning</div></div>
-        <div style="text-align:right;"><div style="font-size:16px;font-weight:800;color:var(--amber);">£229</div><div style="font-size:10px;color:var(--green);font-weight:700;">+£6.00/hr</div></div>
+
+      <div style="padding:16px;margin-top:-12px;background:var(--paper);border-radius:20px 20px 0 0;">
+
+        <!-- SIA - Featured -->
+        <div style="background:linear-gradient(135deg,#1a52f5,#0f3cd4);border-radius:20px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,.05);border-radius:50%;"></div>
+          <div style="position:absolute;top:10px;right:14px;background:rgba(255,255,255,.15);border-radius:8px;padding:4px 10px;font-size:10px;font-weight:700;color:white;">⭐ MOST POPULAR</div>
+          <div style="font-size:32px;margin-bottom:8px;">🛡️</div>
+          <div style="font-size:19px;font-weight:800;color:white;margin-bottom:4px;">SIA Door Supervisor</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:14px;">Nationally recognised · Required by law · 4-day course</div>
+          <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;flex:1;text-align:center;">
+              <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:2px;">Course price</div>
+              <div style="font-size:20px;font-weight:800;color:white;">£349</div>
+            </div>
+            <div style="background:rgba(16,185,129,.2);border-radius:10px;padding:10px 14px;flex:1;text-align:center;">
+              <div style="font-size:11px;color:rgba(16,185,129,.7);margin-bottom:2px;">Hourly boost</div>
+              <div style="font-size:20px;font-weight:800;color:#6ee7b7;">+£4.50</div>
+            </div>
+          </div>
+          <button onclick="applyForCourse('SIA Door Supervisor','£349')" style="width:100%;background:white;color:var(--blue);border:none;border-radius:12px;padding:13px;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;">Book now — £349</button>
+          <button onclick="applyForCourse('SIA Door Supervisor','earnings')" style="width:100%;background:transparent;color:rgba(255,255,255,.6);border:none;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;padding:8px;">or pay via earnings</button>
+        </div>
+
+        <!-- Food Hygiene -->
+        <div style="background:white;border-radius:20px;padding:18px;margin-bottom:12px;border:1px solid var(--border);display:flex;align-items:center;gap:14px;">
+          <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:grid;place-items:center;font-size:28px;flex-shrink:0;">🍽️</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:800;margin-bottom:2px;">Food Hygiene Level 2</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Online · 1-2 hours · Instant certificate</div>
+            <div style="display:flex;gap:6px;">
+              <span style="background:#eff6ff;color:var(--blue);font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;">£29</span>
+              <span style="background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;">+£1.50/hr</span>
+            </div>
+          </div>
+          <button onclick="applyForCourse('Food Hygiene Level 2','£29')" style="background:var(--green);color:white;border:none;border-radius:12px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;">Book</button>
+        </div>
+
+        <!-- First Aid -->
+        <div style="background:white;border-radius:20px;padding:18px;margin-bottom:12px;border:1px solid var(--border);display:flex;align-items:center;gap:14px;">
+          <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#cffafe,#a5f3fc);display:grid;place-items:center;font-size:28px;flex-shrink:0;">🩺</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:800;margin-bottom:2px;">First Aid at Work</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">1-day course · Ofqual regulated · 3 year validity</div>
+            <div style="display:flex;gap:6px;">
+              <span style="background:#ecfeff;color:#0e7490;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;">£159</span>
+              <span style="background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;">+£2.50/hr</span>
+            </div>
+          </div>
+          <button onclick="applyForCourse('First Aid at Work','£159')" style="background:#06b6d4;color:white;border:none;border-radius:12px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;">Book</button>
+        </div>
+
+        <!-- Personal Licence -->
+        <div style="background:white;border-radius:20px;padding:18px;margin-bottom:12px;border:1px solid var(--border);display:flex;align-items:center;gap:14px;">
+          <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);display:grid;place-items:center;font-size:28px;flex-shrink:0;">🍺</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:800;margin-bottom:2px;">Personal Licence</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">APLH Award · Required to sell alcohol · Valid for life</div>
+            <div style="display:flex;gap:6px;">
+              <span style="background:#f5f3ff;color:#7c3aed;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;">£109</span>
+              <span style="background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;">+£3.00/hr</span>
+            </div>
+          </div>
+          <button onclick="applyForCourse('Personal Licence','£109')" style="background:#8b5cf6;color:white;border:none;border-radius:12px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;">Book</button>
+        </div>
+
+        <!-- WSET -->
+        <div style="background:white;border-radius:20px;padding:18px;margin-bottom:12px;border:1px solid var(--border);display:flex;align-items:center;gap:14px;">
+          <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#fef3c7,#fde68a);display:grid;place-items:center;font-size:28px;flex-shrink:0;">🍷</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:800;margin-bottom:2px;">WSET Level 1</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Wine & Spirits · 1-day · Globally recognised</div>
+            <div style="display:flex;gap:6px;">
+              <span style="background:#fffbeb;color:#d97706;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;">£155</span>
+              <span style="background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;">+£2.50/hr</span>
+            </div>
+          </div>
+          <button onclick="applyForCourse('WSET Level 1','£155')" style="background:var(--amber);color:white;border:none;border-radius:12px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;">Book</button>
+        </div>
+
+        <!-- Forklift -->
+        <div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);border-radius:20px;padding:18px;margin-bottom:12px;display:flex;align-items:center;gap:14px;">
+          <div style="width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.1);display:grid;place-items:center;font-size:28px;flex-shrink:0;">🏭</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:800;color:white;margin-bottom:2px;">Forklift RTITB</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:8px;">3-5 day course · Highest earning category</div>
+            <div style="display:flex;gap:6px;">
+              <span style="background:rgba(255,255,255,.1);color:white;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;">£229</span>
+              <span style="background:rgba(16,185,129,.2);color:#6ee7b7;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;">+£6.00/hr 🔥</span>
+            </div>
+          </div>
+          <button onclick="applyForCourse('Forklift RTITB','£229')" style="background:var(--green);color:white;border:none;border-radius:12px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;">Book</button>
+        </div>
+
+        <div style="text-align:center;padding:16px;font-size:12px;color:var(--muted);">Pay for any course via your ShiftMatch earnings. No upfront cost needed.</div>
       </div>
     </div>
     <div class="bottom-nav">
@@ -795,6 +884,71 @@ html,body{
         <div class="stat-pill"><div class="stat-num" id="profile-earned">£0</div><div class="stat-lbl">Earned</div></div>
         <div class="stat-pill"><div class="stat-num" id="profile-status-dot">⏳</div><div class="stat-lbl">Status</div></div>
       </div>
+
+      <!-- iCal Timetable Sync -->
+      <div class="card" style="margin-bottom:14px;">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px;">📅 University Timetable Sync</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Paste your university iCal link so we can automatically find your free slots between lectures.</div>
+
+        <!-- Tabs -->
+        <div style="display:flex;gap:0;background:#f0f2f8;border-radius:10px;padding:3px;margin-bottom:14px;">
+          <button id="ical-tab-url" onclick="switchIcalTab('url')" style="flex:1;padding:8px;border:none;background:white;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(10,15,30,.08);">🔗 URL</button>
+          <button id="ical-tab-file" onclick="switchIcalTab('file')" style="flex:1;padding:8px;border:none;background:none;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;">📁 Upload</button>
+        </div>
+
+        <!-- URL input -->
+        <div id="ical-url-section">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">iCal URL</div>
+          <input type="url" id="ical-url-input" placeholder="https://timetable.mmu.ac.uk/ical/..." style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:13px;background:#f8faff;outline:none;margin-bottom:10px;"/>
+          <button onclick="syncIcalFromURL()" style="width:100%;background:var(--blue);color:white;border:none;border-radius:12px;padding:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;">Sync timetable</button>
+        </div>
+
+        <!-- File upload -->
+        <div id="ical-file-section" style="display:none;">
+          <div style="border:2px dashed rgba(10,15,30,.15);border-radius:12px;padding:20px;text-align:center;position:relative;background:#f8faff;">
+            <input type="file" accept=".ics,text/calendar" onchange="syncIcalFromFile(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;"/>
+            <div style="font-size:28px;margin-bottom:6px;">📅</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;">Upload .ics file</div>
+            <div style="font-size:11px;color:var(--muted);">Download from your university timetable portal</div>
+          </div>
+        </div>
+
+        <!-- Sync status -->
+        <div id="ical-status" style="display:none;margin-top:12px;background:#d1fae5;border-radius:10px;padding:10px 14px;font-size:12px;color:#065f46;font-weight:600;"></div>
+        <div id="ical-error" style="display:none;margin-top:12px;background:#fee2e2;border-radius:10px;padding:10px 14px;font-size:12px;color:#991b1b;font-weight:600;"></div>
+      </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="font-size:15px;font-weight:700;">My Availability</div>
+          <button onclick="saveAvailability()" style="background:var(--blue);color:white;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;">Save</button>
+        </div>
+        <!-- Legend -->
+        <div style="display:flex;gap:12px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><div style="width:12px;height:12px;border-radius:3px;background:#d1fae5;border:1px solid #6ee7b7;"></div>Available</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><div style="width:12px;height:12px;border-radius:3px;background:#fef3c7;border:1px solid #fcd34d;"></div>Maybe</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><div style="width:12px;height:12px;border-radius:3px;background:#f3f4f6;border:1px solid #e5e7eb;"></div>Unavailable</div>
+        </div>
+        <!-- Timetable grid -->
+        <div style="overflow-x:auto;">
+          <table id="avail-table" style="width:100%;border-collapse:collapse;font-size:11px;">
+            <thead>
+              <tr>
+                <th style="padding:6px 4px;color:var(--muted);font-weight:600;text-align:left;min-width:50px;"></th>
+                <th style="padding:6px 3px;color:var(--muted);font-weight:600;text-align:center;">Mon</th>
+                <th style="padding:6px 3px;color:var(--muted);font-weight:600;text-align:center;">Tue</th>
+                <th style="padding:6px 3px;color:var(--muted);font-weight:600;text-align:center;">Wed</th>
+                <th style="padding:6px 3px;color:var(--muted);font-weight:600;text-align:center;">Thu</th>
+                <th style="padding:6px 3px;color:var(--muted);font-weight:600;text-align:center;">Fri</th>
+                <th style="padding:6px 3px;color:var(--muted);font-weight:600;text-align:center;">Sat</th>
+                <th style="padding:6px 3px;color:var(--muted);font-weight:600;text-align:center;">Sun</th>
+              </tr>
+            </thead>
+            <tbody id="avail-body"></tbody>
+          </table>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:10px;">Tap each cell to cycle: Available → Maybe → Unavailable</div>
+      </div>
+
+      <!-- Settings -->
       <div class="card">
         <div class="profile-row" onclick="showVerify()">
           <div class="profile-row-left">
@@ -803,14 +957,14 @@ html,body{
           </div>
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
-        <div class="profile-row">
+        <div class="profile-row" onclick="showCertificates()">
           <div class="profile-row-left">
             <div class="profile-row-icon" style="background:#d1fae5;">📋</div>
             <div><div class="profile-row-title">My Certificates</div><div class="profile-row-sub">View your ShiftSkills</div></div>
           </div>
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
-        <div class="profile-row">
+        <div class="profile-row" onclick="showEarnings()">
           <div class="profile-row-left">
             <div class="profile-row-icon" style="background:#fef3c7;">💰</div>
             <div><div class="profile-row-title">Earnings & Payments</div><div class="profile-row-sub">View payment history</div></div>
@@ -900,27 +1054,21 @@ auth.onAuthStateChanged(async function(user){
   loading(false);
   if(user){
     currentUser = user;
-    // Get student doc
     try {
       const snap = await db.collection('students').doc(user.uid).get();
       if(snap.exists){
         studentDoc = snap.data();
         studentId  = user.uid;
       } else {
-        // Try by email
         const q = await db.collection('students').where('email','==',user.email).get();
         if(!q.empty){ studentDoc=q.docs[0].data(); studentId=q.docs[0].id; }
       }
     } catch(e){ console.log('Fetch error:',e); }
 
-    // Check status
-    if(studentDoc && (studentDoc.status==='docs_submitted'||studentDoc.status==='active')){
-      showScreen('home');
-      loadHomeData();
-    } else {
-      showScreen('verify');
-      checkVerifyProgress();
-    }
+    // Always go to home first — never force verify
+    showScreen('home');
+    loadHomeData();
+
   } else {
     currentUser = null;
     studentDoc  = null;
@@ -1224,6 +1372,8 @@ async function loadHomeData(){
   try {
     const snap=await db.collection('students').doc(currentUser.uid).get();
     const data=snap.exists?snap.data():{};
+    studentDoc=data;
+    studentId=currentUser.uid;
     const name=(data.name||currentUser.email||'').split(' ')[0];
     document.getElementById('home-name').textContent=name;
     document.getElementById('home-shifts').textContent=data.shiftsCount||0;
@@ -1241,22 +1391,16 @@ async function loadHomeData(){
       img.src=data.profilePhotoURL; img.style.display='block';
     }
 
-    // Status
-    const statusMap={
-      'pending_vetting':{icon:'⏳',text:'Complete verification',color:'pending',btn:'Complete →',show:true},
-      'vetting_emailed':{icon:'📧',text:'Check your email',color:'pending',btn:'Continue →',show:true},
-      'docs_submitted':{icon:'🔍',text:'Under review (24hrs)',color:'vetting',btn:'View →',show:false},
-      'active':{icon:'✅',text:'Active — ready for shifts!',color:'active',btn:'',show:false},
-    };
-    const s=statusMap[data.status]||statusMap['pending_vetting'];
-    document.getElementById('home-status-card').querySelector('.status-icon').textContent=s.icon;
-    document.getElementById('home-status-card').querySelector('.status-icon').className='status-icon '+s.color;
-    document.getElementById('home-status').textContent=s.text;
-    document.getElementById('profile-verify-status').textContent=s.text;
-    document.getElementById('profile-status-dot').textContent=s.icon;
-    if(!s.show) document.getElementById('home-status-btn').style.display='none';
+    // Load availability timetable
+    loadAvailability(data);
 
-    // Load available shifts if active
+    // Update status display
+    updateStatusDisplay(data);
+
+    // Start real-time status listener
+    startStatusListener();
+
+    // Load shifts if active
     if(data.status==='active') loadShifts(data);
 
   } catch(e){ console.log('Load error:',e); }
@@ -1274,10 +1418,335 @@ async function loadShifts(studentData){
   } catch(e){}
 }
 
+// ── ICAL TAB SWITCH ──
+function switchIcalTab(tab){
+  document.getElementById('ical-url-section').style.display = tab==='url'?'':'none';
+  document.getElementById('ical-file-section').style.display = tab==='file'?'':'none';
+  document.getElementById('ical-tab-url').style.cssText = tab==='url'
+    ? 'flex:1;padding:8px;border:none;background:white;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(10,15,30,.08);'
+    : 'flex:1;padding:8px;border:none;background:none;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;';
+  document.getElementById('ical-tab-file').style.cssText = tab==='file'
+    ? 'flex:1;padding:8px;border:none;background:white;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(10,15,30,.08);'
+    : 'flex:1;padding:8px;border:none;background:none;border-radius:8px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;';
+}
+
+// ── ICAL FROM URL ──
+async function syncIcalFromURL(){
+  const url = document.getElementById('ical-url-input').value.trim();
+  if(!url){ toast('Please enter your iCal URL','error'); return; }
+  toast('Fetching timetable...','');
+  setIcalStatus('','Fetching your timetable...');
+
+  const proxies = [
+    url,
+    'https://corsproxy.io/?'+encodeURIComponent(url),
+    'https://api.allorigins.win/raw?url='+encodeURIComponent(url)
+  ];
+
+  for(const proxy of proxies){
+    try {
+      const res = await fetch(proxy);
+      if(res.ok){
+        const text = await res.text();
+        if(text.includes('BEGIN:VCALENDAR')){
+          processIcal(text, url);
+          return;
+        }
+      }
+    } catch(e){ continue; }
+  }
+  setIcalError('Could not fetch the URL. Try downloading the .ics file from your university portal and uploading it instead.');
+}
+
+// ── ICAL FROM FILE ──
+function syncIcalFromFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  toast('Reading timetable file...','');
+  const reader = new FileReader();
+  reader.onload = function(e){ processIcal(e.target.result, file.name); };
+  reader.readAsText(file);
+}
+
+// ── PROCESS ICAL ──
+function parseIcalDate(str){
+  if(!str) return null;
+  try {
+    if(str.length >= 15){
+      const y=str.slice(0,4),mo=str.slice(4,6),d=str.slice(6,8);
+      const h=str.slice(9,11)||'00',mi=str.slice(11,13)||'00';
+      const utc=str.endsWith('Z');
+      const date=new Date(`${y}-${mo}-${d}T${h}:${mi}:00${utc?'Z':''}`);
+      return isNaN(date.getTime())?null:date;
+    } else if(str.length===8){
+      return new Date(str.slice(0,4)+'-'+str.slice(4,6)+'-'+str.slice(6,8));
+    }
+  } catch(e){ return null; }
+  return null;
+}
+
+async function processIcal(text, source){
+  if(!text.includes('BEGIN:VCALENDAR')){
+    setIcalError('This doesn\'t look like a valid iCal file.');
+    return;
+  }
+
+  const eventBlocks = text.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g)||[];
+  const events = [];
+
+  eventBlocks.forEach(function(block){
+    const get=function(key){ const m=block.match(new RegExp(key+'(?:;[^:]*)?:([^\r\n]+)')); return m?m[1].trim():null; };
+    const dtstart=get('DTSTART'); const dtend=get('DTEND');
+    const summary=get('SUMMARY')||'Untitled'; const location=get('LOCATION')||'';
+    if(!dtstart) return;
+    const start=parseIcalDate(dtstart); const end=dtend?parseIcalDate(dtend):null;
+    if(!start) return;
+    events.push({summary,location,start,end});
+  });
+
+  if(events.length===0){ setIcalError('No events found in this calendar.'); return; }
+
+  // Build availability grid from events
+  const SLOTS=[{start:6,end:12},{start:12,end:18},{start:18,end:24}];
+  const newGrid=Array(3).fill(null).map(()=>Array(7).fill(0));
+  const daysWithData=new Set();
+
+  events.forEach(function(e){
+    const dow=(e.start.getDay()+6)%7;
+    const startH=e.start.getHours();
+    const endH=e.end?e.end.getHours():startH+1;
+    daysWithData.add(dow);
+    SLOTS.forEach(function(slot,si){
+      if(startH<slot.end&&endH>slot.start) newGrid[si][dow]=2; // busy=yellow
+    });
+  });
+
+  // Days with data but no lecture = mark as available
+  daysWithData.forEach(function(dow){
+    SLOTS.forEach(function(_,si){
+      if(newGrid[si][dow]===0) newGrid[si][dow]=1; // free=green
+    });
+  });
+
+  availGrid=newGrid;
+  renderAvailGrid();
+
+  // Build lecture data for Firebase
+  const lectures=events.map(function(e){
+    return {
+      title:e.summary,
+      day:e.start.toLocaleDateString('en-GB',{weekday:'long'}),
+      startHour:e.start.getHours(),
+      endHour:e.end?e.end.getHours():e.start.getHours()+1,
+      location:e.location
+    };
+  });
+
+  // Save to Firebase
+  if(currentUser){
+    try {
+      await db.collection('students').doc(studentId||currentUser.uid).update({
+        icalSource:source,
+        icalParsedAt:firebase.firestore.FieldValue.serverTimestamp(),
+        icalEventCount:events.length,
+        lectures:lectures,
+        availabilityGrid:JSON.stringify(newGrid),
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch(e){ console.log('Save error:',e); }
+  }
+
+  setIcalStatus('success',
+    '✅ Timetable synced! Found '+events.length+' events. Your availability grid has been updated automatically.'
+  );
+  toast('Timetable synced! '+events.length+' events found 📅','success');
+}
+
+function setIcalStatus(type, msg){
+  const s=document.getElementById('ical-status');
+  const e=document.getElementById('ical-error');
+  if(msg&&type!=='error'){
+    s.style.display='block'; s.textContent=msg;
+    e.style.display='none';
+  } else { s.style.display='none'; }
+}
+
+function setIcalError(msg){
+  const s=document.getElementById('ical-status');
+  const e=document.getElementById('ical-error');
+  e.style.display='block'; e.textContent='❌ '+msg;
+  s.style.display='none';
+  toast(msg,'error');
+}
+
+// ── CERTIFICATES ──
+function showCertificates(){
+  toast('No certificates yet. Book a ShiftSkills course to earn your first one! 📜','');
+}
+
+// ── EARNINGS ──
+function showEarnings(){
+  toast('No earnings yet. Complete verification and start taking shifts! 💰','');
+}
+
+
+// ── AVAILABILITY TIMETABLE ──
+const SLOTS = ['Morning\n6-12', 'Afternoon\n12-6', 'Evening\n6-12'];
+const DAYS  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+// 0=no info(grey), 1=available(green), 2=maybe(yellow), 3=unavailable(white/grey)
+let availGrid = Array(3).fill(null).map(()=>Array(7).fill(0));
+
+function initAvailTable(){
+  const tbody = document.getElementById('avail-body');
+  if(!tbody) return;
+  tbody.innerHTML = SLOTS.map(function(slot, r){
+    return '<tr><td style="padding:4px 4px;font-size:10px;color:var(--muted);font-weight:600;white-space:pre-line;line-height:1.3;">'+slot+'</td>'
+      + DAYS.map(function(_,c){
+          return '<td style="padding:3px;text-align:center;"><div id="ac-'+r+'-'+c+'" onclick="toggleAvail('+r+','+c+')" style="width:100%;height:32px;border-radius:6px;cursor:pointer;border:1.5px solid #e5e7eb;background:#f3f4f6;transition:all .15s;"></div></td>';
+        }).join('')
+      + '</tr>';
+  }).join('');
+  renderAvailGrid();
+}
+
+function toggleAvail(r, c){
+  availGrid[r][c] = (availGrid[r][c]+1)%3;
+  renderAvailGrid();
+}
+
+function renderAvailGrid(){
+  const colors = [
+    {bg:'#f3f4f6',border:'#e5e7eb'}, // 0 = no info
+    {bg:'#d1fae5',border:'#6ee7b7'}, // 1 = available
+    {bg:'#fef3c7',border:'#fcd34d'}, // 2 = maybe
+  ];
+  for(let r=0;r<3;r++){
+    for(let c=0;c<7;c++){
+      const el=document.getElementById('ac-'+r+'-'+c);
+      if(el){
+        const col=colors[availGrid[r][c]];
+        el.style.background=col.bg;
+        el.style.borderColor=col.border;
+      }
+    }
+  }
+}
+
+function loadAvailability(data){
+  if(data && data.availabilityGrid){
+    try{ availGrid=JSON.parse(data.availabilityGrid); }catch(e){}
+  }
+  initAvailTable();
+}
+
+async function saveAvailability(){
+  if(!currentUser) return;
+  try {
+    await db.collection('students').doc(studentId||currentUser.uid).update({
+      availabilityGrid: JSON.stringify(availGrid),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('Availability saved ✓','success');
+  } catch(e){ toast('Error saving: '+e.message,'error'); }
+}
+
+// ── APPLY FOR SHIFT ──
+async function applyForShift(btn, role, business, datetime, pay){
+  if(!currentUser){ toast('Please sign in to apply','error'); return; }
+  if(!studentDoc || studentDoc.status!=='active'){
+    toast('Complete verification first to apply for shifts','error');
+    return;
+  }
+  btn.textContent='Applying...'; btn.disabled=true;
+  try {
+    await db.collection('applications').add({
+      studentId: currentUser.uid,
+      studentName: studentDoc.name||'',
+      studentEmail: studentDoc.email||'',
+      role, business, datetime, pay,
+      status:'pending',
+      appliedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    btn.textContent='Applied ✓';
+    btn.style.background='var(--green)';
+    toast('Application sent! We\'ll be in touch shortly 🎉','success');
+  } catch(e){
+    btn.textContent='Apply now'; btn.disabled=false;
+    toast('Error applying: '+e.message,'error');
+  }
+}
+
+// ── APPLY FOR COURSE ──
+async function applyForCourse(course, price){
+  if(!currentUser){ toast('Please sign in first','error'); return; }
+  try {
+    await db.collection('courseInterest').add({
+      studentId: currentUser.uid,
+      studentName: studentDoc&&studentDoc.name||'',
+      studentEmail: studentDoc&&studentDoc.email||currentUser.email,
+      course, price,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('Interest logged! We\'ll contact you about '+course+' 📚','success');
+  } catch(e){ toast('Error: '+e.message,'error'); }
+}
+
+// ── REAL-TIME STATUS LISTENER ──
+function startStatusListener(){
+  if(!currentUser) return;
+  db.collection('students').doc(studentId||currentUser.uid).onSnapshot(function(snap){
+    if(!snap.exists) return;
+    const data = snap.data();
+    studentDoc = data;
+    updateStatusDisplay(data);
+  });
+}
+
+function updateStatusDisplay(data){
+  const statusMap = {
+    'pending_vetting':{icon:'⏳',text:'Complete verification',color:'pending',showBtn:true,btnText:'Complete →'},
+    'vetting_emailed':{icon:'📧',text:'Check your email',color:'pending',showBtn:true,btnText:'Continue →'},
+    'docs_submitted':{icon:'🔍',text:'Under review — we\'ll notify you within 24hrs',color:'vetting',showBtn:false},
+    'active':{icon:'✅',text:'Active — you\'re ready for shifts!',color:'active',showBtn:false},
+    'rejected':{icon:'❌',text:'Verification unsuccessful — contact us',color:'pending',showBtn:false},
+  };
+  const s = statusMap[data.status]||statusMap['pending_vetting'];
+  const card = document.getElementById('home-status-card');
+  const statusEl = document.getElementById('home-status');
+  const statusBtn = document.getElementById('home-status-btn');
+  if(card) card.querySelector('.status-icon').textContent=s.icon;
+  if(card) card.querySelector('.status-icon').className='status-icon '+s.color;
+  if(statusEl) statusEl.textContent=s.text;
+  if(statusBtn){
+    statusBtn.style.display=s.showBtn?'':'none';
+    statusBtn.textContent=s.btnText||'';
+  }
+
+  // 🎉 Show congratulations if just became active
+  if(data.status==='active'){
+    const congrats = document.getElementById('home-congrats');
+    if(congrats) congrats.style.display='block';
+    // Load real shifts
+    loadShifts(data);
+  }
+
+  // Update profile verify status
+  const pvs=document.getElementById('profile-verify-status');
+  if(pvs) pvs.textContent=s.text;
+  const psd=document.getElementById('profile-status-dot');
+  if(psd) psd.textContent=s.icon;
+}
+
 // ── NI FORMAT ──
 document.getElementById('vs1-ni').addEventListener('input',function(){
   this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
 });
+
+// ── SORT CODE AUTO ADVANCE ──
+function sortCodeInput(el, nextId){
+  el.value=el.value.replace(/\D/g,'');
+  if(el.value.length>=2&&nextId) document.getElementById(nextId).focus();
+}
 </script>
 </body>
 </html>
