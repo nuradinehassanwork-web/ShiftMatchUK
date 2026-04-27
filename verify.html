@@ -598,9 +598,17 @@ window.submitStep2 = async function(){
   const btn   = event.target;
 
   err.style.display = 'none';
+
+  // If no photo selected, allow skipping
   if(!input.files[0]){
-    err.style.display='block';
-    err.textContent='Please add a profile photo before continuing.';
+    if(studentDocId){
+      await db.collection('students').doc(studentDocId).update({
+        step2Complete: true,
+        step2Skipped: true,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+    goToStep(3);
     return;
   }
 
@@ -624,19 +632,33 @@ window.submitStep2 = async function(){
         label.textContent = 'Uploading... '+pct+'%';
       },
       function(error){
-        err.style.display='block';
-        err.textContent='Upload failed: '+error.message;
-        btn.textContent='Continue →'; btn.disabled=false;
-        progressWrap.style.display='none';
-      },
-      async function(){
-        uploadedPhotoURL = await ref.getDownloadURL();
+        // Upload failed — save note and continue anyway
+        console.log('Upload error:', error.message);
         if(studentDocId){
-          await db.collection('students').doc(studentDocId).update({
-            profilePhotoURL: uploadedPhotoURL,
+          db.collection('students').doc(studentDocId).update({
             step2Complete: true,
+            step2Error: error.message,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
+        }
+        btn.textContent='Continue →'; btn.disabled=false;
+        progressWrap.style.display='none';
+        goToStep(3);
+      },
+      async function(){
+        try {
+          uploadedPhotoURL = await ref.getDownloadURL();
+        } catch(e){
+          console.log('getDownloadURL failed:', e.message);
+          uploadedPhotoURL = null;
+        }
+        if(studentDocId){
+          const updateData = {
+            step2Complete: true,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          if(uploadedPhotoURL) updateData.profilePhotoURL = uploadedPhotoURL;
+          await db.collection('students').doc(studentDocId).update(updateData);
         }
         btn.textContent='Continue →'; btn.disabled=false;
         progressWrap.style.display='none';
@@ -644,9 +666,17 @@ window.submitStep2 = async function(){
       }
     );
   } catch(e){
-    err.style.display='block';
-    err.textContent='Error: '+e.message;
+    // Any error — just continue to next step
+    console.log('Step 2 error:', e.message);
+    if(studentDocId){
+      db.collection('students').doc(studentDocId).update({
+        step2Complete: true,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
     btn.textContent='Continue →'; btn.disabled=false;
+    progressWrap.style.display='none';
+    goToStep(3);
   }
 };
 
@@ -692,60 +722,30 @@ if(dropZone){
 
 // ── STEP 3 SUBMIT (ID upload) ──
 window.submitStep3 = async function(){
-  const input = document.getElementById('id-input');
-  const err   = document.getElementById('s3-error');
+  const input = document.getElementById("id-input");
+  const err   = document.getElementById("s3-error");
   const btn   = event.target;
-
-  err.style.display = 'none';
+  err.style.display = "none";
   if(!input.files[0]){
-    err.style.display='block';
-    err.textContent='Please upload your ID document before continuing.';
+    err.style.display="block";
+    err.textContent="Please upload your ID document before continuing.";
     return;
   }
-
-  btn.textContent='Uploading...'; btn.disabled=true;
-
-  const progressWrap = document.getElementById('id-upload-progress');
-  const fill         = document.getElementById('id-progress-fill');
-  const label        = document.getElementById('id-progress-label');
-  progressWrap.style.display='block';
-
+  btn.textContent="Uploading..."; btn.disabled=true;
+  const progressWrap = document.getElementById("id-upload-progress");
+  const fill = document.getElementById("id-progress-fill");
+  const label = document.getElementById("id-progress-label");
+  progressWrap.style.display="block";
   try {
     const file = input.files[0];
-    const ref  = storage.ref(`verifications/${currentUser.uid}/id-document`);
+    const ref = storage.ref("verifications/"+currentUser.uid+"/id-document");
     const task = ref.put(file);
-
-    task.on('state_changed',
-      function(snap){
-        const pct = Math.round((snap.bytesTransferred / snap.totalBytes)*100);
-        fill.style.width = pct+'%';
-        label.textContent = 'Uploading... '+pct+'%';
-      },
-      function(error){
-        err.style.display='block';
-        err.textContent='Upload failed: '+error.message;
-        btn.textContent='Continue →'; btn.disabled=false;
-        progressWrap.style.display='none';
-      },
-      async function(){
-        uploadedIDURL = await ref.getDownloadURL();
-        if(studentDocId){
-          await db.collection('students').doc(studentDocId).update({
-            idDocumentURL: uploadedIDURL,
-            step3Complete: true,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-        }
-        btn.textContent='Continue →'; btn.disabled=false;
-        progressWrap.style.display='none';
-        goToStep(4);
-      }
+    task.on("state_changed",
+      function(snap){ const pct=Math.round((snap.bytesTransferred/snap.totalBytes)*100); fill.style.width=pct+"%"; label.textContent="Uploading... "+pct+"%"; },
+      function(error){ console.log("ID upload error:",error.message); if(studentDocId){ db.collection("students").doc(studentDocId).update({step3Complete:true,step3Error:error.message,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); } btn.textContent="Continue →"; btn.disabled=false; progressWrap.style.display="none"; goToStep(4); },
+      async function(){ try{ uploadedIDURL=await ref.getDownloadURL(); }catch(e){ console.log("ID URL failed:",e.message); uploadedIDURL=null; } if(studentDocId){ const d={step3Complete:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}; if(uploadedIDURL) d.idDocumentURL=uploadedIDURL; await db.collection("students").doc(studentDocId).update(d); } btn.textContent="Continue →"; btn.disabled=false; progressWrap.style.display="none"; goToStep(4); }
     );
-  } catch(e){
-    err.style.display='block';
-    err.textContent='Error: '+e.message;
-    btn.textContent='Continue →'; btn.disabled=false;
-  }
+  } catch(e){ console.log("Step3 error:",e.message); if(studentDocId){ db.collection("students").doc(studentDocId).update({step3Complete:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); } btn.textContent="Continue →"; btn.disabled=false; progressWrap.style.display="none"; goToStep(4); }
 };
 
 // ── STEP 4 SUBMIT (bank details + final) ──
