@@ -1844,47 +1844,50 @@ function submitRegistration(){
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     }).then(function(){
-      // Send welcome email via Brevo
-      fetch('https://api.brevo.com/v3/smtp/email', {
+      // Send welcome email via Resend
+      fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'api-key': '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'
+          'Authorization': 'Bearer re_Pzc7Ak1X_MrHs4bzkyzFeaNfw4eCPVvhC'
         },
         body: JSON.stringify({
-          sender: { name: 'ShiftMatch', email: 'nuradinehassanwork@gmail.com' },
-          to: [{ email: email, name: name }],
-          subject: 'Welcome to ShiftMatch — Complete Your Verification 🎉',
-          htmlContent: `
-            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-              <img src="https://joinshiftmatch.netlify.app/logo.png" height="40" style="margin-bottom:20px;"/>
-              <h2 style="color:#0a0f1e;">Hi ${name}, welcome to ShiftMatch! 🎉</h2>
-              <p>Your account has been created successfully.</p>
-              <p>Before we can match you to shifts, we need to verify a few things. It only takes 5 minutes.</p>
-              <a href="https://joinshiftmatch.netlify.app/verify.html" style="display:inline-block;background:#1a52f5;color:white;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;margin:20px 0;">
-                👉 Complete Your Verification
-              </a>
-              <p><strong>Log in with:</strong><br/>
-              📧 Email: ${email}<br/>
-              🔑 Password: the one you chose when registering</p>
-              <p><strong>You'll need:</strong><br/>
-              ✅ Your National Insurance number<br/>
-              ✅ A photo of your passport or birth certificate<br/>
-              ✅ Your bank account details</p>
-              <p style="color:#6b7280;font-size:13px;">Once verified we'll start matching you to shifts that fit around your university timetable.</p>
-              <p style="color:#6b7280;font-size:13px;">The ShiftMatch Team<br/>joinshiftmatch.netlify.app</p>
-            </div>
-          `
+          from: 'ShiftMatch <hello@joinshiftmatch.com>',
+          to: [email],
+          subject: '\uD83D\uDCB8 You\'re almost ready to earn, '+name+'!',
+          html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f4f6fb;">'
+            + '<div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;">'
+            + '<div style="font-size:32px;margin-bottom:8px;">\u26A1</div>'
+            + '<div style="font-size:26px;font-weight:800;color:white;margin-bottom:4px;">ShiftMatch</div>'
+            + '<div style="font-size:14px;color:rgba(255,255,255,.5);">Flexible work. Around your lectures.</div>'
+            + '</div>'
+            + '<div style="background:white;padding:32px 28px;">'
+            + '<h2 style="font-size:22px;font-weight:800;color:#0a0f1e;margin-bottom:8px;">Hey ' + name + '! \uD83D\uDC4B</h2>'
+            + '<p style="color:#6b7280;font-size:15px;line-height:1.6;margin-bottom:24px;">Your ShiftMatch account has been created successfully. Before we can match you to shifts, we need to verify a few things. It only takes 5 minutes.</p>'
+            + '<div style="text-align:center;margin:28px 0;"><a href="https://joinshiftmatch.com/verify.html" style="background:#1a52f5;color:white;padding:16px 36px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;">\uD83D\uDC49 Complete Your Verification</a></div>'
+            + '<div style="background:#f4f6fb;border-radius:12px;padding:20px 24px;margin-bottom:24px;">'
+            + '<div style="font-size:13px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">You will need:</div>'
+            + '<div style="font-size:14px;color:#0a0f1e;margin-bottom:8px;">\u2705 Your National Insurance number</div>'
+            + '<div style="font-size:14px;color:#0a0f1e;margin-bottom:8px;">\u2705 A photo of your passport or birth certificate</div>'
+            + '<div style="font-size:14px;color:#0a0f1e;">\u2705 Your bank account details</div>'
+            + '</div>'
+            + '<div style="background:#eff6ff;border:1px solid rgba(26,82,245,.15);border-radius:12px;padding:20px 24px;margin-bottom:24px;">'
+            + '<div style="font-size:13px;font-weight:700;color:#1a52f5;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Log in with:</div>'
+            + '<div style="font-size:14px;color:#0a0f1e;margin-bottom:6px;">\uD83D\uDCE7 Email: <strong>' + email + '</strong></div>'
+            + '<div style="font-size:14px;color:#0a0f1e;">\uD83D\uDD11 Password: the one you chose when registering</div>'
+            + '</div>'
+            + '<p style="color:#6b7280;font-size:14px;line-height:1.6;">Once verified we will start matching you to shifts that fit around your university timetable.</p>'
+            + '<p style="color:#6b7280;font-size:14px;margin-top:16px;">Any questions? Just reply to this email.</p>'
+            + '</div>'
+            + '<div style="background:#f4f6fb;padding:20px 28px;text-align:center;border-radius:0 0 12px 12px;">'
+            + '<div style="font-size:13px;font-weight:700;color:#0a0f1e;margin-bottom:4px;">The ShiftMatch Team</div>'
+            + '<a href="https://joinshiftmatch.com" style="color:#1a52f5;font-size:13px;text-decoration:none;">joinshiftmatch.com</a>'
+            + '</div></div>'
         })
       }).then(function(res){
-        if(res.ok){
-          console.log('Email sent successfully via Brevo');
-        } else {
-          res.json().then(function(d){ console.log('Brevo error:', JSON.stringify(d)); });
-        }
-      }).catch(function(err){
-        console.log('Email fetch error:', err);
-      });
+        if(res.ok){ console.log('Email sent via Resend \u2713'); }
+        else { res.json().then(function(d){ console.log('Resend error:', JSON.stringify(d)); }); }
+      }).catch(function(err){ console.log('Email error:', err); });
 
       success.style.display='block';
       success.innerHTML='<strong>🎉 Welcome to ShiftMatch, '+name+'!</strong><br/><br/>Your account has been created. <strong>Check your email</strong> — we\'ve sent you a verification link.<br/><br/>🔗 Or go straight to <a href="verify.html" style="color:#065f46;font-weight:700;">verify your account now</a> to upload your documents.<br/><br/>✅ Once approved — shifts matched to your timetable will start coming in';
