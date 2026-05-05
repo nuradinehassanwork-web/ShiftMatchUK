@@ -301,6 +301,11 @@ tbody tr:hover{background:#f9fafc;}
       Contact Requests
       <span class="sb-badge" id="sb-badge-msg"></span>
     </div>
+    <div class="sb-item" onclick="nav('livechats',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      Live Chats
+      <span class="sb-badge" id="sb-badge-livechats" style="background:#10b981;"></span>
+    </div>
     <div class="sb-section">Tools</div>
     <a class="sb-item" href="calculator.html" style="text-decoration:none;">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
@@ -743,6 +748,65 @@ joinshiftmatch.netlify.app</div>
       </div>
     </div>
 
+    <!-- LIVE CHATS -->
+    <div class="page" id="page-livechats">
+      <div class="sec-hd">
+        <h3>Live Chats</h3>
+        <button class="sec-btn" onclick="loadLiveChats()">↻ Refresh</button>
+      </div>
+      <div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:#065f46;">
+        🤖 These are students escalated from Shifty who need human support. Students are verified before reaching here. Reply directly in the chat below — they see your messages in real time in the app.
+      </div>
+
+      <!-- Chat list + active chat split view -->
+      <div style="display:grid;grid-template-columns:300px 1fr;gap:16px;height:calc(100vh - 260px);">
+
+        <!-- Chat list -->
+        <div style="background:white;border-radius:16px;border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;">
+            Conversations
+            <span id="lc-open-count" style="background:#fee2e2;color:#991b1b;font-size:11px;padding:2px 8px;border-radius:999px;margin-left:6px;"></span>
+          </div>
+          <div id="lc-list" style="flex:1;overflow-y:auto;padding:8px;">
+            <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">No active chats</div>
+          </div>
+        </div>
+
+        <!-- Active chat -->
+        <div style="background:white;border-radius:16px;border:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;">
+          <!-- Chat header -->
+          <div id="lc-chat-header" style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;border-radius:50%;background:#eff6ff;display:grid;place-items:center;font-size:18px;">👤</div>
+            <div style="flex:1;">
+              <div id="lc-chat-name" style="font-size:14px;font-weight:700;">Select a chat</div>
+              <div id="lc-chat-sub" style="font-size:12px;color:var(--muted);">Click a conversation to start</div>
+            </div>
+            <div id="lc-chat-actions" style="display:none;gap:8px;">
+              <button onclick="resolveLiveChat()" style="background:#d1fae5;color:#065f46;border:none;border-radius:8px;padding:7px 14px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;">✓ Resolve</button>
+            </div>
+          </div>
+
+          <!-- Student info bar -->
+          <div id="lc-student-info" style="display:none;background:#f8faff;border-bottom:1px solid var(--border);padding:10px 18px;display:none;gap:16px;font-size:12px;flex-wrap:wrap;">
+          </div>
+
+          <!-- Messages -->
+          <div id="lc-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#f8faff;">
+            <div style="text-align:center;color:var(--muted);font-size:13px;margin:auto;">Select a conversation to view messages</div>
+          </div>
+
+          <!-- Reply box -->
+          <div id="lc-reply-box" style="display:none;padding:14px 16px;border-top:1px solid var(--border);display:none;gap:10px;align-items:flex-end;">
+            <textarea id="lc-reply-input" placeholder="Type your reply..." rows="2"
+              style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;font-family:var(--font);font-size:13px;resize:none;outline:none;background:#f8faff;"
+              onkeydown="lcKeyDown(event)"></textarea>
+            <button onclick="sendAgentReply()" style="background:var(--blue);color:white;border:none;border-radius:12px;padding:12px 20px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">Send ↑</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- STAFF -->
     <div class="page" id="page-staff">
       <div class="sec-hd"><h3>Staff Login Management</h3>
@@ -898,6 +962,9 @@ function initAllListeners(){
   unsubscribers.push(db.collection('activity').orderBy('createdAt','desc').onSnapshot(function(snap){
     renderActivity(snap.docs.slice(0,8));
   }));
+
+  // Load live chats
+  loadLiveChats();
 }
 
 // ── DASHBOARD STATS ──
@@ -1110,7 +1177,161 @@ function nav(page, el){
   var pg = document.getElementById('page-'+page);
   if(pg) pg.classList.add('active');
   if(el) el.classList.add('active');
-  var titles={dashboard:'Dashboard',traffic:'Traffic & Analytics',students:'Students',vetting:'Vetting Queue',businesses:'Businesses',shifts:'Shifts Posted',finance:'Finance',messages:'Contact Requests',staff:'Staff Logins'};
+  var titles={dashboard:'Dashboard',traffic:'Traffic & Analytics',students:'Students',vetting:'Vetting Queue',businesses:'Businesses',shifts:'Shifts Posted',finance:'Finance',messages:'Contact Requests',livechats:'Live Chats 💬',staff:'Staff Logins'};
+
+// ── LIVE CHATS ──
+var activeLiveChatId = null;
+var lcUnsubscribe = null;
+
+function loadLiveChats(){
+  db.collection('liveChats').orderBy('createdAt','desc').onSnapshot(function(snap){
+    var chats = snap.docs;
+    var open = chats.filter(function(d){ return d.data().status==='open'||d.data().status==='active'; });
+
+    // Update badge
+    var badge = document.getElementById('sb-badge-livechats');
+    if(badge) badge.textContent = open.length||'';
+    var countEl = document.getElementById('lc-open-count');
+    if(countEl) countEl.textContent = open.length ? open.length+' open' : '';
+
+    // Render chat list
+    var list = document.getElementById('lc-list');
+    if(!list) return;
+    if(chats.length===0){
+      list.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">No chats yet</div>';
+      return;
+    }
+    list.innerHTML = chats.map(function(d){
+      var c = d.data();
+      var isOpen = c.status==='open'||c.status==='active';
+      var isActive = d.id===activeLiveChatId;
+      var lastMsg = (c.messages||[]).slice(-1)[0];
+      var preview = lastMsg ? lastMsg.content.slice(0,40)+'...' : (c.escalationReason||'New chat');
+      var timeAgo = c.createdAt&&c.createdAt.toDate ? timeAgoStr(c.createdAt.toDate()) : 'Just now';
+      return '<div onclick="openLiveChat(\''+d.id+'\')" style="padding:12px;border-radius:12px;cursor:pointer;margin-bottom:4px;background:'+(isActive?'#eff6ff':'transparent')+';border:1px solid '+(isActive?'rgba(26,82,245,.15)':'transparent')+';">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">'
+        +'<div style="font-size:13px;font-weight:700;">'+(c.studentName||'Unknown')+'</div>'
+        +'<div style="font-size:10px;color:var(--muted);">'+timeAgo+'</div>'
+        +'</div>'
+        +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">'+preview+'</div>'
+        +'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:'+(isOpen?'#fee2e2':'#f3f4f6')+';color:'+(isOpen?'#991b1b':'#6b7280')+';">'+(isOpen?'OPEN':'RESOLVED')+'</span>'
+        +'</div>';
+    }).join('');
+  });
+}
+
+function timeAgoStr(date){
+  var diff = Math.floor((new Date()-date)/1000);
+  if(diff<60) return 'Just now';
+  if(diff<3600) return Math.floor(diff/60)+'m ago';
+  if(diff<86400) return Math.floor(diff/3600)+'h ago';
+  return Math.floor(diff/86400)+'d ago';
+}
+
+function openLiveChat(chatId){
+  activeLiveChatId = chatId;
+  if(lcUnsubscribe) lcUnsubscribe();
+
+  // Show reply box and actions
+  document.getElementById('lc-reply-box').style.display='flex';
+  document.getElementById('lc-chat-actions').style.display='flex';
+  document.getElementById('lc-student-info').style.display='flex';
+
+  // Listen to chat in real time
+  lcUnsubscribe = db.collection('liveChats').doc(chatId).onSnapshot(function(snap){
+    if(!snap.exists) return;
+    var c = snap.data();
+
+    // Update header
+    document.getElementById('lc-chat-name').textContent = c.studentName||'Unknown';
+    document.getElementById('lc-chat-sub').textContent = c.studentUniversity+' · '+(c.status==='resolved'?'Resolved':'Active');
+
+    // Student info bar
+    document.getElementById('lc-student-info').innerHTML =
+      '<span style="font-weight:700;">📧 '+c.studentEmail+'</span>'
+      +'<span>🎂 DOB: '+c.studentDOB+'</span>'
+      +'<span>🎓 '+c.studentUniversity+'</span>'
+      +'<span>Status: <strong>'+c.studentStatus+'</strong></span>'
+      +'<span style="color:#991b1b;font-weight:600;">Reason: '+c.escalationReason+'</span>';
+
+    // Render messages
+    var msgs = document.getElementById('lc-messages');
+    var allMessages = [];
+
+    // Show original Shifty conversation history first
+    if(c.conversationHistory && c.conversationHistory.length){
+      allMessages.push('<div style="text-align:center;font-size:11px;color:var(--muted);padding:8px;background:rgba(10,15,30,.04);border-radius:8px;margin-bottom:8px;">— Shifty conversation history —</div>');
+      c.conversationHistory.forEach(function(m){
+        var isUser = m.role==='user';
+        allMessages.push(
+          '<div style="display:flex;'+(isUser?'flex-direction:row-reverse;':'')+' gap:8px;align-items:flex-end;margin-bottom:8px;">'
+          +(isUser?'':'<div style="width:26px;height:26px;border-radius:50%;background:#e5e7eb;display:grid;place-items:center;font-size:13px;flex-shrink:0;">🤖</div>')
+          +'<div style="max-width:75%;padding:9px 13px;border-radius:16px;font-size:12px;line-height:1.5;'
+          +(isUser?'background:#1a52f5;color:white;border-bottom-right-radius:4px;':'background:white;border:1px solid var(--border);border-bottom-left-radius:4px;')
+          +'">'+m.content.replace(/\n/g,'<br/>')+'</div></div>'
+        );
+      });
+      allMessages.push('<div style="text-align:center;font-size:11px;color:var(--muted);padding:8px;background:rgba(16,185,129,.08);border-radius:8px;margin-bottom:8px;">— Live chat started · Student verified ✓ —</div>');
+    }
+
+    // Live messages
+    (c.messages||[]).forEach(function(m){
+      var isStudent = m.role==='student';
+      var isAgent   = m.role==='agent';
+      allMessages.push(
+        '<div style="display:flex;'+(isStudent?'flex-direction:row-reverse;':'')+' gap:8px;align-items:flex-end;margin-bottom:8px;">'
+        +(isStudent?'':'<div style="width:26px;height:26px;border-radius:50%;background:'+(isAgent?'#d1fae5':'#eff6ff')+';display:grid;place-items:center;font-size:13px;flex-shrink:0);">'+(isAgent?'👤':'🤖')+'</div>')
+        +'<div style="max-width:75%;padding:9px 13px;border-radius:16px;font-size:13px;line-height:1.5;'
+        +(isStudent?'background:#1a52f5;color:white;border-bottom-right-radius:4px;':isAgent?'background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;border-bottom-left-radius:4px;':'background:white;border:1px solid var(--border);border-bottom-left-radius:4px;')
+        +'">'+m.content.replace(/\n/g,'<br/>')+'</div>'
+        +(isAgent?'<div style="font-size:10px;color:var(--muted);margin-left:4px;align-self:flex-end;">You</div>':'')
+        +'</div>'
+      );
+    });
+
+    msgs.innerHTML = allMessages.join('');
+    msgs.scrollTop = msgs.scrollHeight;
+  });
+
+  // Refresh the list to show active state
+  loadLiveChats();
+}
+
+async function sendAgentReply(){
+  var input = document.getElementById('lc-reply-input');
+  var text = input.value.trim();
+  if(!text||!activeLiveChatId) return;
+  input.value='';
+
+  try {
+    await db.collection('liveChats').doc(activeLiveChatId).update({
+      messages: firebase.firestore.FieldValue.arrayUnion({
+        role:'agent',
+        content: text,
+        agentName: 'ShiftMatch Team',
+        timestamp: new Date().toISOString()
+      }),
+      status:'active',
+      agentName:'ShiftMatch Team',
+      lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e){ toast('Error sending: '+e.message,'error'); }
+}
+
+async function resolveLiveChat(){
+  if(!activeLiveChatId) return;
+  if(!confirm('Mark this chat as resolved? The student will be notified.')) return;
+  await db.collection('liveChats').doc(activeLiveChatId).update({
+    status:'resolved',
+    resolvedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  toast('Chat resolved ✓');
+  document.getElementById('lc-reply-box').style.display='none';
+}
+
+function lcKeyDown(e){
+  if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendAgentReply(); }
+}
   setEl('topbar-title', titles[page]||page);
   document.getElementById('notif-panel').classList.remove('show');
 }
