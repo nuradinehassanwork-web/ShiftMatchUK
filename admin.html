@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
-<style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --blue:#1a52f5;--blue2:#0f3cd4;--ink:#0a0f1e;--paper:#f0f2f8;
@@ -1008,44 +1007,30 @@ function updateStatus(col, id, status, msg){
 
 // ── APPROVE BUSINESS ──
 function approveBusiness(id, name){
-  if(!confirm('Approve '+name+' as an active business?')) return;
-  db.collection('businesses').doc(id).get().then(function(snap){
-    const biz = snap.data();
-    db.collection('businesses').doc(id).update({
-      status:'active',
-      approvedAt: serverTimestamp()
-    }).then(function(){
-      logActivity(name+' approved as a business','business');
-      toast(name+' approved ✓');
-      // Send approval email
-      fetch('https://api.resend.com/emails',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer re_Pzc7Ak1X_MrHs4bzkyzFeaNfw4eCPVvhC'},
-        body: JSON.stringify({
-          from:'ShiftMatch <hello@joinshiftmatch.com>',
-          to:[biz.email],
-          subject:'🎉 Your ShiftMatch business account is now active!',
-          html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f4f6fb;">'
-            +'<div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;">'
-            +'<div style="font-size:32px;margin-bottom:8px;">⚡</div>'
-            +'<div style="font-size:26px;font-weight:800;color:white;">ShiftMatch</div>'
-            +'</div>'
-            +'<div style="background:white;padding:32px 28px;">'
-            +'<h2 style="font-size:22px;font-weight:800;color:#0a0f1e;margin-bottom:8px;">You\'re approved, '+(biz.contact||name)+'! 🎉</h2>'
-            +'<p style="color:#6b7280;font-size:15px;line-height:1.6;margin-bottom:24px;"><strong>'+name+'</strong> is now active on ShiftMatch. You can start posting shifts and receiving applicants from verified university students immediately.</p>'
-            +'<div style="text-align:center;margin:28px 0;">'
-            +'<a href="https://joinshiftmatch.com/business.html" style="background:#1a52f5;color:white;padding:16px 36px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;">Go to Business Portal →</a>'
-            +'</div>'
-            +'<p style="color:#6b7280;font-size:14px;">Questions? Reply to this email anytime.</p>'
-            +'</div>'
-            +'<div style="background:#f4f6fb;padding:20px 28px;text-align:center;border-radius:0 0 12px 12px;">'
-            +'<div style="font-size:13px;font-weight:700;color:#0a0f1e;margin-bottom:4px;">The ShiftMatch Team</div>'
-            +'<a href="https://joinshiftmatch.com" style="color:#1a52f5;font-size:13px;text-decoration:none;">joinshiftmatch.com</a>'
-            +'</div></div>'
-        })
-      }).then(function(r){ if(r.ok) console.log('Business approval email sent ✓'); });
-    }).catch(function(e){ toast('Error: '+e.message,'error'); });
-  });
+  db.collection('businesses').doc(id).update({ status:'active', approvedAt: serverTimestamp() }).then(function(){
+    // Send approval email
+    db.collection('businesses').doc(id).get().then(function(snap){
+      if(snap.exists){
+        var b = snap.data();
+        sendBusinessApprovalEmail(b.email, b.businessName||name, b.contact||name);
+      }
+    });
+    logActivity(name+' approved as a business','business');
+    toast(name+' approved ✓');
+  }).catch(function(e){ toast('Error: '+e.message,'error'); });
+}
+
+function sendBusinessApprovalEmail(email, bizname, contact){
+  fetch('https://api.resend.com/emails',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer re_Pzc7Ak1X_MrHs4bzkyzFeaNfw4eCPVvhC'},
+    body: JSON.stringify({
+      from:'ShiftMatch <hello@joinshiftmatch.com>',
+      to:[email],
+      subject:'✅ Your ShiftMatch business account is now active!',
+      html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;"><div style="font-size:32px;margin-bottom:8px;">⚡</div><div style="font-size:26px;font-weight:800;color:white;">ShiftMatch</div></div><div style="background:white;padding:32px 28px;"><h2 style="font-size:22px;font-weight:800;color:#0a0f1e;">You\'re approved, '+contact+'! 🎉</h2><p style="color:#6b7280;font-size:15px;line-height:1.6;">Your business account for <strong>'+bizname+'</strong> has been approved. You can now log in and start posting shifts.</p><div style="text-align:center;margin:24px 0;"><a href="https://joinshiftmatch.com/business.html" style="background:#1a52f5;color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;">Go to Business Portal →</a></div><p style="color:#6b7280;font-size:14px;">Questions? Email us at hello@joinshiftmatch.com</p></div></div>'
+    })
+  }).catch(function(e){ console.log('Approval email error:',e); });
 }
 
 // ── VETTING ──
@@ -1212,6 +1197,9 @@ function nav(page, el){
   if(pg) pg.classList.add('active');
   if(el) el.classList.add('active');
   var titles={dashboard:'Dashboard',traffic:'Traffic & Analytics',students:'Students',vetting:'Vetting Queue',businesses:'Businesses',shifts:'Shifts Posted',finance:'Finance',messages:'Contact Requests',livechats:'Live Chats 💬',staff:'Staff Logins'};
+  setEl('topbar-title', titles[page]||page);
+  document.getElementById('notif-panel').classList.remove('show');
+}
 
 // ── LIVE CHATS ──
 var activeLiveChatId = null;
@@ -1366,10 +1354,6 @@ async function resolveLiveChat(){
 function lcKeyDown(e){
   if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendAgentReply(); }
 }
-  setEl('topbar-title', titles[page]||page);
-  document.getElementById('notif-panel').classList.remove('show');
-}
-
 function toggleNotif(){ document.getElementById('notif-panel').classList.toggle('show'); }
 document.addEventListener('click', function(e){
   if(!e.target.closest('.notif-btn')&&!e.target.closest('.notif-panel'))
@@ -1620,9 +1604,9 @@ function renderBusinesses(docs){
   stdBody.innerHTML=active.length===0
     ? '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted);">No active businesses yet. Approve from Pending tab.</td></tr>'
     : active.map(function(d){
-        var b=d.data(); var col=randCol(b.name||'A'); var ini=initials(b.name||'?');
-        var safeName=(b.name||'').replace(/'/g,"\\'");
-        return '<tr><td><div class="avatar-cell">'+av(ini,col)+'<div><div style="font-weight:600;">'+b.name+'</div><div style="font-size:11px;color:var(--muted);">'+(b.contactName||'')+'</div></div></div></td>'
+        var b=d.data(); var col=randCol(b.businessName||'A'); var ini=initials(b.businessName||'?');
+        var safeName=(b.businessName||'').replace(/'/g,"\\'");
+        return '<tr><td><div class="avatar-cell">'+av(ini,col)+'<div><div style="font-weight:600;">'+b.businessName+'</div><div style="font-size:11px;color:var(--muted);">'+(b.contact||'')+'</div></div></div></td>'
           +'<td>'+(b.email||'—')+'</td><td>'+(b.industry||'—')+'</td><td>'+(b.shiftVolume||'—')+'</td>'
           +'<td>'+badge('Active','active')+'</td><td style="font-size:12px;">'+tsToDate(b.createdAt)+'</td>'
           +'<td><div style="display:flex;gap:6px;"><button class="tbl-action" onclick="viewRecord(\'businesses\',\''+d.id+'\')">👁 View</button>'
@@ -1631,9 +1615,9 @@ function renderBusinesses(docs){
   pendBody.innerHTML=pending.length===0
     ? '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted);">🎉 No pending businesses!</td></tr>'
     : pending.map(function(d){
-        var b=d.data(); var col=randCol(b.name||'A'); var ini=initials(b.name||'?');
-        var safeName=(b.name||'').replace(/'/g,"\\'");
-        return '<tr><td><div class="avatar-cell">'+av(ini,col)+'<div><div style="font-weight:600;">'+b.name+'</div><div style="font-size:11px;color:var(--muted);">'+(b.contactName||'')+'</div></div></div></td>'
+        var b=d.data(); var col=randCol(b.businessName||'A'); var ini=initials(b.businessName||'?');
+        var safeName=(b.businessName||'').replace(/'/g,"\\'");
+        return '<tr><td><div class="avatar-cell">'+av(ini,col)+'<div><div style="font-weight:600;">'+b.businessName+'</div><div style="font-size:11px;color:var(--muted);">'+(b.contact||'')+'</div></div></div></td>'
           +'<td>'+(b.email||'—')+'</td><td>'+(b.industry||'—')+'</td><td>'+(b.shiftVolume||'—')+' shifts/mo</td><td style="font-size:12px;">'+tsToDate(b.createdAt)+'</td>'
           +'<td><div style="display:flex;gap:6px;"><button class="tbl-action" onclick="viewRecord(\'businesses\',\''+d.id+'\')">👁 View</button>'
           +'<button class="tbl-action approve" onclick="approveBusiness(\''+d.id+'\',\''+safeName+'\')">✓ Approve</button>'
