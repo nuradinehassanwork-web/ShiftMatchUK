@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ShiftMatch — Business Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --blue:#1a52f5;--blue-d:#0f3cd4;--blue-l:#eff6ff;
+  --green:#10b981;--green-l:#d1fae5;
+  --amber:#f59e0b;--amber-l:#fef3c7;
+  --red:#ef4444;--red-l:#fee2e2;
+  --dark:#0a0f1e;--navy:#0d1a4a;
+  --muted:#6b7280;--border:rgba(10,15,30,.1);
+  --paper:#f4f6fb;--white:#ffffff;
+  --font:'Outfit',sans-serif;
+  --sidebar:260px;
+}
+body{font-family:var(--font);background:var(--paper);color:var(--dark);min-height:100vh;overflow-x:hidden;}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* ── AUTH SCREENS ── */
+#screen-login,#screen-register{
+  align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0a0f1e 0%,#0d1a4a 50%,#0a0f1e 100%);
+  min-height:100vh;padding:20px;
+}
+.auth-card{
+  background:white;border-radius:24px;padding:40px;
+  width:100%;max-width:440px;
+  box-shadow:0 24px 60px rgba(10,15,30,.3);
+}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;}
+.auth-logo-icon{width:44px;height:44px;border-radius:12px;background:var(--blue);display:grid;place-items:center;font-size:22px;}
+.auth-logo-text{font-size:20px;font-weight:800;color:var(--dark);}
+.auth-logo-badge{font-size:11px;font-weight:700;background:var(--blue-l);color:var(--blue);padding:3px 8px;border-radius:999px;margin-left:4px;}
+.auth-title{font-size:26px;font-weight:800;margin-bottom:6px;}
+.auth-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.field input,.field select,.field textarea{
+  width:100%;padding:13px 16px;
+  border:1.5px solid var(--border);border-radius:12px;
+  font-family:var(--font);font-size:14px;color:var(--dark);
+  background:#f8faff;outline:none;transition:border-color .2s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);background:white;}
+.field textarea{min-height:80px;resize:vertical;}
+.btn{
+  width:100%;padding:14px;border:none;border-radius:12px;
+  font-family:var(--font);font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .15s;
+}
+.btn-primary{background:var(--blue);color:white;}
+.btn-primary:hover{background:var(--blue-d);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--dark);}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue);}
+.auth-switch{text-align:center;margin-top:20px;font-size:13px;color:var(--muted);}
+.auth-switch a{color:var(--blue);font-weight:600;cursor:pointer;text-decoration:none;}
+.error-msg{background:var(--red-l);color:var(--red);border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none;}
+.success-msg{background:var(--green-l);color:#065f46;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none;}
+
+/* ── PENDING SCREEN ── */
+#screen-pending{
+  align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0a0f1e,#0d1a4a);
+  flex-direction:column;text-align:center;padding:40px;
+}
+.pending-card{background:white;border-radius:24px;padding:48px 40px;max-width:480px;width:100%;}
+
+/* ── DASHBOARD ── */
+#screen-dashboard{flex-direction:row;}
+.sidebar{
+  width:var(--sidebar);min-height:100vh;
+  background:var(--dark);flex-shrink:0;
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;
+  z-index:100;overflow-y:auto;
+}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.06);}
+.sidebar-logo-wrap{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:36px;height:36px;border-radius:10px;background:var(--blue);display:grid;place-items:center;font-size:18px;flex-shrink:0;}
+.sidebar-logo-name{font-size:16px;font-weight:800;color:white;}
+.sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px;}
+.sidebar-biz{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.06);}
+.sidebar-biz-name{font-size:13px;font-weight:700;color:white;margin-bottom:2px;}
+.sidebar-biz-status{font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;}
+.sidebar-nav{flex:1;padding:12px 0;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 20px;cursor:pointer;
+  font-size:13px;font-weight:600;color:rgba(255,255,255,.5);
+  transition:all .15s;border-left:3px solid transparent;
+}
+.nav-item:hover{color:white;background:rgba(255,255,255,.04);}
+.nav-item.active{color:white;background:rgba(26,82,245,.15);border-left-color:var(--blue);}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;}
+.nav-section{padding:16px 20px 6px;font-size:10px;font-weight:700;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.08em;}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);}
+.signout-btn{
+  width:100%;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);
+  color:#fca5a5;border-radius:10px;padding:10px;
+  font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;
+}
+.signout-btn:hover{background:rgba(239,68,68,.2);}
+
+/* ── MAIN CONTENT ── */
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh;padding:28px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.topbar-title{font-size:22px;font-weight:800;}
+.topbar-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;}
+.stat-card{background:white;border-radius:16px;padding:20px;border:1px solid var(--border);}
+.stat-card-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;margin-bottom:12px;}
+.stat-card-num{font-size:28px;font-weight:800;margin-bottom:2px;}
+.stat-card-lbl{font-size:12px;color:var(--muted);}
+
+/* ── CARDS ── */
+.card{background:white;border-radius:16px;padding:24px;border:1px solid var(--border);margin-bottom:20px;}
+.card-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.card-btn{background:var(--blue);color:white;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;}
+.card-btn:hover{background:var(--blue-d);}
+.card-btn.green{background:var(--green);}
+.card-btn.red{background:var(--red);}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);}
+td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--dark);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f8faff;}
+
+/* ── BADGES ── */
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;display:inline-block;}
+.badge-green{background:var(--green-l);color:#065f46;}
+.badge-amber{background:var(--amber-l);color:#92400e;}
+.badge-red{background:var(--red-l);color:#991b1b;}
+.badge-blue{background:var(--blue-l);color:var(--blue);}
+.badge-grey{background:#f3f4f6;color:var(--muted);}
+
+/* ── SHIFT FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:40px;color:var(--muted);}
+.empty-icon{font-size:36px;margin-bottom:12px;}
+.empty-title{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:6px;}
+.empty-sub{font-size:13px;line-height:1.6;}
+
+/* ── STATUS BANNER ── */
+.status-banner{border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;}
+.status-banner.pending{background:var(--amber-l);border:1px solid #fcd34d;}
+.status-banner.active{background:var(--green-l);border:1px solid #6ee7b7;}
+.status-banner.rejected{background:var(--red-l);border:1px solid #fca5a5;}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  background:var(--dark);color:white;padding:12px 24px;
+  border-radius:12px;font-size:13px;font-weight:600;
+  opacity:0;transition:opacity .3s;z-index:9999;white-space:nowrap;
+  box-shadow:0 8px 24px rgba(10,15,30,.2);pointer-events:none;
+}
+#toast.show{opacity:1;}
+
+/* ── MODAL ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(10,15,30,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.modal-backdrop.show{display:flex;}
+.modal{background:white;border-radius:20px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.modal-footer{display:flex;gap:10px;margin-top:20px;}
+</style>
+</head>
+<body>
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════ -->
+<div class="screen active" id="screen-login">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">⚡</div>
+      <div>
+        <div class="auth-logo-text">ShiftMatch <span class="auth-logo-badge">Business</span></div>
+      </div>
+    </div>
+    <div class="auth-title">Welcome back</div>
+    <div class="auth-sub">Sign in to your business portal to manage shifts and staff.</div>
+    <div class="error-msg" id="login-error"></div>
+    <div class="field"><label>Business email</label><input type="email" id="login-email" placeholder="hello@yourbusiness.com"/></div>
+    <div class="field"><label>Password</label><input type="password" id="login-password" placeholder="Your password"/></div>
+    <button class="btn btn-primary" id="login-btn" onclick="loginBusiness()">Sign in</button>
+    <div class="auth-switch">Don't have an account? <a onclick="showScreen('register')">Register your business</a></div>
+    <div class="auth-switch" style="margin-top:8px;"><a href="index.html" style="color:var(--muted);">← Back to ShiftMatch</a></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     REGISTER SCREEN
+══════════════════════════════════════ -->
+<div class="screen" id="screen-register">
+  <div class="auth-card" style="max-width:520px;">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">⚡</div>
+      <div><div class="auth-logo-text">ShiftMatch <span class="auth-logo-badge">Business</span></div></div>
+    </div>
+    <div class="auth-title">Register your business</div>
+    <div class="auth-sub">Join ShiftMatch and start hiring verified university students for flexible shifts.</div>
+    <div class="error-msg" id="register-error"></div>
+    <div class="success-msg" id="register-success"></div>
+    <div class="form-grid">
+      <div class="field"><label>Business name</label><input type="text" id="reg-bizname" placeholder="e.g. City Coffee Manchester"/></div>
+      <div class="field"><label>Industry</label>
+        <select id="reg-industry">
+          <option value="">Select industry</option>
+          <option>Hospitality & Food</option>
+          <option>Events & Entertainment</option>
+          <option>Retail</option>
+          <option>Logistics & Warehousing</option>
+          <option>Healthcare & Care Homes</option>
+          <option>Security</option>
+          <option>Office & Admin</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field"><label>Contact name</label><input type="text" id="reg-contact" placeholder="Your full name"/></div>
+      <div class="field"><label>Phone number</label><input type="tel" id="reg-phone" placeholder="+44 7700 000000"/></div>
+    </div>
+    <div class="field"><label>Business email</label><input type="email" id="reg-email" placeholder="hello@yourbusiness.com"/></div>
+    <div class="field"><label>Password</label><input type="password" id="reg-password" placeholder="Create a strong password"/></div>
+    <div class="field"><label>Business address</label><input type="text" id="reg-address" placeholder="123 Oxford Road, Manchester, M1 7ED"/></div>
+    <div class="field"><label>Tell us about your staffing needs</label><textarea id="reg-needs" placeholder="e.g. We need 5-10 staff for weekend hospitality shifts..."></textarea></div>
+    <div class="field" style="display:flex;align-items:flex-start;gap:10px;">
+      <input type="checkbox" id="reg-terms" style="width:auto;margin-top:3px;flex-shrink:0;"/>
+      <label for="reg-terms" style="font-size:13px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400;">I agree to ShiftMatch's terms of service and understand my account will be reviewed before activation.</label>
+    </div>
+    <button class="btn btn-primary" id="register-btn" onclick="registerBusiness()">Create business account</button>
+    <div class="auth-switch">Already have an account? <a onclick="showScreen('login')">Sign in</a></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PENDING SCREEN
+══════════════════════════════════════ -->
+<div class="screen" id="screen-pending">
+  <div class="pending-card">
+    <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+    <h2 style="font-size:24px;font-weight:800;margin-bottom:8px;">Account under review</h2>
+    <p style="font-size:15px;color:var(--muted);line-height:1.6;margin-bottom:24px;">Thanks for registering! Our team is reviewing your account and will activate it within 24 hours. You'll receive an email confirmation once you're approved.</p>
+    <div style="background:#f4f6fb;border-radius:12px;padding:16px;margin-bottom:24px;text-align:left;">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">What happens next:</div>
+      <div style="font-size:13px;color:var(--dark);line-height:2;">✅ We verify your business details<br/>✅ We activate your account<br/>✅ You receive a confirmation email<br/>✅ You can start posting shifts</div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);">Questions? Email us at <a href="mailto:hello@joinshiftmatch.com" style="color:var(--blue);">hello@joinshiftmatch.com</a></p>
+    <button class="btn btn-outline" style="margin-top:16px;" onclick="auth.signOut()">Sign out</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     DASHBOARD SCREEN
+══════════════════════════════════════ -->
+<div class="screen" id="screen-dashboard">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-wrap">
+        <div class="sidebar-logo-icon">⚡</div>
+        <div>
+          <div class="sidebar-logo-name">ShiftMatch</div>
+          <div class="sidebar-logo-sub">Business Portal</div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-biz">
+      <div class="sidebar-biz-name" id="sb-biz-name">Loading...</div>
+      <div class="sidebar-biz-status" id="sb-biz-status"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <div class="nav-item active" onclick="navTo('overview',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Overview
+      </div>
+      <div class="nav-item" onclick="navTo('shifts',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        My Shifts
+      </div>
+      <div class="nav-item" onclick="navTo('applicants',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Applicants
+      </div>
+      <div class="nav-item" onclick="navTo('postshift',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Post a Shift
+      </div>
+      <div class="nav-section">Account</div>
+      <div class="nav-item" onclick="navTo('account',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Account Settings
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="signout-btn" onclick="auth.signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- OVERVIEW PAGE -->
+    <div class="page active" id="page-overview">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title" id="overview-greeting">Good morning!</div>
+          <div class="topbar-sub" id="overview-sub">Here's what's happening with your account.</div>
+        </div>
+        <button class="card-btn" onclick="navTo('postshift',document.querySelector('[onclick*=postshift]'))">+ Post a shift</button>
+      </div>
+
+      <!-- Status banner -->
+      <div class="status-banner pending" id="status-banner" style="display:none;">
+        <div style="font-size:24px;">⏳</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#92400e;" id="status-banner-title">Account under review</div>
+          <div style="font-size:13px;color:#92400e;opacity:.8;" id="status-banner-sub">Our team will activate your account within 24 hours.</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#eff6ff;">📋</div>
+          <div class="stat-card-num" id="stat-shifts">0</div>
+          <div class="stat-card-lbl">Shifts posted</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#d1fae5;">👥</div>
+          <div class="stat-card-num" id="stat-applicants">0</div>
+          <div class="stat-card-lbl">Total applicants</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#fef3c7;">✅</div>
+          <div class="stat-card-num" id="stat-confirmed">0</div>
+          <div class="stat-card-lbl">Confirmed staff</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#ede9fe;">💷</div>
+          <div class="stat-card-num" id="stat-spend">£0</div>
+          <div class="stat-card-lbl">Total spend</div>
+        </div>
+      </div>
+
+      <!-- Recent shifts -->
+      <div class="card">
+        <div class="card-title">
+          Recent Shifts
+          <button class="card-btn" onclick="navTo('postshift',document.querySelector('[onclick*=postshift]'))">+ New shift</button>
+        </div>
+        <div id="overview-shifts-list">
+          <div class="empty">
+            <div class="empty-icon">📅</div>
+            <div class="empty-title">No shifts posted yet</div>
+            <div class="empty-sub">Post your first shift and start receiving applicants from verified university students.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY SHIFTS PAGE -->
+    <div class="page" id="page-shifts">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">My Shifts</div>
+          <div class="topbar-sub">All shifts you've posted on ShiftMatch.</div>
+        </div>
+        <button class="card-btn" onclick="navTo('postshift',document.querySelector('[onclick*=postshift]'))">+ Post a shift</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Role</th><th>Date & Time</th><th>Location</th><th>Pay</th><th>Spots</th><th>Applicants</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="shifts-table-body">
+              <tr><td colspan="8"><div class="empty"><div class="empty-icon">📅</div><div class="empty-title">No shifts posted yet</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPLICANTS PAGE -->
+    <div class="page" id="page-applicants">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Applicants</div>
+          <div class="topbar-sub">Students who have applied for your shifts.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>Email</th><th>University</th><th>Shift</th><th>Applied</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="applicants-table-body">
+              <tr><td colspan="7"><div class="empty"><div class="empty-icon">👥</div><div class="empty-title">No applicants yet</div><div class="empty-sub">Post a shift to start receiving applicants.</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST A SHIFT PAGE -->
+    <div class="page" id="page-postshift">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Post a Shift</div>
+          <div class="topbar-sub">Fill in the details below and we'll match you with verified students.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="error-msg" id="shift-error"></div>
+        <div class="success-msg" id="shift-success"></div>
+        <div class="form-grid">
+          <div class="field"><label>Job role / title</label><input type="text" id="shift-role" placeholder="e.g. Barista, Event Staff, Warehouse Operative"/></div>
+          <div class="field"><label>Category</label>
+            <select id="shift-category">
+              <option value="">Select category</option>
+              <option>Hospitality & Food</option>
+              <option>Events & Entertainment</option>
+              <option>Retail</option>
+              <option>Logistics & Warehousing</option>
+              <option>Security</option>
+              <option>Healthcare</option>
+              <option>Office & Admin</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Date</label><input type="date" id="shift-date"/></div>
+          <div class="field"><label>Start time</label><input type="time" id="shift-start"/></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>End time</label><input type="time" id="shift-end"/></div>
+          <div class="field"><label>Hourly pay (£)</label><input type="number" id="shift-pay" placeholder="e.g. 13.00" min="11.44" step="0.50"/></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Number of staff needed</label><input type="number" id="shift-spots" placeholder="e.g. 3" min="1"/></div>
+          <div class="field"><label>Location / address</label><input type="text" id="shift-location" placeholder="e.g. AO Arena, Manchester, M3 1AR"/></div>
+        </div>
+        <div class="field"><label>Requirements (optional)</label><textarea id="shift-requirements" placeholder="e.g. Must have Food Hygiene Level 2, smart casual dress code, previous bar experience preferred..."></textarea></div>
+        <div class="field"><label>Additional notes (optional)</label><textarea id="shift-notes" placeholder="e.g. Please arrive 15 minutes early, parking available on site..."></textarea></div>
+        <button class="btn btn-primary" id="post-shift-btn" onclick="postShift()" style="margin-top:8px;">Post shift →</button>
+      </div>
+    </div>
+
+    <!-- ACCOUNT PAGE -->
+    <div class="page" id="page-account">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Account Settings</div>
+          <div class="topbar-sub">Your business account details.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Business Information</div>
+        <div class="form-grid">
+          <div class="field"><label>Business name</label><input type="text" id="acc-bizname" readonly style="background:#f4f6fb;"/></div>
+          <div class="field"><label>Industry</label><input type="text" id="acc-industry" readonly style="background:#f4f6fb;"/></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Contact name</label><input type="text" id="acc-contact" readonly style="background:#f4f6fb;"/></div>
+          <div class="field"><label>Phone</label><input type="text" id="acc-phone" readonly style="background:#f4f6fb;"/></div>
+        </div>
+        <div class="field"><label>Email</label><input type="email" id="acc-email" readonly style="background:#f4f6fb;"/></div>
+        <div class="field"><label>Address</label><input type="text" id="acc-address" readonly style="background:#f4f6fb;"/></div>
+        <div style="margin-top:8px;padding:14px;background:#f4f6fb;border-radius:12px;font-size:13px;color:var(--muted);">
+          To update your business details please email <a href="mailto:hello@joinshiftmatch.com" style="color:var(--blue);">hello@joinshiftmatch.com</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Account Status</div>
+        <div id="acc-status-display"></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /dashboard -->
+
+<!-- ══════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════ -->
+<script>
+const firebaseConfig = {
+  apiKey:"AIzaSyDlzTSRbIJEIE70nbV2VuFUFp8-a9b6I_4",
+  authDomain:"shiftmatch-c5cd0.firebaseapp.com",
+  projectId:"shiftmatch-c5cd0",
+  storageBucket:"shiftmatch-c5cd0.firebasestorage.app",
+  messagingSenderId:"828722512268",
+  appId:"1:828722512268:web:06bd98494fbb24b3a7d6a9"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+let currentUser = null;
+let bizDoc = null;
+let bizId  = null;
+
+// ── TOAST ──
+function toast(msg, type=''){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type==='error' ? '#ef4444' : type==='success' ? '#10b981' : '#0a0f1e';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 3000);
+}
+
+// ── SCREEN ──
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+// ── NAV ──
+function navTo(page, el){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(page==='shifts') loadShifts();
+  if(page==='applicants') loadApplicants();
+}
+
+// ── AUTH STATE ──
+auth.onAuthStateChanged(async function(user){
+  if(user){
+    currentUser = user;
+    try {
+      // Find business doc
+      const snap = await db.collection('businesses').where('email','==',user.email).get();
+      if(!snap.empty){
+        bizDoc = snap.docs[0].data();
+        bizId  = snap.docs[0].id;
+        if(bizDoc.status === 'active' || bizDoc.status === 'approved'){
+          showScreen('dashboard');
+          loadDashboard();
+        } else {
+          showScreen('pending');
+        }
+      } else {
+        showScreen('pending');
+      }
+    } catch(e){
+      console.log('Error:',e);
+      showScreen('login');
+    }
+  } else {
+    currentUser = null;
+    bizDoc = null;
+    showScreen('login');
+  }
+});
+
+// ── LOGIN ──
+async function loginBusiness(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+
+  errEl.style.display='none';
+  if(!email||!pass){ errEl.textContent='Please fill in all fields.'; errEl.style.display='block'; return; }
+
+  btn.textContent='Signing in...'; btn.disabled=true;
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(e){
+    errEl.textContent = e.code==='auth/wrong-password'||e.code==='auth/user-not-found'
+      ? 'Invalid email or password.' : e.message;
+    errEl.style.display='block';
+    btn.textContent='Sign in'; btn.disabled=false;
+  }
+}
+
+// ── REGISTER ──
+async function registerBusiness(){
+  const bizname  = document.getElementById('reg-bizname').value.trim();
+  const industry = document.getElementById('reg-industry').value;
+  const contact  = document.getElementById('reg-contact').value.trim();
+  const phone    = document.getElementById('reg-phone').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const pass     = document.getElementById('reg-password').value;
+  const address  = document.getElementById('reg-address').value.trim();
+  const needs    = document.getElementById('reg-needs').value.trim();
+  const terms    = document.getElementById('reg-terms').checked;
+
+  const errEl = document.getElementById('register-error');
+  const sucEl = document.getElementById('register-success');
+  const btn   = document.getElementById('register-btn');
+
+  errEl.style.display='none'; sucEl.style.display='none';
+
+  if(!bizname||!industry||!contact||!email||!pass||!address){
+    errEl.textContent='Please fill in all required fields.';
+    errEl.style.display='block'; return;
+  }
+  if(!terms){
+    errEl.textContent='Please agree to the terms of service.';
+    errEl.style.display='block'; return;
+  }
+  if(pass.length < 8){
+    errEl.textContent='Password must be at least 8 characters.';
+    errEl.style.display='block'; return;
+  }
+
+  btn.textContent='Creating account...'; btn.disabled=true;
+
+  try {
+    // Create Firebase Auth account
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+
+    // Save to Firestore businesses collection
+    await db.collection('businesses').add({
+      uid: cred.user.uid,
+      businessName: bizname,
+      industry, contact, phone, email, address,
+      staffingNeeds: needs,
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      shiftsPosted: 0,
+      totalApplicants: 0,
+      totalSpend: 0,
+    });
+
+    // Send welcome email via Resend
+    sendBusinessWelcomeEmail(email, bizname, contact);
+
+    // Log activity
+    await db.collection('activity').add({
+      type:'business_registered',
+      message: bizname+' registered as a new business',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    sucEl.textContent='Account created! Check your email and wait for approval.';
+    sucEl.style.display='block';
+    btn.textContent='Account created!';
+
+  } catch(e){
+    errEl.textContent = e.code==='auth/email-already-in-use'
+      ? 'An account with this email already exists. Try signing in.'
+      : e.message;
+    errEl.style.display='block';
+    btn.textContent='Create business account'; btn.disabled=false;
+  }
+}
+
+// ── WELCOME EMAIL ──
+function sendBusinessWelcomeEmail(email, bizname, contact){
+  fetch('https://api.resend.com/emails',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer re_Pzc7Ak1X_MrHs4bzkyzFeaNfw4eCPVvhC'},
+    body: JSON.stringify({
+      from:'ShiftMatch <hello@joinshiftmatch.com>',
+      to:[email],
+      subject:'Welcome to ShiftMatch — Your account is under review 🎉',
+      html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f4f6fb;">'
+        +'<div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;">'
+        +'<div style="font-size:32px;margin-bottom:8px;">⚡</div>'
+        +'<div style="font-size:26px;font-weight:800;color:white;margin-bottom:4px;">ShiftMatch</div>'
+        +'<div style="font-size:14px;color:rgba(255,255,255,.5);">Business Portal</div>'
+        +'</div>'
+        +'<div style="background:white;padding:32px 28px;">'
+        +'<h2 style="font-size:22px;font-weight:800;color:#0a0f1e;margin-bottom:8px;">Welcome, '+contact+'! 👋</h2>'
+        +'<p style="color:#6b7280;font-size:15px;line-height:1.6;margin-bottom:20px;">Thanks for registering <strong>'+bizname+'</strong> on ShiftMatch. Your account is currently under review and will be activated within 24 hours.</p>'
+        +'<div style="background:#f4f6fb;border-radius:12px;padding:20px;margin-bottom:20px;">'
+        +'<div style="font-size:13px;font-weight:700;color:#6b7280;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">What happens next:</div>'
+        +'<div style="font-size:14px;color:#0a0f1e;line-height:2;">✅ We verify your business details<br/>✅ We activate your account (within 24hrs)<br/>✅ You can start posting shifts<br/>✅ We match verified students to your shifts</div>'
+        +'</div>'
+        +'<div style="text-align:center;margin:24px 0;">'
+        +'<a href="https://joinshiftmatch.com/business.html" style="background:#1a52f5;color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;">Access Business Portal →</a>'
+        +'</div>'
+        +'<p style="color:#6b7280;font-size:14px;">Questions? Reply to this email or contact us at hello@joinshiftmatch.com</p>'
+        +'</div>'
+        +'<div style="background:#f4f6fb;padding:20px 28px;text-align:center;border-radius:0 0 12px 12px;">'
+        +'<div style="font-size:13px;font-weight:700;color:#0a0f1e;margin-bottom:4px;">The ShiftMatch Team</div>'
+        +'<a href="https://joinshiftmatch.com" style="color:#1a52f5;font-size:13px;text-decoration:none;">joinshiftmatch.com</a>'
+        +'</div></div>'
+    })
+  }).then(r=>{ if(r.ok) console.log('Business welcome email sent ✓'); })
+  .catch(e=>console.log('Email error:',e));
+}
+
+// ── LOAD DASHBOARD ──
+function loadDashboard(){
+  // Greeting
+  const hour = new Date().getHours();
+  const greeting = hour<12?'Good morning':'hour<17?Good afternoon':'Good evening';
+  document.getElementById('overview-greeting').textContent =
+    (hour<12?'Good morning':hour<17?'Good afternoon':'Good evening')+', '+bizDoc.contact+'!';
+  document.getElementById('overview-sub').textContent =
+    bizDoc.businessName+' — '+bizDoc.industry;
+
+  // Sidebar
+  document.getElementById('sb-biz-name').textContent = bizDoc.businessName;
+  const statusColors = {active:'#10b981',pending:'#f59e0b',rejected:'#ef4444'};
+  const statusLabels = {active:'✅ Active',pending:'⏳ Pending review',rejected:'❌ Rejected'};
+  document.getElementById('sb-biz-status').innerHTML =
+    '<div style="width:7px;height:7px;border-radius:50%;background:'+
+    (statusColors[bizDoc.status]||'#6b7280')+'"></div>'+
+    '<span style="color:'+(statusColors[bizDoc.status]||'#6b7280')+'">'+
+    (statusLabels[bizDoc.status]||bizDoc.status)+'</span>';
+
+  // Status banner
+  const banner = document.getElementById('status-banner');
+  if(bizDoc.status === 'pending'){
+    banner.style.display='flex';
+    banner.className='status-banner pending';
+    document.getElementById('status-banner-title').textContent='Account under review';
+    document.getElementById('status-banner-sub').textContent='Our team will activate your account within 24 hours.';
+  } else if(bizDoc.status === 'active'){
+    banner.style.display='none';
+  }
+
+  // Stats
+  document.getElementById('stat-shifts').textContent = bizDoc.shiftsPosted||0;
+  document.getElementById('stat-applicants').textContent = bizDoc.totalApplicants||0;
+  document.getElementById('stat-confirmed').textContent = bizDoc.confirmedStaff||0;
+  document.getElementById('stat-spend').textContent = '£'+(bizDoc.totalSpend||0);
+
+  // Account page
+  document.getElementById('acc-bizname').value = bizDoc.businessName||'';
+  document.getElementById('acc-industry').value = bizDoc.industry||'';
+  document.getElementById('acc-contact').value = bizDoc.contact||'';
+  document.getElementById('acc-phone').value = bizDoc.phone||'';
+  document.getElementById('acc-email').value = bizDoc.email||'';
+  document.getElementById('acc-address').value = bizDoc.address||'';
+
+  document.getElementById('acc-status-display').innerHTML =
+    '<div style="display:flex;align-items:center;gap:10px;padding:14px;background:'
+    +(bizDoc.status==='active'?'#d1fae5':bizDoc.status==='pending'?'#fef3c7':'#fee2e2')
+    +';border-radius:12px;">'
+    +'<div style="font-size:20px;">'+(bizDoc.status==='active'?'✅':bizDoc.status==='pending'?'⏳':'❌')+'</div>'
+    +'<div><div style="font-weight:700;font-size:14px;">'+(statusLabels[bizDoc.status]||bizDoc.status)+'</div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-top:2px;">'
+    +(bizDoc.status==='active'?'Your account is active and you can post shifts.'
+    :bizDoc.status==='pending'?'Under review — activation within 24 hours.'
+    :'Your account has been rejected. Contact hello@joinshiftmatch.com.')
+    +'</div></div></div>';
+
+  // Load overview shifts
+  loadOverviewShifts();
+}
+
+// ── LOAD OVERVIEW SHIFTS ──
+async function loadOverviewShifts(){
+  try {
+    const snap = await db.collection('shifts')
+      .where('businessId','==',bizId)
+      .orderBy('createdAt','desc').limit(5).get();
+
+    if(snap.empty){
+      document.getElementById('overview-shifts-list').innerHTML =
+        '<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">No shifts posted yet</div><div class="empty-sub">Post your first shift and start receiving applicants.</div></div>';
+      return;
+    }
+
+    document.getElementById('overview-shifts-list').innerHTML =
+      '<div class="table-wrap"><table><thead><tr><th>Role</th><th>Date</th><th>Pay</th><th>Spots</th><th>Status</th></tr></thead><tbody>'
+      + snap.docs.map(function(d){
+          const s = d.data();
+          return '<tr><td><strong>'+s.role+'</strong></td><td>'+s.date+' · '+s.startTime+'-'+s.endTime+'</td><td>£'+s.payRate+'/hr</td><td>'+s.spotsNeeded+'</td><td><span class="badge '+(s.status==='open'?'badge-green':s.status==='filled'?'badge-blue':'badge-grey')+'">'+s.status+'</span></td></tr>';
+        }).join('')
+      +'</tbody></table></div>';
+  } catch(e){ console.log('Shifts error:',e); }
+}
+
+// ── LOAD SHIFTS TABLE ──
+async function loadShifts(){
+  try {
+    const snap = await db.collection('shifts')
+      .where('businessId','==',bizId)
+      .orderBy('createdAt','desc').get();
+
+    const tbody = document.getElementById('shifts-table-body');
+    if(snap.empty){
+      tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">📅</div><div class="empty-title">No shifts posted yet</div></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = snap.docs.map(function(d){
+      const s=d.data();
+      return '<tr>'
+        +'<td><strong>'+s.role+'</strong><br/><span style="font-size:11px;color:var(--muted);">'+s.category+'</span></td>'
+        +'<td>'+s.date+'<br/><span style="font-size:11px;color:var(--muted);">'+s.startTime+' – '+s.endTime+'</span></td>'
+        +'<td>'+s.location+'</td>'
+        +'<td><strong>£'+s.payRate+'/hr</strong></td>'
+        +'<td>'+s.spotsNeeded+'</td>'
+        +'<td>'+(s.applicantCount||0)+'</td>'
+        +'<td><span class="badge '+(s.status==='open'?'badge-green':s.status==='filled'?'badge-blue':'badge-grey')+'">'+s.status+'</span></td>'
+        +'<td><button onclick="deleteShift(\''+d.id+'\')" style="background:var(--red-l);color:var(--red);border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Remove</button></td>'
+        +'</tr>';
+    }).join('');
+  } catch(e){ console.log('Load shifts error:',e); }
+}
+
+// ── LOAD APPLICANTS ──
+async function loadApplicants(){
+  try {
+    const snap = await db.collection('applications')
+      .where('businessId','==',bizId)
+      .orderBy('appliedAt','desc').get();
+
+    const tbody = document.getElementById('applicants-table-body');
+    if(snap.empty){
+      tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">👥</div><div class="empty-title">No applicants yet</div><div class="empty-sub">Post a shift to start receiving applicants.</div></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = snap.docs.map(function(d){
+      const a=d.data();
+      const date = a.appliedAt&&a.appliedAt.toDate ? a.appliedAt.toDate().toLocaleDateString('en-GB') : 'Recently';
+      return '<tr>'
+        +'<td><strong>'+(a.studentName||'Student')+'</strong></td>'
+        +'<td>'+(a.studentEmail||'')+'</td>'
+        +'<td>'+(a.studentUniversity||'—')+'</td>'
+        +'<td>'+(a.role||'—')+'</td>'
+        +'<td>'+date+'</td>'
+        +'<td><span class="badge '+(a.status==='approved'?'badge-green':a.status==='rejected'?'badge-red':'badge-amber')+'">'+(a.status||'pending')+'</span></td>'
+        +'<td style="display:flex;gap:6px;">'
+        +'<button onclick="updateApplication(\''+d.id+'\',\'approved\')" style="background:var(--green-l);color:#065f46;border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">✓ Approve</button>'
+        +'<button onclick="updateApplication(\''+d.id+'\',\'rejected\')" style="background:var(--red-l);color:var(--red);border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">✗ Reject</button>'
+        +'</td></tr>';
+    }).join('');
+  } catch(e){ console.log('Applicants error:',e); }
+}
+
+// ── POST SHIFT ──
+async function postShift(){
+  const role     = document.getElementById('shift-role').value.trim();
+  const category = document.getElementById('shift-category').value;
+  const date     = document.getElementById('shift-date').value;
+  const start    = document.getElementById('shift-start').value;
+  const end      = document.getElementById('shift-end').value;
+  const pay      = document.getElementById('shift-pay').value;
+  const spots    = document.getElementById('shift-spots').value;
+  const location = document.getElementById('shift-location').value.trim();
+  const reqs     = document.getElementById('shift-requirements').value.trim();
+  const notes    = document.getElementById('shift-notes').value.trim();
+
+  const errEl = document.getElementById('shift-error');
+  const sucEl = document.getElementById('shift-success');
+  const btn   = document.getElementById('post-shift-btn');
+
+  errEl.style.display='none'; sucEl.style.display='none';
+
+  if(!role||!category||!date||!start||!end||!pay||!spots||!location){
+    errEl.textContent='Please fill in all required fields.';
+    errEl.style.display='block'; return;
+  }
+  if(parseFloat(pay) < 11.44){
+    errEl.textContent='Pay rate must be at least £11.44/hr (UK minimum wage).';
+    errEl.style.display='block'; return;
+  }
+
+  btn.textContent='Posting...'; btn.disabled=true;
+
+  try {
+    await db.collection('shifts').add({
+      businessId: bizId,
+      businessName: bizDoc.businessName,
+      businessEmail: bizDoc.email,
+      role, category, date,
+      startTime: start,
+      endTime: end,
+      payRate: parseFloat(pay),
+      spotsNeeded: parseInt(spots),
+      location, requirements: reqs, notes,
+      status: 'open',
+      applicantCount: 0,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Update business shift count
+    await db.collection('businesses').doc(bizId).update({
+      shiftsPosted: firebase.firestore.FieldValue.increment(1)
+    });
+
+    // Log activity
+    await db.collection('activity').add({
+      type:'shift_posted',
+      message: bizDoc.businessName+' posted a new shift: '+role,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    sucEl.textContent='Shift posted successfully! Students will start applying shortly.';
+    sucEl.style.display='block';
+    btn.textContent='Post shift →'; btn.disabled=false;
+
+    // Clear form
+    ['shift-role','shift-date','shift-start','shift-end','shift-pay','shift-spots','shift-location','shift-requirements','shift-notes'].forEach(function(id){
+      document.getElementById(id).value='';
+    });
+    document.getElementById('shift-category').value='';
+
+    toast('Shift posted! ✓','success');
+
+  } catch(e){
+    errEl.textContent='Error posting shift: '+e.message;
+    errEl.style.display='block';
+    btn.textContent='Post shift →'; btn.disabled=false;
+  }
+}
+
+// ── DELETE SHIFT ──
+async function deleteShift(shiftId){
+  if(!confirm('Are you sure you want to remove this shift?')) return;
+  try {
+    await db.collection('shifts').doc(shiftId).update({status:'cancelled'});
+    toast('Shift removed','success');
+    loadShifts();
+  } catch(e){ toast('Error: '+e.message,'error'); }
+}
+
+// ── UPDATE APPLICATION ──
+async function updateApplication(appId, status){
+  try {
+    await db.collection('applications').doc(appId).update({
+      status,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast(status==='approved'?'Applicant approved ✓':'Applicant rejected', status==='approved'?'success':'error');
+    loadApplicants();
+  } catch(e){ toast('Error: '+e.message,'error'); }
+}
+
+// ── ENTER KEY ──
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){
+    const active = document.querySelector('.screen.active');
+    if(active && active.id==='screen-login') loginBusiness();
+  }
+});
+</script>
+</body>
+</html>

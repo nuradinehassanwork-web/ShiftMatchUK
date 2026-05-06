@@ -1008,10 +1008,44 @@ function updateStatus(col, id, status, msg){
 
 // ── APPROVE BUSINESS ──
 function approveBusiness(id, name){
-  db.collection('businesses').doc(id).update({ status:'active', approvedAt: serverTimestamp() }).then(function(){
-    logActivity(name+' approved as a business','business');
-    toast(name+' approved ✓');
-  }).catch(function(e){ toast('Error: '+e.message,'error'); });
+  if(!confirm('Approve '+name+' as an active business?')) return;
+  db.collection('businesses').doc(id).get().then(function(snap){
+    const biz = snap.data();
+    db.collection('businesses').doc(id).update({
+      status:'active',
+      approvedAt: serverTimestamp()
+    }).then(function(){
+      logActivity(name+' approved as a business','business');
+      toast(name+' approved ✓');
+      // Send approval email
+      fetch('https://api.resend.com/emails',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer re_Pzc7Ak1X_MrHs4bzkyzFeaNfw4eCPVvhC'},
+        body: JSON.stringify({
+          from:'ShiftMatch <hello@joinshiftmatch.com>',
+          to:[biz.email],
+          subject:'🎉 Your ShiftMatch business account is now active!',
+          html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f4f6fb;">'
+            +'<div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;">'
+            +'<div style="font-size:32px;margin-bottom:8px;">⚡</div>'
+            +'<div style="font-size:26px;font-weight:800;color:white;">ShiftMatch</div>'
+            +'</div>'
+            +'<div style="background:white;padding:32px 28px;">'
+            +'<h2 style="font-size:22px;font-weight:800;color:#0a0f1e;margin-bottom:8px;">You\'re approved, '+(biz.contact||name)+'! 🎉</h2>'
+            +'<p style="color:#6b7280;font-size:15px;line-height:1.6;margin-bottom:24px;"><strong>'+name+'</strong> is now active on ShiftMatch. You can start posting shifts and receiving applicants from verified university students immediately.</p>'
+            +'<div style="text-align:center;margin:28px 0;">'
+            +'<a href="https://joinshiftmatch.com/business.html" style="background:#1a52f5;color:white;padding:16px 36px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;">Go to Business Portal →</a>'
+            +'</div>'
+            +'<p style="color:#6b7280;font-size:14px;">Questions? Reply to this email anytime.</p>'
+            +'</div>'
+            +'<div style="background:#f4f6fb;padding:20px 28px;text-align:center;border-radius:0 0 12px 12px;">'
+            +'<div style="font-size:13px;font-weight:700;color:#0a0f1e;margin-bottom:4px;">The ShiftMatch Team</div>'
+            +'<a href="https://joinshiftmatch.com" style="color:#1a52f5;font-size:13px;text-decoration:none;">joinshiftmatch.com</a>'
+            +'</div></div>'
+        })
+      }).then(function(r){ if(r.ok) console.log('Business approval email sent ✓'); });
+    }).catch(function(e){ toast('Error: '+e.message,'error'); });
+  });
 }
 
 // ── VETTING ──
