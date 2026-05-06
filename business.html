@@ -248,7 +248,8 @@ tr:hover td{background:#f8faff;}
       <div class="field"><label>Phone number</label><input type="tel" id="reg-phone" placeholder="+44 7700 000000"/></div>
     </div>
     <div class="field"><label>Business email</label><input type="email" id="reg-email" placeholder="hello@yourbusiness.com"/></div>
-    <div class="field"><label>Password</label><input type="password" id="reg-password" placeholder="Create a strong password"/></div>
+    <div class="field"><label>Password</label><input type="password" id="reg-password" placeholder="Create a strong password (min. 8 characters)"/></div>
+    <div class="field"><label>Confirm password</label><input type="password" id="reg-password-confirm" placeholder="Repeat your password"/></div>
     <div class="field"><label>Business address</label><input type="text" id="reg-address" placeholder="123 Oxford Road, Manchester, M1 7ED"/></div>
     <div class="field"><label>Tell us about your staffing needs</label><textarea id="reg-needs" placeholder="e.g. We need 5-10 staff for weekend hospitality shifts..."></textarea></div>
     <div class="field" style="display:flex;align-items:flex-start;gap:10px;">
@@ -596,7 +597,7 @@ async function loginBusiness(){
   try {
     await auth.signInWithEmailAndPassword(email, pass);
   } catch(e){
-    errEl.textContent = e.code==='auth/wrong-password'||e.code==='auth/user-not-found'
+    errEl.textContent = e.code==='auth/wrong-password'||e.code==='auth/user-not-found'||e.code==='auth/invalid-credential'
       ? 'Invalid email or password.' : e.message;
     errEl.style.display='block';
     btn.textContent='Sign in'; btn.disabled=false;
@@ -611,6 +612,7 @@ async function registerBusiness(){
   const phone    = document.getElementById('reg-phone').value.trim();
   const email    = document.getElementById('reg-email').value.trim();
   const pass     = document.getElementById('reg-password').value;
+  const passConfirm = document.getElementById('reg-password-confirm').value;
   const address  = document.getElementById('reg-address').value.trim();
   const needs    = document.getElementById('reg-needs').value.trim();
   const terms    = document.getElementById('reg-terms').checked;
@@ -631,6 +633,12 @@ async function registerBusiness(){
   }
   if(pass.length < 8){
     errEl.textContent='Password must be at least 8 characters.';
+    errEl.style.display='block'; return;
+  }
+  if(pass !== passConfirm){
+    errEl.textContent='Passwords do not match.';
+    errEl.style.display='block'; return;
+  }
     errEl.style.display='block'; return;
   }
 
@@ -663,13 +671,22 @@ async function registerBusiness(){
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    sucEl.textContent='Account created! Check your email and wait for approval.';
+    // Sign out so onAuthStateChanged doesn't auto-redirect before they see success
+    await auth.signOut();
+
+    sucEl.textContent='✅ Account created! Our team will review your application within 24 hours. Check your email for confirmation.';
     sucEl.style.display='block';
     btn.textContent='Account created!';
+    btn.disabled=true;
+
+    // After 4 seconds redirect to login
+    setTimeout(function(){ showScreen('login'); btn.textContent='Create business account'; btn.disabled=false; }, 4000);
 
   } catch(e){
     errEl.textContent = e.code==='auth/email-already-in-use'
       ? 'An account with this email already exists. Try signing in.'
+      : e.code==='auth/weak-password'
+      ? 'Password is too weak. Please use at least 8 characters.'
       : e.message;
     errEl.style.display='block';
     btn.textContent='Create business account'; btn.disabled=false;
@@ -716,7 +733,7 @@ function sendBusinessWelcomeEmail(email, bizname, contact){
 function loadDashboard(){
   // Greeting
   const hour = new Date().getHours();
-  const greeting = hour<12?'Good morning':'hour<17?Good afternoon':'Good evening';
+  const greeting = hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
   document.getElementById('overview-greeting').textContent =
     (hour<12?'Good morning':hour<17?'Good afternoon':'Good evening')+', '+bizDoc.contact+'!';
   document.getElementById('overview-sub').textContent =
