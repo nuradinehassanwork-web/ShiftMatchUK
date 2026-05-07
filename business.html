@@ -693,9 +693,9 @@ async function registerBusiness(){
 
 // ── WELCOME EMAIL ──
 function sendBusinessWelcomeEmail(email, bizname, contact){
-  fetch('https://api.resend.com/emails',{
+  fetch('https://sendemail-828722512268.us-central1.run.app',{
     method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer re_Pzc7Ak1X_MrHs4bzkyzFeaNfw4eCPVvhC'},
+    
     body: JSON.stringify({
       from:'ShiftMatch <hello@joinshiftmatch.com>',
       to:[email],
