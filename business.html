@@ -570,7 +570,11 @@ auth.onAuthStateChanged(async function(user){
           showScreen('pending');
         }
       } else {
-        showScreen('pending');
+        // Auth account exists but no Firestore doc — sign them out and show error
+        await auth.signOut();
+        showScreen('login');
+        const errEl = document.getElementById('login-error');
+        if(errEl){ errEl.textContent='Account not found. Please register first or contact hello@joinshiftmatch.com'; errEl.style.display='block'; }
       }
     } catch(e){
       console.log('Error:',e);
@@ -695,10 +699,9 @@ async function registerBusiness(){
 function sendBusinessWelcomeEmail(email, bizname, contact){
   fetch('https://sendemail-828722512268.us-central1.run.app',{
     method:'POST',
-    
+    headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      from:'ShiftMatch <hello@joinshiftmatch.com>',
-      to:[email],
+      to:email,
       subject:'Welcome to ShiftMatch — Your account is under review 🎉',
       html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f4f6fb;">'
         +'<div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;">'
