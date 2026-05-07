@@ -787,6 +787,44 @@ window.submitStep4 = async function(){
         type: 'student',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+
+      // Send verification submitted confirmation email
+      const stuSnap = await db.collection('students').doc(studentDocId).get();
+      const stuData = stuSnap.data();
+      const stuName = stuData.name || 'there';
+      const stuEmail = stuData.email || '';
+      if(stuEmail){
+        fetch('https://api.resend.com/emails',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer re_Pzc7Ak1X_MrHs4bzkyzFeaNfw4eCPVvhC'},
+          body: JSON.stringify({
+            from:'ShiftMatch <hello@joinshiftmatch.com>',
+            to:[stuEmail],
+            subject:'✅ Verification received — we\'re reviewing your details!',
+            html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f4f6fb;">'\
+              +'<div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;">'\
+              +'<div style="font-size:32px;margin-bottom:8px;">⚡</div>'\
+              +'<div style="font-size:26px;font-weight:800;color:white;margin-bottom:4px;">ShiftMatch</div>'\
+              +'<div style="font-size:14px;color:rgba(255,255,255,.5);">Flexible work. Around your lectures.</div>'\
+              +'</div>'\
+              +'<div style="background:white;padding:32px 28px;">'\
+              +'<h2 style="font-size:22px;font-weight:800;color:#0a0f1e;margin-bottom:8px;">We\'ve got your documents, '+stuName+'! 🎉</h2>'\
+              +'<p style="color:#6b7280;font-size:15px;line-height:1.6;margin-bottom:20px;">Thanks for completing your verification. Our team will review your details within 24 hours and you\'ll receive an email once you\'re approved.</p>'\
+              +'<div style="background:#d1fae5;border-radius:12px;padding:20px;margin-bottom:24px;">'\
+              +'<div style="font-size:14px;color:#065f46;line-height:2;">✅ Personal details — received<br/>✅ Photo — received<br/>✅ ID document — received<br/>✅ Bank details — received</div>'\
+              +'</div>'\
+              +'<div style="text-align:center;margin:24px 0;">'\
+              +'<a href="https://joinshiftmatch.com/app.html" style="background:#1a52f5;color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;">Go to Student App →</a>'\
+              +'</div>'\
+              +'<p style="color:#6b7280;font-size:14px;">Any questions? Just reply to this email.</p>'\
+              +'</div>'\
+              +'<div style="background:#f4f6fb;padding:20px 28px;text-align:center;border-radius:0 0 12px 12px;">'\
+              +'<div style="font-size:13px;font-weight:700;color:#0a0f1e;margin-bottom:4px;">The ShiftMatch Team</div>'\
+              +'<a href="https://joinshiftmatch.com" style="color:#1a52f5;font-size:13px;text-decoration:none;">joinshiftmatch.com</a>'\
+              +'</div></div>'
+          })
+        }).catch(function(e){ console.log('Verification email error:',e); });
+      }
     }
 
     showScreen('success');

@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ShiftMatch — Business Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --blue:#1a52f5;--blue-d:#0f3cd4;--blue-l:#eff6ff;
+  --green:#10b981;--green-l:#d1fae5;
+  --amber:#f59e0b;--amber-l:#fef3c7;
+  --red:#ef4444;--red-l:#fee2e2;
+  --purple:#8b5cf6;--purple-l:#ede9fe;
+  --dark:#0a0f1e;--navy:#0d1a4a;
+  --muted:#6b7280;--border:rgba(10,15,30,.09);
+  --paper:#f4f6fb;--white:#ffffff;
+  --font:'Outfit',sans-serif;
+  --sidebar:260px;
+}
+body{font-family:var(--font);background:var(--paper);color:var(--dark);min-height:100vh;overflow-x:hidden;}
+
+/* DEMO BANNER */
+.demo-banner{
+  background:linear-gradient(90deg,#f59e0b,#f97316);
+  color:white;text-align:center;padding:10px 20px;
+  font-size:13px;font-weight:700;position:sticky;top:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.demo-banner span{opacity:.85;font-weight:500;}
+
+/* SCREEN */
+.screen{display:flex;flex-direction:row;min-height:calc(100vh - 40px);}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar);min-height:calc(100vh - 40px);
+  background:var(--dark);flex-shrink:0;
+  display:flex;flex-direction:column;
+  position:fixed;top:40px;left:0;bottom:0;
+  z-index:100;overflow-y:auto;
+}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.06);}
+.sidebar-logo-wrap{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:36px;height:36px;border-radius:10px;background:var(--blue);display:grid;place-items:center;font-size:18px;flex-shrink:0;}
+.sidebar-logo-name{font-size:16px;font-weight:800;color:white;}
+.sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px;}
+.sidebar-biz{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.06);}
+.sidebar-biz-name{font-size:13px;font-weight:700;color:white;margin-bottom:4px;}
+.sidebar-biz-status{font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px;color:#10b981;}
+.sidebar-nav{flex:1;padding:12px 0;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 20px;cursor:pointer;
+  font-size:13px;font-weight:600;color:rgba(255,255,255,.5);
+  transition:all .15s;border-left:3px solid transparent;
+}
+.nav-item:hover{color:white;background:rgba(255,255,255,.04);}
+.nav-item.active{color:white;background:rgba(26,82,245,.15);border-left-color:var(--blue);}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;}
+.nav-section{padding:16px 20px 6px;font-size:10px;font-weight:700;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.08em;}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);}
+
+/* MAIN */
+.main{margin-left:var(--sidebar);flex:1;min-height:calc(100vh - 40px);padding:28px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.topbar-title{font-size:22px;font-weight:800;}
+.topbar-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;}
+.stat-card{background:white;border-radius:16px;padding:20px;border:1px solid var(--border);}
+.stat-card-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;margin-bottom:12px;}
+.stat-card-num{font-size:28px;font-weight:800;margin-bottom:2px;}
+.stat-card-lbl{font-size:12px;color:var(--muted);}
+.stat-card-change{font-size:11px;font-weight:600;color:var(--green);margin-top:4px;}
+
+/* CARDS */
+.card{background:white;border-radius:16px;padding:24px;border:1px solid var(--border);margin-bottom:20px;}
+.card-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.card-btn{background:var(--blue);color:white;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);}
+td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--dark);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f8faff;}
+
+/* BADGES */
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;display:inline-block;}
+.badge-green{background:var(--green-l);color:#065f46;}
+.badge-amber{background:var(--amber-l);color:#92400e;}
+.badge-red{background:var(--red-l);color:#991b1b;}
+.badge-blue{background:var(--blue-l);color:var(--blue);}
+.badge-grey{background:#f3f4f6;color:var(--muted);}
+.badge-purple{background:var(--purple-l);color:#5b21b6;}
+
+/* AVATAR */
+.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:white;flex-shrink:0;}
+.av-cell{display:flex;align-items:center;gap:10px;}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;color:var(--dark);background:#f8faff;outline:none;}
+.field textarea{min-height:80px;resize:vertical;}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;}
+.btn-primary{background:var(--blue);color:white;}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px;color:var(--muted);}
+.empty-icon{font-size:36px;margin-bottom:12px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--dark);color:white;padding:12px 24px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;z-index:9999;white-space:nowrap;pointer-events:none;}
+#toast.show{opacity:1;}
+
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(10,15,30,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.modal-backdrop.show{display:flex;}
+.modal{background:white;border-radius:20px;padding:28px;width:100%;max-width:480px;}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:16px;}
+.modal-footer{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;}
+.modal-cancel{padding:10px 20px;background:var(--paper);border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;}
+.modal-save{padding:10px 20px;background:var(--blue);color:white;border:none;border-radius:10px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;}
+
+/* PROFILE PHOTOS */
+.profile-photo{width:32px;height:32px;border-radius:50%;object-fit:cover;}
+
+/* STAR RATING */
+.stars{color:#f59e0b;font-size:13px;letter-spacing:1px;}
+
+/* ACTIVITY FEED */
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);}
+.activity-item:last-child{border-bottom:none;}
+.activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- DEMO BANNER -->
+<div class="demo-banner">
+  🎯 DEMO MODE — <span>This is a live preview of your ShiftMatch business portal. All data shown is for demonstration purposes.</span>
+</div>
+
+<div class="screen">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-wrap">
+        <div class="sidebar-logo-icon">⚡</div>
+        <div>
+          <div class="sidebar-logo-name">ShiftMatch</div>
+          <div class="sidebar-logo-sub">Business Portal</div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-biz">
+      <div class="sidebar-biz-name" id="sb-biz-name">City Coffee Manchester</div>
+      <div class="sidebar-biz-status">
+        <div style="width:7px;height:7px;border-radius:50%;background:#10b981;"></div>
+        ✅ Active
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <div class="nav-item active" onclick="navTo('overview',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Overview
+      </div>
+      <div class="nav-item" onclick="navTo('shifts',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        My Shifts
+        <span class="nav-badge">3</span>
+      </div>
+      <div class="nav-item" onclick="navTo('applicants',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Applicants
+        <span class="nav-badge" style="background:var(--amber);">8</span>
+      </div>
+      <div class="nav-item" onclick="navTo('postshift',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Post a Shift
+      </div>
+      <div class="nav-section">Account</div>
+      <div class="nav-item" onclick="navTo('account',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Account Settings
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div style="font-size:12px;color:rgba(255,255,255,.3);text-align:center;">Demo account — joinshiftmatch.com</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- OVERVIEW PAGE -->
+    <div class="page active" id="page-overview">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Good morning, Sarah! ☀️</div>
+          <div class="topbar-sub">City Coffee Manchester — Hospitality & Food</div>
+        </div>
+        <button class="card-btn" onclick="navTo('postshift',document.querySelector('[onclick*=postshift]'))">+ Post a shift</button>
+      </div>
+
+      <!-- Active status banner -->
+      <div style="background:var(--green-l);border:1px solid #6ee7b7;border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;">
+        <div style="font-size:24px;">✅</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#065f46;">Account active — you're live on ShiftMatch!</div>
+          <div style="font-size:13px;color:#065f46;opacity:.8;">Verified university students can now see and apply for your shifts.</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#eff6ff;">📋</div>
+          <div class="stat-card-num" id="stat-shifts-count">3</div>
+          <div class="stat-card-lbl">Shifts posted</div>
+          <div class="stat-card-change">↑ 1 this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#d1fae5;">👥</div>
+          <div class="stat-card-num" id="stat-applicants-count">12</div>
+          <div class="stat-card-lbl">Total applicants</div>
+          <div class="stat-card-change">↑ 5 this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#fef3c7;">✅</div>
+          <div class="stat-card-num">7</div>
+          <div class="stat-card-lbl">Confirmed staff</div>
+          <div class="stat-card-change">↑ 2 this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#ede9fe;">💷</div>
+          <div class="stat-card-num">£1,248</div>
+          <div class="stat-card-lbl">Total spend</div>
+          <div class="stat-card-change">↑ £320 this month</div>
+        </div>
+      </div>
+
+      <!-- Recent Shifts -->
+      <div class="card">
+        <div class="card-title">
+          Recent Shifts
+          <button class="card-btn" onclick="navTo('postshift',document.querySelector('[onclick*=postshift]'))">+ New shift</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Role</th><th>Date</th><th>Pay</th><th>Spots</th><th>Applicants</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Barista</strong><br/><span style="font-size:11px;color:var(--muted);">Hospitality & Food</span></td>
+                <td>Sat 10 May<br/><span style="font-size:11px;color:var(--muted);">08:00 – 16:00</span></td>
+                <td><strong>£13.50/hr</strong></td>
+                <td>2</td>
+                <td>5</td>
+                <td><span class="badge badge-green">Open</span></td>
+              </tr>
+              <tr>
+                <td><strong>Front of House</strong><br/><span style="font-size:11px;color:var(--muted);">Hospitality & Food</span></td>
+                <td>Sun 11 May<br/><span style="font-size:11px;color:var(--muted);">10:00 – 18:00</span></td>
+                <td><strong>£12.50/hr</strong></td>
+                <td>3</td>
+                <td>4</td>
+                <td><span class="badge badge-green">Open</span></td>
+              </tr>
+              <tr>
+                <td><strong>Barista</strong><br/><span style="font-size:11px;color:var(--muted);">Hospitality & Food</span></td>
+                <td>Fri 9 May<br/><span style="font-size:11px;color:var(--muted);">07:00 – 15:00</span></td>
+                <td><strong>£13.50/hr</strong></td>
+                <td>1</td>
+                <td>3</td>
+                <td><span class="badge badge-blue">Filled</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-title">Live Activity</div>
+        <div class="activity-item">
+          <div class="activity-dot" style="background:var(--green);"></div>
+          <div><strong>Aisha Patel</strong> applied for your Barista shift on Sat 10 May<br/><span style="font-size:11px;color:var(--muted);">2 minutes ago</span></div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot" style="background:var(--blue);"></div>
+          <div>You confirmed <strong>James Okafor</strong> for Front of House on Sun 11 May<br/><span style="font-size:11px;color:var(--muted);">1 hour ago</span></div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot" style="background:var(--green);"></div>
+          <div><strong>Mia Chen</strong> applied for your Barista shift on Sat 10 May<br/><span style="font-size:11px;color:var(--muted);">3 hours ago</span></div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot" style="background:var(--amber);"></div>
+          <div>Your shift on Fri 9 May has been <strong>filled</strong> — all spots confirmed<br/><span style="font-size:11px;color:var(--muted);">Yesterday</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY SHIFTS PAGE -->
+    <div class="page" id="page-shifts">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">My Shifts</div>
+          <div class="topbar-sub">All shifts you've posted on ShiftMatch.</div>
+        </div>
+        <button class="card-btn" onclick="navTo('postshift',document.querySelector('[onclick*=postshift]'))">+ Post a shift</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Role</th><th>Date & Time</th><th>Location</th><th>Pay</th><th>Spots</th><th>Applicants</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Barista</strong><br/><span style="font-size:11px;color:var(--muted);">Hospitality & Food</span></td>
+                <td>Sat 10 May 2025<br/><span style="font-size:11px;color:var(--muted);">08:00 – 16:00</span></td>
+                <td>Northern Quarter, M4 1HN</td>
+                <td><strong>£13.50/hr</strong></td>
+                <td>2</td>
+                <td><span style="font-weight:700;color:var(--blue);">5</span></td>
+                <td><span class="badge badge-green">Open</span></td>
+                <td><button onclick="toast('Shift removed from demo ✓')" style="background:var(--red-l);color:var(--red);border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Remove</button></td>
+              </tr>
+              <tr>
+                <td><strong>Front of House</strong><br/><span style="font-size:11px;color:var(--muted);">Hospitality & Food</span></td>
+                <td>Sun 11 May 2025<br/><span style="font-size:11px;color:var(--muted);">10:00 – 18:00</span></td>
+                <td>Northern Quarter, M4 1HN</td>
+                <td><strong>£12.50/hr</strong></td>
+                <td>3</td>
+                <td><span style="font-weight:700;color:var(--blue);">4</span></td>
+                <td><span class="badge badge-green">Open</span></td>
+                <td><button onclick="toast('Shift removed from demo ✓')" style="background:var(--red-l);color:var(--red);border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Remove</button></td>
+              </tr>
+              <tr>
+                <td><strong>Barista</strong><br/><span style="font-size:11px;color:var(--muted);">Hospitality & Food</span></td>
+                <td>Fri 9 May 2025<br/><span style="font-size:11px;color:var(--muted);">07:00 – 15:00</span></td>
+                <td>Northern Quarter, M4 1HN</td>
+                <td><strong>£13.50/hr</strong></td>
+                <td>1</td>
+                <td><span style="font-weight:700;color:var(--blue);">3</span></td>
+                <td><span class="badge badge-blue">Filled</span></td>
+                <td><button onclick="toast('Shift removed from demo ✓')" style="background:var(--red-l);color:var(--red);border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">Remove</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPLICANTS PAGE -->
+    <div class="page" id="page-applicants">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Applicants</div>
+          <div class="topbar-sub">Verified university students who applied for your shifts.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>University</th><th>Shift</th><th>Rating</th><th>Shifts Done</th><th>Applied</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="applicants-body">
+              <!-- populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST A SHIFT PAGE -->
+    <div class="page" id="page-postshift">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Post a Shift</div>
+          <div class="topbar-sub">Fill in the details and we'll match you with verified students.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="background:var(--amber-l);border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#92400e;display:flex;align-items:center;gap:10px;">
+          <span>🎯</span><span>This is a demo — shift posting is disabled. In your live account you can post unlimited shifts.</span>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Job role / title</label><input type="text" placeholder="e.g. Barista, Event Staff, Warehouse Operative"/></div>
+          <div class="field"><label>Category</label>
+            <select>
+              <option value="">Select category</option>
+              <option selected>Hospitality & Food</option>
+              <option>Events & Entertainment</option>
+              <option>Retail</option>
+              <option>Logistics & Warehousing</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Date</label><input type="date"/></div>
+          <div class="field"><label>Start time</label><input type="time"/></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>End time</label><input type="time"/></div>
+          <div class="field"><label>Hourly pay (£)</label><input type="number" placeholder="e.g. 13.50" min="11.44" step="0.50"/></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Number of staff needed</label><input type="number" placeholder="e.g. 3" min="1"/></div>
+          <div class="field"><label>Location / address</label><input type="text" placeholder="e.g. 12 High Street, Manchester, M1 1AA"/></div>
+        </div>
+        <div class="field"><label>Requirements (optional)</label><textarea placeholder="e.g. Must have Food Hygiene Level 2, smart casual dress..."></textarea></div>
+        <button class="btn btn-primary" style="margin-top:8px;" onclick="toast('✅ In your live account this shift goes live instantly!')">Post shift →</button>
+      </div>
+    </div>
+
+    <!-- ACCOUNT PAGE -->
+    <div class="page" id="page-account">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Account Settings</div>
+          <div class="topbar-sub">Your business account details.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Business Information</div>
+        <div class="form-grid">
+          <div class="field"><label>Business name</label><input type="text" value="City Coffee Manchester" readonly style="background:#f4f6fb;"/></div>
+          <div class="field"><label>Industry</label><input type="text" value="Hospitality & Food" readonly style="background:#f4f6fb;"/></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Contact name</label><input type="text" value="Sarah Thompson" readonly style="background:#f4f6fb;"/></div>
+          <div class="field"><label>Phone</label><input type="text" value="+44 7700 123456" readonly style="background:#f4f6fb;"/></div>
+        </div>
+        <div class="field"><label>Email</label><input type="email" value="sarah@citycoffee.co.uk" readonly style="background:#f4f6fb;"/></div>
+        <div class="field"><label>Address</label><input type="text" value="12 Tib Street, Northern Quarter, Manchester, M4 1HN" readonly style="background:#f4f6fb;"/></div>
+        <div style="margin-top:8px;padding:14px;background:#f4f6fb;border-radius:12px;font-size:13px;color:var(--muted);">
+          To update your business details please email <a href="mailto:hello@joinshiftmatch.com" style="color:var(--blue);">hello@joinshiftmatch.com</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Account Status</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:14px;background:var(--green-l);border-radius:12px;">
+          <div style="font-size:20px;">✅</div>
+          <div>
+            <div style="font-weight:700;font-size:14px;">Active</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">Your account is active and you can post shifts.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Your Plan</div>
+        <div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);border-radius:14px;padding:20px 24px;color:white;">
+          <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Current Plan</div>
+          <div style="font-size:22px;font-weight:800;margin-bottom:4px;">Standard — £49/mo</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.6);">Up to 10 active shifts · Unlimited applicants · Priority matching</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /screen -->
+
+<!-- STUDENT PROFILE MODAL -->
+<div class="modal-backdrop" id="student-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-name">Student Profile</div>
+    <div id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeModal()">Close</button>
+      <button class="modal-save" id="modal-approve-btn">✓ Approve</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── TOAST ──
+function toast(msg, type=''){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type==='error' ? '#ef4444' : type==='success' ? '#10b981' : '#0a0f1e';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 3000);
+}
+
+// ── NAV ──
+function navTo(page, el){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+}
+
+// ── MODAL ──
+function closeModal(){ document.getElementById('student-modal').classList.remove('show'); }
+
+// ── DUMMY STUDENTS ──
+const students = [
+  {
+    id:1, name:'Aisha Patel', uni:'Manchester Metropolitan University', degree:'Business Management BA',
+    year:'2nd year', rating:4.9, shiftsCompleted:23, initials:'AP', color:'#1a52f5',
+    shift:'Barista — Sat 10 May', shiftDate:'Sat 10 May, 08:00–16:00',
+    appliedAgo:'2 mins ago', status:'pending',
+    skills:['Food Hygiene Level 2','Barista trained','Customer service'],
+    about:'Reliable, punctual and experienced in hospitality. Available weekends and evenings. Has completed 23 shifts through ShiftMatch with 0 no-shows.',
+    previousShifts:['Barista at Caffè Nero (Apr)','Event Staff at Manchester Arena (Mar)','Barista at Pret (Feb)']
+  },
+  {
+    id:2, name:'James Okafor', uni:'University of Manchester', degree:'Economics BSc',
+    year:'3rd year', rating:5.0, shiftsCompleted:41, initials:'JO', color:'#10b981',
+    shift:'Front of House — Sun 11 May', shiftDate:'Sun 11 May, 10:00–18:00',
+    appliedAgo:'1 hour ago', status:'approved',
+    skills:['Front of house','POS systems','Upselling trained'],
+    about:'One of our highest-rated students. 41 shifts completed, never a no-show. Highly recommended by previous employers.',
+    previousShifts:['Front of House at Dishoom (Apr)','Bar Staff at Albert Hall (Apr)','Event Staff at Manchester Central (Mar)']
+  },
+  {
+    id:3, name:'Mia Chen', uni:'University of Salford', degree:'Marketing BA',
+    year:'1st year', rating:4.7, shiftsCompleted:8, initials:'MC', color:'#8b5cf6',
+    shift:'Barista — Sat 10 May', shiftDate:'Sat 10 May, 08:00–16:00',
+    appliedAgo:'3 hours ago', status:'pending',
+    skills:['Food Hygiene Level 2','Social media','Customer service'],
+    about:'Enthusiastic first-year student with growing experience. Has Food Hygiene Level 2 certification and barista training from previous part-time work.',
+    previousShifts:['Barista at Grind (Mar)','Retail at Zara (Feb)']
+  },
+  {
+    id:4, name:'Liam Hassan', uni:'Manchester Metropolitan University', degree:'Computer Science BSc',
+    year:'2nd year', rating:4.8, shiftsCompleted:16, initials:'LH', color:'#f59e0b',
+    shift:'Front of House — Sun 11 May', shiftDate:'Sun 11 May, 10:00–18:00',
+    appliedAgo:'5 hours ago', status:'pending',
+    skills:['Food Hygiene Level 2','Bar trained','Cash handling'],
+    about:'Dependable and hard-working. Consistently receives positive feedback from employers. Available all day Sunday.',
+    previousShifts:['Bar Staff at Dukes 92 (Apr)','Event Staff at AO Arena (Mar)','Front of House at Yard & Coop (Feb)']
+  },
+  {
+    id:5, name:'Sophie Williams', uni:'University of Bolton', degree:'Nursing BSc',
+    year:'2nd year', rating:4.6, shiftsCompleted:12, initials:'SW', color:'#ef4444',
+    shift:'Barista — Sat 10 May', shiftDate:'Sat 10 May, 08:00–16:00',
+    appliedAgo:'Yesterday', status:'rejected',
+    skills:['Customer service','Food preparation','Team player'],
+    about:'Reliable student nurse looking for weekend work to supplement studies. Good communication skills and friendly manner.',
+    previousShifts:['Café Staff at Costa (Mar)','Event Staff at Manchester Central (Feb)']
+  },
+  {
+    id:6, name:'Tariq Mahmood', uni:'University of Manchester', degree:'Law LLB',
+    year:'1st year', rating:4.5, shiftsCompleted:4, initials:'TM', color:'#06b6d4',
+    shift:'Front of House — Sun 11 May', shiftDate:'Sun 11 May, 10:00–18:00',
+    appliedAgo:'Yesterday', status:'pending',
+    skills:['Customer service','Smart appearance','Punctual'],
+    about:'New to ShiftMatch but eager and professional. Has previous customer-facing experience from retail work.',
+    previousShifts:['Retail at Next (Jan)','Customer service at Boots (Dec)']
+  },
+  {
+    id:7, name:'Priya Sharma', uni:'University of Salford', degree:'Journalism BA',
+    year:'3rd year', rating:4.9, shiftsCompleted:31, initials:'PS', color:'#10b981',
+    shift:'Barista — Fri 9 May', shiftDate:'Fri 9 May, 07:00–15:00',
+    appliedAgo:'2 days ago', status:'approved',
+    skills:['Barista trained','Food Hygiene Level 2','Leadership'],
+    about:'Highly experienced ShiftMatch student. Has covered multiple shifts at City Coffee before — knows your setup well.',
+    previousShifts:['Barista at City Coffee (Mar)','Barista at Takk (Feb)','Event at Manchester Central (Jan)']
+  },
+  {
+    id:8, name:'Daniel Eze', uni:'Manchester Metropolitan University', degree:'Sports Science BSc',
+    year:'2nd year', rating:4.7, shiftsCompleted:19, initials:'DE', color:'#f97316',
+    shift:'Barista — Fri 9 May', shiftDate:'Fri 9 May, 07:00–15:00',
+    appliedAgo:'2 days ago', status:'approved',
+    skills:['Barista trained','Food Hygiene Level 2','Early starts'],
+    about:'Consistent performer, great with early morning starts. Always arrives on time and well-presented.',
+    previousShifts:['Barista at Pret (Mar)','Café at Grind (Feb)','Bar at Albert Hall (Jan)']
+  }
+];
+
+let activeStudentId = null;
+
+function renderApplicants(){
+  const tbody = document.getElementById('applicants-body');
+  tbody.innerHTML = students.map(s => {
+    const statusBadge = s.status==='approved'
+      ? '<span class="badge badge-green">✓ Approved</span>'
+      : s.status==='rejected'
+      ? '<span class="badge badge-red">✗ Rejected</span>'
+      : '<span class="badge badge-amber">Pending</span>';
+    const stars = '★'.repeat(Math.floor(s.rating)) + (s.rating%1?'½':'');
+    return `<tr>
+      <td>
+        <div class="av-cell">
+          <div class="av" style="background:${s.color};">${s.initials}</div>
+          <div>
+            <div style="font-weight:700;">${s.name}</div>
+            <div style="font-size:11px;color:var(--muted);">${s.degree}</div>
+          </div>
+        </div>
+      </td>
+      <td>${s.uni}</td>
+      <td style="font-size:12px;">${s.shift}</td>
+      <td><span class="stars">${stars}</span> <span style="font-size:12px;color:var(--muted);">${s.rating}</span></td>
+      <td><strong>${s.shiftsCompleted}</strong></td>
+      <td style="font-size:12px;color:var(--muted);">${s.appliedAgo}</td>
+      <td>${statusBadge}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button onclick="viewStudent(${s.id})" style="background:var(--blue-l);color:var(--blue);border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">👁 View</button>
+          ${s.status==='pending' ? `
+            <button onclick="approveStudent(${s.id})" style="background:var(--green-l);color:#065f46;border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">✓</button>
+            <button onclick="rejectStudent(${s.id})" style="background:var(--red-l);color:var(--red);border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">✗</button>
+          ` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function viewStudent(id){
+  const s = students.find(x=>x.id===id);
+  if(!s) return;
+  activeStudentId = id;
+  document.getElementById('modal-name').textContent = s.name;
+  const stars = '★'.repeat(Math.floor(s.rating));
+  document.getElementById('modal-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div class="av" style="background:${s.color};width:56px;height:56px;font-size:20px;">${s.initials}</div>
+      <div>
+        <div style="font-size:16px;font-weight:800;">${s.name}</div>
+        <div style="font-size:13px;color:var(--muted);">${s.degree} · ${s.year}</div>
+        <div style="font-size:13px;color:var(--muted);">${s.uni}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="background:var(--paper);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:var(--blue);">${s.shiftsCompleted}</div>
+        <div style="font-size:11px;color:var(--muted);">Shifts done</div>
+      </div>
+      <div style="background:var(--paper);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:var(--amber);">${s.rating}</div>
+        <div style="font-size:11px;color:var(--muted);">Rating</div>
+      </div>
+      <div style="background:var(--paper);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:var(--green);">0</div>
+        <div style="font-size:11px;color:var(--muted);">No-shows</div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">About</div>
+      <div style="font-size:13px;line-height:1.6;color:var(--dark);">${s.about}</div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Skills</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">${s.skills.map(sk=>`<span style="background:var(--blue-l);color:var(--blue);font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;">${sk}</span>`).join('')}</div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Recent Shifts</div>
+      ${s.previousShifts.map(ps=>`<div style="font-size:12px;color:var(--dark);padding:6px 0;border-bottom:1px solid var(--border);">✅ ${ps}</div>`).join('')}
+    </div>
+    <div style="margin-top:16px;padding:12px;background:var(--paper);border-radius:10px;font-size:12px;color:var(--muted);">
+      Applying for: <strong style="color:var(--dark);">${s.shiftDate}</strong>
+    </div>
+  `;
+  const approveBtn = document.getElementById('modal-approve-btn');
+  if(s.status==='approved'){
+    approveBtn.textContent = '✓ Approved';
+    approveBtn.style.background = 'var(--green)';
+    approveBtn.onclick = null;
+  } else if(s.status==='rejected'){
+    approveBtn.textContent = '✗ Rejected';
+    approveBtn.style.background = 'var(--red)';
+    approveBtn.onclick = null;
+  } else {
+    approveBtn.textContent = '✓ Approve for shift';
+    approveBtn.style.background = 'var(--blue)';
+    approveBtn.onclick = () => { approveStudent(id); closeModal(); };
+  }
+  document.getElementById('student-modal').classList.add('show');
+}
+
+function approveStudent(id){
+  const s = students.find(x=>x.id===id);
+  if(!s) return;
+  s.status = 'approved';
+  renderApplicants();
+  toast(s.name+' approved ✓', 'success');
+}
+
+function rejectStudent(id){
+  const s = students.find(x=>x.id===id);
+  if(!s) return;
+  s.status = 'rejected';
+  renderApplicants();
+  toast(s.name+' rejected');
+}
+
+// Close modal on backdrop click
+document.getElementById('student-modal').addEventListener('click', function(e){
+  if(e.target === this) closeModal();
+});
+
+// Init
+renderApplicants();
+
+// ── DEMO SHIFTS STATE ──
+const demoShifts = [
+  { role:'Barista', category:'Hospitality & Food', date:'2025-05-10', start:'08:00', end:'16:00', pay:13.50, spots:2, applicants:5, location:'Northern Quarter, M4 1HN', status:'open' },
+  { role:'Front of House', category:'Hospitality & Food', date:'2025-05-11', start:'10:00', end:'18:00', pay:12.50, spots:3, applicants:4, location:'Northern Quarter, M4 1HN', status:'open' },
+  { role:'Barista', category:'Hospitality & Food', date:'2025-05-09', start:'07:00', end:'15:00', pay:13.50, spots:1, applicants:3, location:'Northern Quarter, M4 1HN', status:'filled' }
+];
+
+function postDemoShift(){
+  const role = document.getElementById('shift-role').value.trim();
+  const category = document.getElementById('shift-category').value;
+  const date = document.getElementById('shift-date').value;
+  const start = document.getElementById('shift-start').value;
+  const end = document.getElementById('shift-end').value;
+  const pay = document.getElementById('shift-pay').value;
+  const spots = document.getElementById('shift-spots').value;
+  const location = document.getElementById('shift-location').value.trim();
+  const errEl = document.getElementById('shift-error');
+  const btn = document.getElementById('post-shift-btn');
+
+  errEl.style.display = 'none';
+  if(!role||!category||!date||!start||!end||!pay||!spots||!location){
+    errEl.textContent = 'Please fill in all required fields.';
+    errEl.style.display = 'block'; return;
+  }
+  if(parseFloat(pay) < 11.44){
+    errEl.textContent = 'Pay must be at least £11.44/hr (UK minimum wage).';
+    errEl.style.display = 'block'; return;
+  }
+
+  btn.textContent = 'Posting...'; btn.disabled = true;
+
+  // Simulate a brief delay
+  setTimeout(function(){
+    // Add to demo shifts
+    demoShifts.unshift({ role, category, date, start, end, pay:parseFloat(pay), spots:parseInt(spots), applicants:0, location, status:'open' });
+
+    // Add demo applicants for the new shift
+    const newApplicants = [
+      { id:100+demoShifts.length, name:'Omar Farooq', uni:'University of Manchester', degree:'Economics BSc', year:'2nd year', rating:4.8, shiftsCompleted:14, initials:'OF', color:'#1a52f5', shift:role+' — '+formatDate(date), shiftDate:formatDate(date)+', '+start+'–'+end, appliedAgo:'Just now', status:'pending', skills:['Punctual','Team player','Customer service'], about:'Reliable student available at short notice. Great reviews from previous employers.', previousShifts:['Café at Pret (Apr)','Bar at Albert Hall (Mar)'] },
+      { id:101+demoShifts.length, name:'Fatima Al-Hassan', uni:'Manchester Metropolitan University', degree:'Business Management BA', year:'3rd year', rating:4.9, shiftsCompleted:27, initials:'FA', color:'#10b981', shift:role+' — '+formatDate(date), shiftDate:formatDate(date)+', '+start+'–'+end, appliedAgo:'Just now', status:'pending', skills:['Food Hygiene Level 2','Leadership','Customer service'], about:'One of our top students. Consistently rated 5 stars by employers.', previousShifts:['Supervisor at Grind (Apr)','Event at AO Arena (Mar)','Barista at Caffè Nero (Feb)'] }
+    ];
+    students.push(...newApplicants);
+    renderApplicants();
+
+    // Show success
+    const successEl = document.getElementById('shift-posted-success');
+    successEl.style.display = 'flex';
+
+    // Update stats
+    document.getElementById('stat-shifts-count').textContent = demoShifts.length;
+    document.getElementById('stat-applicants-count').textContent = students.length;
+
+    // Clear form
+    ['shift-role','shift-date','shift-start','shift-end','shift-pay','shift-spots','shift-location','shift-requirements','shift-notes'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.value = '';
+    });
+    document.getElementById('shift-category').value = '';
+    btn.textContent = 'Post shift →'; btn.disabled = false;
+
+    toast('Shift posted! Students are being matched ✓', 'success');
+  }, 800);
+}
+
+function formatDate(d){
+  if(!d) return '';
+  const date = new Date(d);
+  return date.toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'});
+}
+
+// ── VOIP PANEL ──
+let voipOpen = false;
+let callActive = false;
+let callTimer = null;
+let callSeconds = 0;
+
+function toggleVoip(){
+  voipOpen = !voipOpen;
+  document.getElementById('voip-panel').style.display = voipOpen ? 'block' : 'none';
+}
+
+function startCall(){
+  if(callActive) return;
+  callActive = true;
+  callSeconds = 0;
+  document.getElementById('call-status').textContent = 'Connecting...';
+  document.getElementById('call-status').style.color = 'var(--amber)';
+  document.getElementById('call-avatar-ring').style.animation = 'ring-pulse 1s infinite';
+  setTimeout(function(){
+    document.getElementById('call-status').textContent = 'Connected ✓';
+    document.getElementById('call-status').style.color = 'var(--green)';
+    document.getElementById('call-avatar-ring').style.animation = 'none';
+    document.getElementById('call-avatar-ring').style.background = 'rgba(16,185,129,.2)';
+    document.getElementById('start-call-btn').style.display = 'none';
+    document.getElementById('end-call-btn').style.display = 'block';
+    callTimer = setInterval(function(){
+      callSeconds++;
+      const m = Math.floor(callSeconds/60).toString().padStart(2,'0');
+      const s = (callSeconds%60).toString().padStart(2,'0');
+      document.getElementById('call-timer').textContent = m+':'+s;
+    }, 1000);
+  }, 1500);
+}
+
+function endCall(){
+  if(!callActive) return;
+  callActive = false;
+  clearInterval(callTimer);
+  document.getElementById('call-status').textContent = 'Call ended';
+  document.getElementById('call-status').style.color = 'var(--muted)';
+  document.getElementById('call-timer').textContent = '00:00';
+  document.getElementById('start-call-btn').style.display = 'block';
+  document.getElementById('end-call-btn').style.display = 'none';
+  document.getElementById('call-avatar-ring').style.background = 'rgba(26,82,245,.15)';
+  toast('Call ended ✓');
+}
+</script>
+
+<!-- VOIP FLOATING BUTTON -->
+<div style="position:fixed;bottom:28px;right:28px;z-index:5000;">
+  <!-- Panel -->
+  <div id="voip-panel" style="display:none;background:white;border-radius:20px;box-shadow:0 20px 60px rgba(10,15,30,.2);border:1px solid var(--border);width:280px;margin-bottom:12px;overflow:hidden;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:16px 18px;display:flex;align-items:center;gap:12px;">
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:white;">ShiftMatch Support</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);">hello@joinshiftmatch.com</div>
+      </div>
+      <button onclick="toggleVoip()" style="background:rgba(255,255,255,.1);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <!-- Call area -->
+    <div style="padding:24px;text-align:center;">
+      <div id="call-avatar-ring" style="width:72px;height:72px;border-radius:50%;background:rgba(26,82,245,.15);display:grid;place-items:center;margin:0 auto 14px;transition:all .3s;">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--blue);display:grid;place-items:center;font-size:24px;">⚡</div>
+      </div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">ShiftMatch Team</div>
+      <div id="call-status" style="font-size:12px;color:var(--muted);margin-bottom:6px;">Ready to call</div>
+      <div id="call-timer" style="font-size:22px;font-weight:800;color:var(--dark);margin-bottom:16px;font-variant-numeric:tabular-nums;">00:00</div>
+      <!-- Controls -->
+      <div style="display:flex;justify-content:center;gap:12px;margin-bottom:16px;">
+        <button id="start-call-btn" onclick="startCall()" style="background:var(--green);color:white;border:none;border-radius:50%;width:52px;height:52px;font-size:22px;cursor:pointer;box-shadow:0 4px 14px rgba(16,185,129,.4);">📞</button>
+        <button id="end-call-btn" onclick="endCall()" style="display:none;background:var(--red);color:white;border:none;border-radius:50%;width:52px;height:52px;font-size:22px;cursor:pointer;box-shadow:0 4px 14px rgba(239,68,68,.4);">📵</button>
+        <button style="background:var(--paper);border:1px solid var(--border);border-radius:50%;width:52px;height:52px;font-size:20px;cursor:pointer;" onclick="toast('Mute toggled')">🔇</button>
+        <button style="background:var(--paper);border:1px solid var(--border);border-radius:50%;width:52px;height:52px;font-size:20px;cursor:pointer;" onclick="toast('Speaker toggled')">🔊</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">This is a demo. In your live account,<br/>call your ShiftMatch account manager directly.</div>
+    </div>
+  </div>
+  <!-- Floating button -->
+  <button onclick="toggleVoip()" style="background:linear-gradient(135deg,#1a52f5,#0f3cd4);color:white;border:none;border-radius:50%;width:56px;height:56px;font-size:24px;cursor:pointer;box-shadow:0 8px 24px rgba(26,82,245,.4);display:flex;align-items:center;justify-content:center;margin-left:auto;">📞</button>
+</div>
+
+<style>
+@keyframes ring-pulse {
+  0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.4);}
+  50%{box-shadow:0 0 0 12px rgba(245,158,11,0);}
+}
+</style>
+
+</body>
+</html>
