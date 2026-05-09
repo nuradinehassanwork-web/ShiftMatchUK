@@ -245,11 +245,11 @@ tbody tr:hover{background:#f9fafc;}
     </div>
     <h2>Admin Portal</h2>
     <p>Staff access only. Sign in to continue.</p>
-    <div class="login-field"><label>Email</label><input type="email" id="login-email" placeholder="admin@shiftmatch.co.uk" value="admin@shiftmatch.co.uk"/></div>
+    <div class="login-field"><label>Email</label><input type="email" id="login-email" placeholder="admin@joinshiftmatch.com" value="admin@joinshiftmatch.com"/></div>
     <div class="login-field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"/></div>
     <div class="login-error" id="login-error"></div>
     <button class="login-btn" id="login-btn">Sign in to Portal</button>
-    <p class="login-hint">Email: admin@shiftmatch.co.uk · Password: Admin123</p>
+    <p class="login-hint">ShiftMatch Internal Portal — Authorised staff only</p>
   </div>
 </div>
 
@@ -321,7 +321,7 @@ tbody tr:hover{background:#f9fafc;}
       <div class="sb-avatar-btn" id="sb-avatar">A</div>
       <div class="sb-user-info">
         <span id="sb-name">Admin</span>
-        <span id="sb-email">admin@shiftmatch.co.uk</span>
+        <span id="sb-email">admin@joinshiftmatch.com</span>
       </div>
       <button class="logout-btn" onclick="doLogout()" title="Sign out">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -820,7 +820,7 @@ joinshiftmatch.netlify.app</div>
           <tbody>
             <tr>
               <td><div class="avatar-cell"><div class="av" style="background:var(--blue);" id="sb-avatar2">A</div><span id="staff-admin-name">Admin</span></div></td>
-              <td id="staff-admin-email">admin@shiftmatch.co.uk</td>
+              <td id="staff-admin-email">admin@joinshiftmatch.com</td>
               <td><span class="badge confirmed">Super Admin</span></td>
               <td><span class="badge active">Active · Signed in</span></td>
               <td><button class="tbl-action">Edit</button></td>
@@ -1027,7 +1027,7 @@ function sendBusinessApprovalEmail(email, bizname, contact){
     body: JSON.stringify({
       to:email,
       subject:'✅ Your ShiftMatch business account is now active!',
-      html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;"><div style="font-size:32px;margin-bottom:8px;">⚡</div><div style="font-size:26px;font-weight:800;color:white;">ShiftMatch</div></div><div style="background:white;padding:32px 28px;"><h2 style="font-size:22px;font-weight:800;color:#0a0f1e;">You\'re approved, '+contact+'! 🎉</h2><p style="color:#6b7280;font-size:15px;line-height:1.6;">Your business account for <strong>'+bizname+'</strong> has been approved. You can now log in and start posting shifts.</p><div style="text-align:center;margin:24px 0;"><a href="https://joinshiftmatch.com/business.html" style="background:#1a52f5;color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;">Go to Business Portal →</a></div><p style="color:#6b7280;font-size:14px;">Questions? Email us at hello@joinshiftmatch.com</p></div></div>'
+      html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;"><img src="https://joinshiftmatch.com/logo.png" alt="ShiftMatch" style="width:80px;height:80px;object-fit:contain;margin-bottom:8px;border-radius:16px;"/><div style="font-size:26px;font-weight:800;color:white;">ShiftMatch</div></div><div style="background:white;padding:32px 28px;"><h2 style="font-size:22px;font-weight:800;color:#0a0f1e;">You\'re approved, '+contact+'! 🎉</h2><p style="color:#6b7280;font-size:15px;line-height:1.6;">Your business account for <strong>'+bizname+'</strong> has been approved. You can now log in and start posting shifts.</p><div style="text-align:center;margin:24px 0;"><a href="https://joinshiftmatch.com/business.html" style="background:#1a52f5;color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;">Go to Business Portal →</a></div><p style="color:#6b7280;font-size:14px;">Questions? Email us at hello@joinshiftmatch.com</p></div></div>'
     })
   }).catch(function(e){ console.log('Approval email error:',e); });
 }
