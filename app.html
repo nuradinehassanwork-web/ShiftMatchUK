@@ -199,7 +199,9 @@ html,body{
 .badge-red{background:#fee2e2;color:#991b1b;}
 
 /* ── SHIFT CARD ── */
-.shift-card{
+.filter-chip{padding:6px 12px;border-radius:999px;border:1.5px solid var(--border);background:white;font-family:var(--font);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;}
+.filter-chip.active{background:var(--blue);color:white;border-color:var(--blue);}
+.shift-card{background:white;border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid var(--border);}
   background:white;border-radius:18px;padding:18px;
   border:1px solid var(--border);margin-bottom:12px;
   box-shadow:0 2px 12px rgba(10,15,30,.05);
@@ -671,63 +673,29 @@ html,body{
   <div class="screen hidden" id="screen-shifts">
     <div class="topbar">
       <div class="topbar-title">Available Shifts</div>
-      <button class="topbar-action" onclick="toast('Filters coming soon! 🔧','')">Filter</button>
+      <button class="topbar-action" id="shifts-filter-btn" onclick="toggleShiftFilter()">Filter</button>
     </div>
-    <div style="padding:16px;flex:1;overflow-y:auto;">
-      <div class="alert info" style="display:block;margin-bottom:16px;">Shifts matched to your degree and availability will appear here once you're verified.</div>
-
-      <!-- Sample shifts -->
-      <div class="shift-card">
-        <div class="shift-header">
-          <div><div class="shift-role">Barista</div><div class="shift-business">City Coffee · Manchester City Centre</div></div>
-          <div style="text-align:right;"><div class="shift-pay">£13/hr</div><div class="shift-pay-label">6 hours</div></div>
-        </div>
-        <div class="shift-details">
-          <div class="shift-tag"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Sat 3 May · 9AM–3PM</div>
-          <div class="shift-tag"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>6 hours</div>
-          <div class="shift-tag">☕ Hospitality</div>
-        </div>
-        <div class="shift-footer">
-          <button class="shift-apply" onclick="applyForShift(this,'Barista','City Coffee','Sat 3 May · 9AM-3PM','£13/hr')">Apply now</button>
-          <button class="shift-save" onclick="toast('Saved! ✓','success')">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-          </button>
+    <div style="padding:12px 16px 0;">
+      <div id="shifts-filter-bar" style="display:none;background:white;border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">Category</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button onclick="setShiftFilter('')" class="filter-chip active" data-cat="">All</button>
+          <button onclick="setShiftFilter('Hospitality & Food')" class="filter-chip" data-cat="Hospitality & Food">🍕 Hospitality</button>
+          <button onclick="setShiftFilter('Events & Entertainment')" class="filter-chip" data-cat="Events & Entertainment">🎪 Events</button>
+          <button onclick="setShiftFilter('Retail')" class="filter-chip" data-cat="Retail">🛍 Retail</button>
+          <button onclick="setShiftFilter('Logistics & Warehousing')" class="filter-chip" data-cat="Logistics & Warehousing">📦 Logistics</button>
+          <button onclick="setShiftFilter('Security')" class="filter-chip" data-cat="Security">🔒 Security</button>
+          <button onclick="setShiftFilter('Office & Admin')" class="filter-chip" data-cat="Office & Admin">💼 Office</button>
         </div>
       </div>
-
-      <div class="shift-card">
-        <div class="shift-header">
-          <div><div class="shift-role">Event Staff</div><div class="shift-business">AO Arena · Manchester</div></div>
-          <div style="text-align:right;"><div class="shift-pay">£12.50/hr</div><div class="shift-pay-label">8 hours</div></div>
-        </div>
-        <div class="shift-details">
-          <div class="shift-tag"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Fri 9 May · 4PM–12AM</div>
-          <div class="shift-tag">🎪 Events</div>
-          <div class="shift-tag" style="background:#d1fae5;color:#065f46;">3 spots left</div>
-        </div>
-        <div class="shift-footer">
-          <button class="shift-apply" onclick="applyForShift(this,'Event Staff','AO Arena','Fri 9 May · 4PM-12AM','£12.50/hr')">Apply now</button>
-          <button class="shift-save" onclick="toast('Saved! ✓','success')">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-          </button>
-        </div>
+      <div id="shifts-match-banner" style="display:none;background:#d1fae5;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#065f46;font-weight:600;">
+        ✅ Green shifts fit your timetable — apply with confidence!
       </div>
-
-      <div class="shift-card">
-        <div class="shift-header">
-          <div><div class="shift-role">Warehouse Operative</div><div class="shift-business">Royal Mail · Depot M16</div></div>
-          <div style="text-align:right;"><div class="shift-pay">£14/hr</div><div class="shift-pay-label">8 hours</div></div>
-        </div>
-        <div class="shift-details">
-          <div class="shift-tag"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Sun 11 May · 6AM–2PM</div>
-          <div class="shift-tag">📦 Logistics</div>
-        </div>
-        <div class="shift-footer">
-          <button class="shift-apply" onclick="applyForShift(this,'Warehouse Operative','Royal Mail','Sun 11 May · 6AM-2PM','£14/hr')">Apply now</button>
-          <button class="shift-save" onclick="toast('Saved! ✓','success')">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-          </button>
-        </div>
+    </div>
+    <div style="padding:0 16px 16px;flex:1;overflow-y:auto;" id="shifts-list">
+      <div class="empty-state" style="text-align:center;padding:40px 20px;">
+        <div style="font-size:36px;margin-bottom:12px;">⏳</div>
+        <div style="font-weight:700;margin-bottom:8px;">Loading shifts...</div>
       </div>
     </div>
     <div class="bottom-nav">
@@ -1079,6 +1047,7 @@ function navTo(name, el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if(el) el.classList.add('active');
   showScreen(name);
+  if(name === 'shifts') loadShifts();
 }
 
 // ── AUTH STATE ──
@@ -1714,8 +1683,212 @@ async function saveAvailability(){
   } catch(e){ toast('Error saving: '+e.message,'error'); }
 }
 
-// ── APPLY FOR SHIFT ──
-async function applyForShift(btn, role, business, datetime, pay){
+// ── SHIFT MATCHING ALGORITHM ──
+var allShifts = [];
+var activeShiftFilter = '';
+var shiftsLoaded = false;
+
+function toggleShiftFilter(){
+  var bar = document.getElementById('shifts-filter-bar');
+  bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
+}
+
+function setShiftFilter(cat){
+  activeShiftFilter = cat;
+  document.querySelectorAll('.filter-chip').forEach(function(btn){
+    btn.classList.toggle('active', btn.getAttribute('data-cat') === cat);
+  });
+  renderShifts();
+}
+
+function shiftFitsAvailability(shift){
+  // If no availability grid set, can't determine fit
+  if(!availGrid || Object.keys(availGrid).length === 0) return null;
+  if(!shift.date || !shift.startTime || !shift.endTime) return null;
+
+  try {
+    var date = new Date(shift.date);
+    var dayIndex = date.getDay(); // 0=Sun,1=Mon...6=Sat
+    // Convert to Mon=0...Sun=6
+    var dayKey = dayIndex === 0 ? 6 : dayIndex - 1;
+
+    var startHour = parseInt(shift.startTime.split(':')[0]);
+    var endHour = parseInt(shift.endTime.split(':')[0]);
+
+    // Check each hour of the shift against availability grid
+    // availGrid[day][hour] = true means FREE, false/undefined means BUSY
+    var dayGrid = availGrid[dayKey] || {};
+    for(var h = startHour; h < endHour; h++){
+      if(dayGrid[h] === false) return false; // clash
+    }
+    return true; // fits
+  } catch(e){
+    return null;
+  }
+}
+
+function formatShiftDate(dateStr){
+  if(!dateStr) return '';
+  try {
+    var d = new Date(dateStr);
+    return d.toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'});
+  } catch(e){ return dateStr; }
+}
+
+function calcHours(start, end){
+  if(!start || !end) return '';
+  try {
+    var s = parseInt(start.split(':')[0]);
+    var e = parseInt(end.split(':')[0]);
+    var diff = e - s;
+    return diff > 0 ? diff + ' hrs' : '';
+  } catch(e){ return ''; }
+}
+
+function categoryEmoji(cat){
+  var map = {'Hospitality & Food':'🍕','Events & Entertainment':'🎪','Retail':'🛍','Logistics & Warehousing':'📦','Security':'🔒','Office & Admin':'💼','Healthcare':'🏥'};
+  return map[cat] || '💼';
+}
+
+function renderShifts(){
+  var list = document.getElementById('shifts-list');
+  if(!list) return;
+
+  var filtered = activeShiftFilter
+    ? allShifts.filter(function(s){ return s.category === activeShiftFilter; })
+    : allShifts;
+
+  if(filtered.length === 0){
+    list.innerHTML = '<div style="text-align:center;padding:40px 20px;"><div style="font-size:36px;margin-bottom:12px;">📋</div><div style="font-weight:700;margin-bottom:8px;">'+(activeShiftFilter ? 'No '+activeShiftFilter+' shifts right now' : 'No shifts available yet')+'</div><div style="color:var(--muted);font-size:13px;">Check back soon — businesses are posting shifts daily.</div></div>';
+    return;
+  }
+
+  // Sort: matched shifts first, then unmatched, then clashing
+  var hasGrid = availGrid && Object.keys(availGrid).length > 0;
+  if(hasGrid){
+    filtered.sort(function(a, b){
+      var fa = shiftFitsAvailability(a);
+      var fb = shiftFitsAvailability(b);
+      if(fa === true && fb !== true) return -1;
+      if(fb === true && fa !== true) return 1;
+      if(fa === null && fb === false) return -1;
+      if(fb === null && fa === false) return 1;
+      return 0;
+    });
+    // Show banner
+    var matched = filtered.filter(function(s){ return shiftFitsAvailability(s) === true; });
+    var banner = document.getElementById('shifts-match-banner');
+    if(banner) banner.style.display = matched.length > 0 ? 'block' : 'none';
+  }
+
+  list.innerHTML = filtered.map(function(shift){
+    var fits = shiftFitsAvailability(shift);
+    var hours = calcHours(shift.startTime, shift.endTime);
+    var dateStr = formatShiftDate(shift.date);
+    var timeStr = shift.startTime && shift.endTime ? shift.startTime+'–'+shift.endTime : '';
+    var spotsLeft = (shift.spots || 1) - (shift.applicants || 0);
+    spotsLeft = Math.max(0, spotsLeft);
+
+    var matchBadge = '';
+    var cardBorder = '';
+    if(fits === true){
+      matchBadge = '<div style="background:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-block;margin-bottom:8px;">✅ Fits your timetable</div>';
+      cardBorder = 'border:1.5px solid #6ee7b7;';
+    } else if(fits === false){
+      matchBadge = '<div style="background:#fee2e2;color:#991b1b;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-block;margin-bottom:8px;">⚠️ Clashes with lectures</div>';
+      cardBorder = 'border:1.5px solid #fca5a5;opacity:0.85;';
+    }
+
+    var warnAttr = fits === false ? ' onclick="confirmClashApply(this,\''+shift.id+'\')"' : ' onclick="applyForShiftById(this,\''+shift.id+'\')"';
+
+    return '<div class="shift-card" style="'+cardBorder+'">'+
+      matchBadge+
+      '<div class="shift-header">'+
+        '<div>'+
+          '<div class="shift-role">'+shift.role+'</div>'+
+          '<div class="shift-business">'+(shift.businessName||shift.business||'')+(shift.location ? ' · '+shift.location : '')+'</div>'+
+        '</div>'+
+        '<div style="text-align:right;">'+
+          '<div class="shift-pay">£'+(shift.pay||shift.hourlyPay||'')+'<span style="font-size:11px;font-weight:500;">/hr</span></div>'+
+          (hours ? '<div class="shift-pay-label">'+hours+'</div>' : '')+
+        '</div>'+
+      '</div>'+
+      '<div class="shift-details">'+
+        (dateStr || timeStr ? '<div class="shift-tag"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'+dateStr+(timeStr ? ' · '+timeStr : '')+'</div>' : '')+
+        (shift.category ? '<div class="shift-tag">'+categoryEmoji(shift.category)+' '+shift.category+'</div>' : '')+
+        (spotsLeft <= 3 && spotsLeft > 0 ? '<div class="shift-tag" style="background:#fef3c7;color:#92400e;">'+spotsLeft+' spot'+(spotsLeft===1?'':'s')+' left</div>' : '')+
+      '</div>'+
+      '<div class="shift-footer">'+
+        '<button class="shift-apply"'+warnAttr+'>Apply now</button>'+
+        '<button class="shift-save" onclick="toast(\'Saved! ✓\',\'success\')">'+
+          '<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>'+
+        '</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+async function loadShifts(){
+  if(shiftsLoaded) return;
+  var list = document.getElementById('shifts-list');
+  try {
+    var snap = await db.collection('shifts').where('status','==','open').orderBy('createdAt','desc').limit(50).get();
+    allShifts = snap.docs.map(function(d){
+      var data = d.data();
+      data.id = d.id;
+      return data;
+    });
+    shiftsLoaded = true;
+    renderShifts();
+  } catch(e){
+    console.log('Load shifts error:', e.message);
+    if(list) list.innerHTML = '<div style="text-align:center;padding:40px 20px;"><div style="font-size:36px;margin-bottom:12px;">📋</div><div style="font-weight:700;margin-bottom:8px;">No shifts yet</div><div style="color:var(--muted);font-size:13px;">Businesses are being onboarded — shifts will appear here soon.</div></div>';
+  }
+}
+
+async function applyForShiftById(btn, shiftId){
+  if(!currentUser){ toast('Please sign in to apply','error'); return; }
+  if(!studentDoc || studentDoc.status !== 'active'){
+    toast('Complete your verification first to apply for shifts','error'); return;
+  }
+  var shift = allShifts.find(function(s){ return s.id === shiftId; });
+  if(!shift) return;
+  btn.textContent = 'Applying...'; btn.disabled = true;
+  try {
+    // Check not already applied
+    var existing = await db.collection('applications').where('studentId','==',currentUser.uid).where('shiftId','==',shiftId).get();
+    if(!existing.empty){ btn.textContent='Already applied ✓'; btn.style.background='var(--green)'; return; }
+    await db.collection('applications').add({
+      shiftId: shiftId,
+      studentId: currentUser.uid,
+      studentName: studentDoc.name||'',
+      studentEmail: studentDoc.email||currentUser.email,
+      businessId: shift.businessId||'',
+      businessName: shift.businessName||shift.business||'',
+      role: shift.role||'',
+      date: shift.date||'',
+      startTime: shift.startTime||'',
+      endTime: shift.endTime||'',
+      pay: shift.pay||shift.hourlyPay||'',
+      status: 'pending',
+      appliedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    btn.textContent = 'Applied ✓';
+    btn.style.background = 'var(--green)';
+    toast('Application sent! 🎉','success');
+  } catch(e){
+    btn.textContent = 'Apply now'; btn.disabled = false;
+    toast('Error: '+e.message,'error');
+  }
+}
+
+function confirmClashApply(btn, shiftId){
+  var shift = allShifts.find(function(s){ return s.id === shiftId; });
+  var role = shift ? shift.role : 'this shift';
+  if(confirm('⚠️ This shift clashes with your lectures. Are you sure you want to apply for '+role+'?')){
+    applyForShiftById(btn, shiftId);
+  }
+}
   if(!currentUser){ toast('Please sign in to apply','error'); return; }
   if(!studentDoc || studentDoc.status!=='active'){
     toast('Complete verification first to apply for shifts','error');
