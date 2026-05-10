@@ -450,6 +450,18 @@ function showScreen(name){
 }
 
 // ── AUTH STATE ──
+// Safety timeout — hide loading after 5 seconds no matter what
+setTimeout(function(){
+  var loader = document.getElementById("loading");
+  if(loader) loader.style.display = "none";
+  var welcome = document.getElementById("screen-welcome");
+  var login = document.getElementById("screen-login");
+  // If nothing is showing, show login
+  if(welcome && welcome.style.display === 'none' && login && login.style.display === 'none'){
+    showScreen('login');
+  }
+}, 5000);
+
 auth.onAuthStateChanged(async function(user){
   document.getElementById("loading").style.display = "none";
   if(user){
@@ -619,54 +631,43 @@ window.submitStep2 = async function(){
   const fill         = document.getElementById('photo-progress-fill');
   const label        = document.getElementById('photo-progress-label');
   progressWrap.style.display = 'block';
+  label.textContent = 'Processing photo...';
+  fill.style.width = '30%';
 
   try {
     const file = input.files[0];
-    const ref  = storage.ref(`verifications/${currentUser.uid}/profile-photo`);
-    const task = ref.put(file);
-
-    task.on('state_changed',
-      function(snap){
-        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-        fill.style.width = pct+'%';
-        label.textContent = 'Uploading... '+pct+'%';
-      },
-      function(error){
-        // Upload failed — save note and continue anyway
-        console.log('Upload error:', error.message);
-        if(studentDocId){
-          db.collection('students').doc(studentDocId).update({
-            step2Complete: true,
-            step2Error: error.message,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-        }
-        btn.textContent='Continue →'; btn.disabled=false;
-        progressWrap.style.display='none';
-        goToStep(3);
-      },
-      async function(){
-        try {
-          uploadedPhotoURL = await ref.getDownloadURL();
-        } catch(e){
-          console.log('getDownloadURL failed:', e.message);
-          uploadedPhotoURL = null;
-        }
-        if(studentDocId){
-          const updateData = {
-            step2Complete: true,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          };
-          if(uploadedPhotoURL) updateData.profilePhotoURL = uploadedPhotoURL;
-          await db.collection('students').doc(studentDocId).update(updateData);
-        }
-        btn.textContent='Continue →'; btn.disabled=false;
-        progressWrap.style.display='none';
-        goToStep(3);
+    // Convert to base64 and save to Firestore instead of Storage (avoids CORS)
+    const reader = new FileReader();
+    reader.onload = async function(e){
+      fill.style.width = '70%';
+      label.textContent = 'Saving...';
+      const base64 = e.target.result;
+      uploadedPhotoURL = base64;
+      if(studentDocId){
+        await db.collection('students').doc(studentDocId).update({
+          step2Complete: true,
+          profilePhotoBase64: base64,
+          profilePhotoName: file.name,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
       }
-    );
+      fill.style.width = '100%';
+      label.textContent = 'Photo saved ✓';
+      setTimeout(function(){
+        btn.textContent='Continue →'; btn.disabled=false;
+        progressWrap.style.display='none';
+        goToStep(3);
+      }, 500);
+    };
+    reader.onerror = function(){
+      console.log('FileReader error');
+      if(studentDocId){ db.collection('students').doc(studentDocId).update({step2Complete:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); }
+      btn.textContent='Continue →'; btn.disabled=false;
+      progressWrap.style.display='none';
+      goToStep(3);
+    };
+    reader.readAsDataURL(file);
   } catch(e){
-    // Any error — just continue to next step
     console.log('Step 2 error:', e.message);
     if(studentDocId){
       db.collection('students').doc(studentDocId).update({
@@ -736,15 +737,39 @@ window.submitStep3 = async function(){
   const fill = document.getElementById("id-progress-fill");
   const label = document.getElementById("id-progress-label");
   progressWrap.style.display="block";
+  label.textContent="Processing document...";
+  fill.style.width="30%";
   try {
     const file = input.files[0];
-    const ref = storage.ref("verifications/"+currentUser.uid+"/id-document");
-    const task = ref.put(file);
-    task.on("state_changed",
-      function(snap){ const pct=Math.round((snap.bytesTransferred/snap.totalBytes)*100); fill.style.width=pct+"%"; label.textContent="Uploading... "+pct+"%"; },
-      function(error){ console.log("ID upload error:",error.message); if(studentDocId){ db.collection("students").doc(studentDocId).update({step3Complete:true,step3Error:error.message,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); } btn.textContent="Continue →"; btn.disabled=false; progressWrap.style.display="none"; goToStep(4); },
-      async function(){ try{ uploadedIDURL=await ref.getDownloadURL(); }catch(e){ console.log("ID URL failed:",e.message); uploadedIDURL=null; } if(studentDocId){ const d={step3Complete:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}; if(uploadedIDURL) d.idDocumentURL=uploadedIDURL; await db.collection("students").doc(studentDocId).update(d); } btn.textContent="Continue →"; btn.disabled=false; progressWrap.style.display="none"; goToStep(4); }
-    );
+    const reader = new FileReader();
+    reader.onload = async function(e){
+      fill.style.width="70%";
+      label.textContent="Saving...";
+      const base64 = e.target.result;
+      uploadedIDURL = base64;
+      if(studentDocId){
+        await db.collection("students").doc(studentDocId).update({
+          step3Complete:true,
+          idDocumentBase64: base64,
+          idDocumentName: file.name,
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      fill.style.width="100%";
+      label.textContent="Document saved ✓";
+      setTimeout(function(){
+        btn.textContent="Continue →"; btn.disabled=false;
+        progressWrap.style.display="none";
+        goToStep(4);
+      }, 500);
+    };
+    reader.onerror = function(){
+      if(studentDocId){ db.collection("students").doc(studentDocId).update({step3Complete:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); }
+      btn.textContent="Continue →"; btn.disabled=false;
+      progressWrap.style.display="none";
+      goToStep(4);
+    };
+    reader.readAsDataURL(file);
   } catch(e){ console.log("Step3 error:",e.message); if(studentDocId){ db.collection("students").doc(studentDocId).update({step3Complete:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); } btn.textContent="Continue →"; btn.disabled=false; progressWrap.style.display="none"; goToStep(4); }
 };
 
@@ -802,7 +827,7 @@ window.submitStep4 = async function(){
             subject:'✅ Verification received — we\'re reviewing your details!',
             html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f4f6fb;">'\
               +'<div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;">'\
-              +'<div style="font-size:32px;margin-bottom:8px;">⚡</div>'\
+              +'<img src="https://joinshiftmatch.com/logo.png" alt="ShiftMatch" style="width:80px;height:80px;object-fit:contain;margin-bottom:8px;border-radius:16px;"/>'\
               +'<div style="font-size:26px;font-weight:800;color:white;margin-bottom:4px;">ShiftMatch</div>'\
               +'<div style="font-size:14px;color:rgba(255,255,255,.5);">Flexible work. Around your lectures.</div>'\
               +'</div>'\
