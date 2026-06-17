@@ -255,6 +255,11 @@ html,body{min-height:100%;font-family:var(--font);background:#f4f6fb;color:var(-
         <div class="field"><label>Full name</label><input id="s1-name" type="text" placeholder="As it appears on your ID"/></div>
         <div class="field"><label>Date of birth</label><input id="s1-dob" type="date"/></div>
         <div class="field">
+          <label>Mobile number (WhatsApp)</label>
+          <input id="s1-phone" type="tel" placeholder="+44 7XXX XXXXXX"/>
+          <div class="field-hint">Used for shift alerts and account updates via WhatsApp.</div>
+        </div>
+        <div class="field">
           <label>National Insurance number</label>
           <div class="ni-wrap">
             <input id="s1-ni" type="text" placeholder="e.g. AB123456C" maxlength="9" oninput="validateNI(this)"/>
@@ -562,12 +567,14 @@ window.formatSortCode = function(input){
 window.submitStep1 = function(){
   const name = document.getElementById('s1-name').value.trim();
   const dob  = document.getElementById('s1-dob').value;
+  const phone= document.getElementById('s1-phone').value.trim();
   const ni   = document.getElementById('s1-ni').value.trim().toUpperCase();
   const err  = document.getElementById('s1-error');
 
   err.style.display = 'none';
   if(!name){ err.style.display='block'; err.textContent='Please enter your full name.'; return; }
   if(!dob){ err.style.display='block'; err.textContent='Please enter your date of birth.'; return; }
+  if(!phone || !/^\+?[0-9\s]{10,15}$/.test(phone)){ err.style.display='block'; err.textContent='Please enter a valid mobile number including country code (e.g. +447XXXXXXXXX).'; return; }
 
   // Age check — must be 18+
   const age = (new Date() - new Date(dob)) / (1000*60*60*24*365.25);
@@ -584,6 +591,7 @@ window.submitStep1 = function(){
     db.collection('students').doc(studentDocId).update({
       verifiedName: name,
       dateOfBirth: dob,
+      phoneNumber: phone,
       nationalInsurance: ni,
       step1Complete: true,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -823,29 +831,9 @@ window.submitStep4 = async function(){
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body: JSON.stringify({
-            to:stuEmail,
-            subject:'✅ Verification received — we\'re reviewing your details!',
-            html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f4f6fb;">'\
-              +'<div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;">'\
-              +'<img src="https://joinshiftmatch.com/logo.png" alt="ShiftMatch" style="width:80px;height:80px;object-fit:contain;margin-bottom:8px;border-radius:16px;"/>'\
-              +'<div style="font-size:26px;font-weight:800;color:white;margin-bottom:4px;">ShiftMatch</div>'\
-              +'<div style="font-size:14px;color:rgba(255,255,255,.5);">Flexible work. Around your lectures.</div>'\
-              +'</div>'\
-              +'<div style="background:white;padding:32px 28px;">'\
-              +'<h2 style="font-size:22px;font-weight:800;color:#0a0f1e;margin-bottom:8px;">We\'ve got your documents, '+stuName+'! 🎉</h2>'\
-              +'<p style="color:#6b7280;font-size:15px;line-height:1.6;margin-bottom:20px;">Thanks for completing your verification. Our team will review your details within 24 hours and you\'ll receive an email once you\'re approved.</p>'\
-              +'<div style="background:#d1fae5;border-radius:12px;padding:20px;margin-bottom:24px;">'\
-              +'<div style="font-size:14px;color:#065f46;line-height:2;">✅ Personal details — received<br/>✅ Photo — received<br/>✅ ID document — received<br/>✅ Bank details — received</div>'\
-              +'</div>'\
-              +'<div style="text-align:center;margin:24px 0;">'\
-              +'<a href="https://joinshiftmatch.com/app.html" style="background:#1a52f5;color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;">Go to Student App →</a>'\
-              +'</div>'\
-              +'<p style="color:#6b7280;font-size:14px;">Any questions? Just reply to this email.</p>'\
-              +'</div>'\
-              +'<div style="background:#f4f6fb;padding:20px 28px;text-align:center;border-radius:0 0 12px 12px;">'\
-              +'<div style="font-size:13px;font-weight:700;color:#0a0f1e;margin-bottom:4px;">The ShiftMatch Team</div>'\
-              +'<a href="https://joinshiftmatch.com" style="color:#1a52f5;font-size:13px;text-decoration:none;">joinshiftmatch.com</a>'\
-              +'</div></div>'
+            to: stuEmail,
+            subject: 'Verification received - we are reviewing your details!',
+            html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:28px;text-align:center;border-radius:12px 12px 0 0;"><div style="font-size:30px;margin-bottom:8px;">⚡</div><div style="font-size:22px;font-weight:800;color:white;">ShiftMatch</div></div><div style="background:white;padding:28px;"><h2 style="font-size:20px;font-weight:800;color:#0a0f1e;">We have got your documents, ' + stuName + '!</h2><p style="color:#6b7280;font-size:14px;line-height:1.6;">Thanks for completing your verification. Our team will review your details within 24 hours.</p><div style="background:#d1fae5;border-radius:12px;padding:16px;margin:16px 0;font-size:13px;color:#065f46;line-height:2;">Personal details received<br/>Photo received<br/>ID document received<br/>Bank details received</div><div style="text-align:center;margin:20px 0;"><a href="https://joinshiftmatch.com/app.html" style="background:#1a52f5;color:white;padding:12px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;">Go to Student App</a></div><p style="color:#6b7280;font-size:13px;">Any questions? Reply to this email.</p></div><div style="background:#f4f6fb;padding:16px;text-align:center;border-radius:0 0 12px 12px;font-size:12px;color:#6b7280;">The ShiftMatch Team - joinshiftmatch.com</div></div>'
           })
         }).catch(function(e){ console.log('Verification email error:',e); });
       }

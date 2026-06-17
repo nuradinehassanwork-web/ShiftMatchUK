@@ -1054,6 +1054,20 @@ function approveVetting(id, name){
   }).then(function(){
     logActivity(name+' fully vetted and approved','student');
     toast(name+' approved ✓');
+    // Send WhatsApp alert if phone number on file
+    db.collection('students').doc(id).get().then(function(doc){
+      var phone = doc.data().phoneNumber;
+      if(phone){
+        fetch('https://us-central1-shiftmatch-c5cd0.cloudfunctions.net/sendWhatsApp',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            to: phone,
+            message: '⚡ ShiftMatch: Great news '+name.split(' ')[0]+' — you\\'re verified! 🎉 Log in now to browse shifts matched to your timetable: joinshiftmatch.com/app.html'
+          })
+        }).catch(function(e){ console.log('WhatsApp alert error:', e); });
+      }
+    });
   }).catch(function(e){ toast('Error: '+e.message,'error'); });
 }
 
