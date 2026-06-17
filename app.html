@@ -853,6 +853,17 @@ html,body{
         <div class="stat-pill"><div class="stat-num" id="profile-status-dot">⏳</div><div class="stat-lbl">Status</div></div>
       </div>
 
+      <!-- Ratings section -->
+      <div class="card" style="margin-bottom:14px;" id="profile-ratings-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:15px;font-weight:700;">⭐ My Ratings</div>
+          <div id="profile-avg-rating" style="font-size:13px;font-weight:700;color:var(--blue);"></div>
+        </div>
+        <div id="profile-ratings-list">
+          <div style="font-size:13px;color:var(--muted);text-align:center;padding:12px 0;">No ratings yet — complete a shift to get your first review!</div>
+        </div>
+      </div>
+
       <!-- iCal Timetable Sync -->
       <div class="card" style="margin-bottom:14px;">
         <div style="font-size:15px;font-weight:700;margin-bottom:4px;">📅 University Timetable Sync</div>
@@ -1389,10 +1400,22 @@ async function loadHomeData(){
     document.getElementById('home-name').textContent=name;
     document.getElementById('home-shifts').textContent=data.shiftsCount||0;
     document.getElementById('home-earnings').textContent='£'+(data.earnings||0);
+    // Show rating
+    var ratingEl = document.getElementById('home-rating');
+    if(ratingEl){
+      if(data.rating && data.ratingsCount > 0){
+        ratingEl.textContent = data.rating + ' ⭐';
+        ratingEl.style.fontSize = '16px';
+      } else {
+        ratingEl.textContent = 'New';
+      }
+    }
 
     // Profile
     document.getElementById('profile-name').textContent=data.name||'Student';
     document.getElementById('profile-email').textContent=data.email||currentUser.email;
+    // Load ratings on profile
+    loadProfileRatings();
     document.getElementById('profile-initial').textContent=(data.name||'?')[0].toUpperCase();
     document.getElementById('profile-shifts').textContent=data.shiftsCount||0;
     document.getElementById('profile-earned').textContent='£'+(data.earnings||0);
@@ -1843,6 +1866,48 @@ async function loadShifts(){
   } catch(e){
     console.log('Load shifts error:', e.message);
     if(list) list.innerHTML = '<div style="text-align:center;padding:40px 20px;"><div style="font-size:36px;margin-bottom:12px;">📋</div><div style="font-weight:700;margin-bottom:8px;">No shifts yet</div><div style="color:var(--muted);font-size:13px;">Businesses are being onboarded — shifts will appear here soon.</div></div>';
+  }
+}
+
+// ── LOAD PROFILE RATINGS ──
+async function loadProfileRatings(){
+  if(!currentUser) return;
+  try {
+    var snap = await db.collection('ratings')
+      .where('studentId','==',currentUser.uid)
+      .orderBy('createdAt','desc')
+      .limit(10).get();
+
+    var avgEl = document.getElementById('profile-avg-rating');
+    var listEl = document.getElementById('profile-ratings-list');
+    if(!avgEl || !listEl) return;
+
+    if(snap.empty){
+      avgEl.textContent = '';
+      listEl.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px 0;">No ratings yet — complete a shift to get your first review!</div>';
+      return;
+    }
+
+    var total = 0;
+    snap.docs.forEach(function(d){ total += d.data().rating; });
+    var avg = Math.round((total / snap.docs.length) * 10) / 10;
+    avgEl.textContent = avg + ' ⭐ (' + snap.docs.length + ' review' + (snap.docs.length===1?'':'s') + ')';
+
+    listEl.innerHTML = snap.docs.map(function(d){
+      var r = d.data();
+      var stars = '⭐'.repeat(r.rating);
+      var date = r.createdAt && r.createdAt.toDate ? r.createdAt.toDate().toLocaleDateString('en-GB') : '';
+      return '<div style="padding:12px 0;border-bottom:1px solid rgba(10,15,30,.07);">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">'+
+          '<div style="font-size:13px;font-weight:700;">'+(r.businessName||'Business')+'</div>'+
+          '<div style="font-size:12px;color:var(--muted);">'+date+'</div>'+
+        '</div>'+
+        '<div style="font-size:15px;margin-bottom:4px;">'+stars+'</div>'+
+        (r.comment ? '<div style="font-size:12px;color:var(--muted);font-style:italic;">"'+r.comment+'"</div>' : '')+
+      '</div>';
+    }).join('') + '</div>';
+  } catch(e){
+    console.log('Ratings load error:', e.message);
   }
 }
 

@@ -705,7 +705,7 @@ function sendBusinessWelcomeEmail(email, bizname, contact){
       subject:'Welcome to ShiftMatch — Your account is under review 🎉',
       html:'<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f4f6fb;">'
         +'<div style="background:linear-gradient(135deg,#0a0f1e,#1a2d6e);padding:32px 28px;text-align:center;border-radius:12px 12px 0 0;">'
-        +'<div style="font-size:32px;margin-bottom:8px;">⚡</div>'
+        +'<img src="https://joinshiftmatch.com/logo.png" alt="ShiftMatch" style="width:80px;height:80px;object-fit:contain;margin-bottom:8px;border-radius:16px;"/>'
         +'<div style="font-size:26px;font-weight:800;color:white;margin-bottom:4px;">ShiftMatch</div>'
         +'<div style="font-size:14px;color:rgba(255,255,255,.5);">Business Portal</div>'
         +'</div>'
@@ -857,6 +857,9 @@ async function loadApplicants(){
     tbody.innerHTML = snap.docs.map(function(d){
       const a=d.data();
       const date = a.appliedAt&&a.appliedAt.toDate ? a.appliedAt.toDate().toLocaleDateString('en-GB') : 'Recently';
+      const rateBtn = a.status==='approved' && !a.rated
+        ? '<button onclick="openRatingModal(\''+d.id+'\',\''+escape(a.studentName||'Student')+'\')" style="background:#fef3c7;color:#92400e;border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">⭐ Rate</button>'
+        : a.rated ? '<span style="font-size:11px;color:var(--muted);">⭐ '+a.rating+'/5</span>' : '';
       return '<tr>'
         +'<td><strong>'+(a.studentName||'Student')+'</strong></td>'
         +'<td>'+(a.studentEmail||'')+'</td>'
@@ -864,9 +867,10 @@ async function loadApplicants(){
         +'<td>'+(a.role||'—')+'</td>'
         +'<td>'+date+'</td>'
         +'<td><span class="badge '+(a.status==='approved'?'badge-green':a.status==='rejected'?'badge-red':'badge-amber')+'">'+(a.status||'pending')+'</span></td>'
-        +'<td style="display:flex;gap:6px;">'
+        +'<td style="display:flex;gap:6px;flex-wrap:wrap;">'
         +'<button onclick="updateApplication(\''+d.id+'\',\'approved\')" style="background:var(--green-l);color:#065f46;border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">✓ Approve</button>'
         +'<button onclick="updateApplication(\''+d.id+'\',\'rejected\')" style="background:var(--red-l);color:var(--red);border:none;border-radius:6px;padding:5px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">✗ Reject</button>'
+        +rateBtn
         +'</td></tr>';
     }).join('');
   } catch(e){ console.log('Applicants error:',e); }
@@ -978,6 +982,114 @@ document.addEventListener('keydown',function(e){
     if(active && active.id==='screen-login') loginBusiness();
   }
 });
+</script>
+<!-- Rating Modal -->
+<div id="rating-modal" style="display:none;position:fixed;inset:0;background:rgba(10,15,30,.6);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(6px);">
+  <div style="background:white;border-radius:20px;padding:28px;width:90%;max-width:400px;box-shadow:0 24px 56px rgba(10,15,30,.18);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-size:18px;font-weight:800;">Rate Student</div>
+      <button onclick="closeRatingModal()" style="width:32px;height:32px;border-radius:50%;border:none;background:#f4f6fb;cursor:pointer;font-size:16px;">✕</button>
+    </div>
+    <div id="rating-student-name" style="font-size:14px;color:#6b7280;margin-bottom:18px;"></div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Overall rating *</div>
+    <div style="display:flex;gap:8px;margin-bottom:18px;" id="star-row">
+      <span onclick="selectStar(1)" style="font-size:32px;cursor:pointer;opacity:.3;" class="star-btn" data-val="1">⭐</span>
+      <span onclick="selectStar(2)" style="font-size:32px;cursor:pointer;opacity:.3;" class="star-btn" data-val="2">⭐</span>
+      <span onclick="selectStar(3)" style="font-size:32px;cursor:pointer;opacity:.3;" class="star-btn" data-val="3">⭐</span>
+      <span onclick="selectStar(4)" style="font-size:32px;cursor:pointer;opacity:.3;" class="star-btn" data-val="4">⭐</span>
+      <span onclick="selectStar(5)" style="font-size:32px;cursor:pointer;opacity:.3;" class="star-btn" data-val="5">⭐</span>
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Comment (optional)</div>
+    <textarea id="rating-comment" placeholder="e.g. Great attitude, arrived on time, would book again..." style="width:100%;padding:12px;border:1.5px solid rgba(10,15,30,.1);border-radius:12px;font-family:var(--font);font-size:13px;resize:none;min-height:80px;outline:none;"></textarea>
+    <div id="rating-error" style="color:#ef4444;font-size:12px;margin-top:8px;display:none;"></div>
+    <button onclick="submitRating()" id="rating-submit-btn" style="width:100%;margin-top:14px;padding:13px;border:none;border-radius:12px;background:#1a52f5;color:white;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;">Submit rating</button>
+  </div>
+</div>
+
+<script>
+var currentRatingAppId = null;
+var currentRatingStudentId = null;
+var currentRatingStudentName = null;
+var selectedStars = 0;
+
+function openRatingModal(appId, studentName){
+  currentRatingAppId = appId;
+  currentRatingStudentName = unescape(studentName);
+  selectedStars = 0;
+  document.getElementById('rating-modal').style.display = 'flex';
+  document.getElementById('rating-student-name').textContent = 'Rating for: ' + unescape(studentName);
+  document.getElementById('rating-comment').value = '';
+  document.getElementById('rating-error').style.display = 'none';
+  document.getElementById('rating-submit-btn').textContent = 'Submit rating';
+  document.getElementById('rating-submit-btn').disabled = false;
+  document.querySelectorAll('.star-btn').forEach(function(s){ s.style.opacity = '.3'; });
+}
+
+function closeRatingModal(){
+  document.getElementById('rating-modal').style.display = 'none';
+}
+
+function selectStar(val){
+  selectedStars = val;
+  document.querySelectorAll('.star-btn').forEach(function(s){
+    s.style.opacity = parseInt(s.getAttribute('data-val')) <= val ? '1' : '.3';
+  });
+}
+
+async function submitRating(){
+  if(selectedStars === 0){
+    document.getElementById('rating-error').textContent = 'Please select a star rating.';
+    document.getElementById('rating-error').style.display = 'block';
+    return;
+  }
+  var comment = document.getElementById('rating-comment').value.trim();
+  var btn = document.getElementById('rating-submit-btn');
+  btn.textContent = 'Submitting...'; btn.disabled = true;
+
+  try {
+    // Get student ID from application
+    var appDoc = await db.collection('applications').doc(currentRatingAppId).get();
+    var studentId = appDoc.data().studentId;
+
+    // Save rating to ratings collection
+    await db.collection('ratings').add({
+      studentId: studentId,
+      studentName: currentRatingStudentName,
+      businessId: bizId,
+      businessName: bizDoc.businessName || '',
+      rating: selectedStars,
+      comment: comment,
+      applicationId: currentRatingAppId,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Mark application as rated
+    await db.collection('applications').doc(currentRatingAppId).update({
+      rated: true,
+      rating: selectedStars,
+      ratingComment: comment,
+      ratedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Update student's average rating in their profile
+    var ratingsSnap = await db.collection('ratings').where('studentId','==',studentId).get();
+    var total = 0;
+    ratingsSnap.docs.forEach(function(d){ total += d.data().rating; });
+    var avg = Math.round((total / ratingsSnap.docs.length) * 10) / 10;
+    await db.collection('students').doc(studentId).update({
+      rating: avg,
+      ratingsCount: ratingsSnap.docs.length
+    });
+
+    toast('Rating submitted! ✓','success');
+    closeRatingModal();
+    loadApplicants(); // Refresh table
+  } catch(e){
+    document.getElementById('rating-error').textContent = 'Error: ' + e.message;
+    document.getElementById('rating-error').style.display = 'block';
+    btn.textContent = 'Submit rating'; btn.disabled = false;
+  }
+}
 </script>
 </body>
 </html>
