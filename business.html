@@ -665,6 +665,11 @@ async function registerBusiness(){
 
     // Send welcome email via Resend
     sendBusinessWelcomeEmail(email, bizname, contact);
+    // Notify admin
+    fetch('https://sendemail-6qashta5oa-uc.a.run.app',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({to:'hello@joinshiftmatch.com',subject:'⚡ New business registered: '+bizname,html:'<p><strong>New business registration</strong></p><p><strong>Business:</strong> '+bizname+'</p><p><strong>Contact:</strong> '+contact+'</p><p><strong>Email:</strong> '+email+'</p><p>Log in to admin portal to approve.</p>'})
+    }).catch(function(){});
 
     // Log activity
     await db.collection('activity').add({
